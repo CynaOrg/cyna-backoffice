@@ -1,0 +1,234 @@
+import { Component, inject, signal, OnInit } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { ApiService } from '../../../core/services/api.service';
+import { AdminAuthService } from '../../../core/auth/services/admin-auth.service';
+import { NotificationService } from '../../../core/services/notification.service';
+import { Subscription } from '../../../core/models/subscription.model';
+import { StatusBadgeComponent } from '../../../shared/components/status-badge/status-badge.component';
+import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
+import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/confirm-modal.component';
+
+@Component({
+  selector: 'app-subscription-list',
+  standalone: true,
+  imports: [FormsModule, StatusBadgeComponent, LoadingSpinnerComponent, ConfirmModalComponent],
+  template: `
+    <div>
+      <div class="mb-6">
+        <h1 class="text-2xl font-bold text-text-primary font-[family-name:var(--font-heading)]">
+          Subscriptions
+        </h1>
+        <p class="text-sm text-text-secondary mt-1">Manage customer subscriptions</p>
+      </div>
+
+      <div class="bg-card-bg rounded-xl border border-border-light shadow-sm p-4 mb-6">
+        <select
+          [(ngModel)]="statusFilter"
+          (change)="loadSubscriptions()"
+          class="px-4 py-2 rounded-lg border border-border bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+        >
+          <option value="">All statuses</option>
+          <option value="active">Active</option>
+          <option value="past_due">Past Due</option>
+          <option value="cancelled">Cancelled</option>
+          <option value="unpaid">Unpaid</option>
+          <option value="paused">Paused</option>
+        </select>
+      </div>
+
+      @if (loading()) {
+        <app-loading-spinner />
+      } @else {
+        <div class="bg-card-bg rounded-xl border border-border-light shadow-sm overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full">
+              <thead>
+                <tr class="border-b border-border-light">
+                  <th
+                    class="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider"
+                  >
+                    Product
+                  </th>
+                  <th
+                    class="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider"
+                  >
+                    Customer
+                  </th>
+                  <th
+                    class="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider"
+                  >
+                    Period
+                  </th>
+                  <th
+                    class="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider"
+                  >
+                    Price
+                  </th>
+                  <th
+                    class="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider"
+                  >
+                    Status
+                  </th>
+                  <th
+                    class="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider"
+                  >
+                    Current Period End
+                  </th>
+                  @if (auth.isSuperAdmin()) {
+                    <th
+                      class="px-6 py-3 text-right text-xs font-semibold text-text-secondary uppercase tracking-wider"
+                    >
+                      Actions
+                    </th>
+                  }
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-border-light">
+                @for (sub of subscriptions(); track sub.id) {
+                  <tr
+                    class="hover:bg-gray-50/50"
+                    [class]="sub.status === 'past_due' ? 'bg-orange-50/30' : ''"
+                  >
+                    <td class="px-6 py-4 text-sm font-medium text-text-primary">
+                      {{ sub.productName || sub.productId }}
+                    </td>
+                    <td class="px-6 py-4 text-sm text-text-secondary">
+                      {{ sub.userId }}
+                    </td>
+                    <td class="px-6 py-4 text-sm text-text-secondary capitalize">
+                      {{ sub.billingPeriod?.toLowerCase() }}
+                    </td>
+                    <td class="px-6 py-4 text-sm text-text-primary font-medium">
+                      {{ formatCurrency(sub.price) }}
+                    </td>
+                    <td class="px-6 py-4">
+                      <app-status-badge [status]="sub.status" />
+                    </td>
+                    <td class="px-6 py-4 text-sm text-text-secondary">
+                      {{ formatDate(sub.currentPeriodEnd) }}
+                    </td>
+                    @if (auth.isSuperAdmin()) {
+                      <td class="px-6 py-4 text-right">
+                        @if (sub.status === 'active') {
+                          <button
+                            (click)="confirmAction(sub, 'cancel')"
+                            class="text-sm text-danger hover:text-red-700"
+                          >
+                            Cancel
+                          </button>
+                        } @else if (sub.status === 'cancelled' || sub.status === 'paused') {
+                          <button
+                            (click)="confirmAction(sub, 'reactivate')"
+                            class="text-sm text-primary hover:text-primary-dark"
+                          >
+                            Reactivate
+                          </button>
+                        }
+                      </td>
+                    }
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="7" class="px-6 py-12 text-center text-text-muted text-sm">
+                      No subscriptions found
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      }
+    </div>
+
+    <app-confirm-modal
+      [open]="showModal()"
+      [title]="modalAction() === 'cancel' ? 'Cancel Subscription' : 'Reactivate Subscription'"
+      [message]="
+        modalAction() === 'cancel'
+          ? 'Are you sure you want to cancel this subscription?'
+          : 'Are you sure you want to reactivate this subscription?'
+      "
+      [confirmLabel]="modalAction() === 'cancel' ? 'Cancel Subscription' : 'Reactivate'"
+      [variant]="modalAction() === 'cancel' ? 'danger' : 'primary'"
+      (confirm)="executeAction()"
+      (cancel)="showModal.set(false)"
+    />
+  `,
+})
+export class SubscriptionListComponent implements OnInit {
+  private readonly api = inject(ApiService);
+  readonly auth = inject(AdminAuthService);
+  private readonly notifications = inject(NotificationService);
+
+  subscriptions = signal<Subscription[]>([]);
+  loading = signal(true);
+  statusFilter = '';
+  showModal = signal(false);
+  modalAction = signal<'cancel' | 'reactivate'>('cancel');
+  selectedSub = signal<Subscription | null>(null);
+
+  ngOnInit() {
+    this.loadSubscriptions();
+  }
+
+  loadSubscriptions() {
+    this.loading.set(true);
+    const params: Record<string, string | number> = {};
+    if (this.statusFilter) params['status'] = this.statusFilter;
+
+    this.api.getRaw<any>('admin/payments/subscriptions', params).subscribe({
+      next: (res) => {
+        const data = Array.isArray(res) ? res : res?.data || [];
+        this.subscriptions.set(data);
+        this.loading.set(false);
+      },
+      error: () => {
+        this.notifications.error('Failed to load subscriptions');
+        this.loading.set(false);
+      },
+    });
+  }
+
+  confirmAction(sub: Subscription, action: 'cancel' | 'reactivate') {
+    this.selectedSub.set(sub);
+    this.modalAction.set(action);
+    this.showModal.set(true);
+  }
+
+  executeAction() {
+    const sub = this.selectedSub();
+    if (!sub) return;
+    this.api
+      .patchRaw<any, any>(`admin/payments/subscriptions/${sub.id}/status`, {
+        action: this.modalAction(),
+      })
+      .subscribe({
+        next: () => {
+          this.notifications.success(
+            `Subscription ${this.modalAction() === 'cancel' ? 'cancelled' : 'reactivated'}`,
+          );
+          this.loadSubscriptions();
+          this.showModal.set(false);
+        },
+        error: () => {
+          this.notifications.error('Failed to update subscription');
+          this.showModal.set(false);
+        },
+      });
+  }
+
+  formatCurrency(v: number) {
+    return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(v);
+  }
+
+  formatDate(d: string) {
+    return d
+      ? new Date(d).toLocaleDateString('fr-FR', {
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric',
+        })
+      : 'N/A';
+  }
+}
