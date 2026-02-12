@@ -1,41 +1,87 @@
-import { Component, inject, computed } from '@angular/core';
-import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
+import { Component, inject, computed, signal, OnInit, OnDestroy } from '@angular/core';
+import { RouterOutlet, RouterLink, RouterLinkActive, Router, NavigationEnd } from '@angular/router';
+import { filter, Subscription } from 'rxjs';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { NgIconComponent, provideIcons } from '@ng-icons/core';
+import { phosphorSignOut, phosphorUser } from '@ng-icons/phosphor-icons/regular';
 import { AdminAuthService } from '../../core/auth/services/admin-auth.service';
 
 interface NavItem {
-  label: string;
-  path: string;
+  route: string;
+  labelKey: string;
   icon: string;
   superAdminOnly?: boolean;
+  exact?: boolean;
+}
+
+interface NavSection {
+  labelKey: string;
+  items: NavItem[];
 }
 
 @Component({
   selector: 'app-admin-layout',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, TranslateModule, NgIconComponent],
+  viewProviders: [provideIcons({ phosphorSignOut, phosphorUser })],
   template: `
-    <!-- Sidebar -->
+    <!-- ========== SIDEBAR (fixed left, 256px) ========== -->
     <aside
-      class="fixed left-0 top-0 bottom-0 w-64 bg-sidebar-bg border-r border-sidebar-border flex flex-col z-40"
+      class="fixed left-0 top-0 z-40 h-screen w-64 flex flex-col border-r border-border-light bg-surface"
     >
       <!-- Logo -->
-      <div class="px-6 py-5 border-b border-sidebar-border">
-        <h1 class="text-xl font-bold text-primary font-[family-name:var(--font-heading)]">CYNA</h1>
-        <p class="text-xs text-text-muted mt-0.5">Backoffice Administration</p>
+      <div class="flex h-20 items-center px-6">
+        <a routerLink="/dashboard" class="no-underline">
+          <img
+            src="assets/cyna-logo-baseline-dark.png"
+            alt="CYNA"
+            class="h-8 w-auto object-contain"
+          />
+        </a>
       </div>
 
-      <!-- Navigation -->
-      <nav class="flex-1 px-3 py-4 overflow-y-auto">
-        <ul class="space-y-1">
-          @for (item of visibleNavItems(); track item.path) {
-            <li>
+      <!-- Main nav -->
+      <nav class="flex flex-1 flex-col overflow-y-auto px-3">
+        <!-- Dashboard link (standalone, with primary bg when active) -->
+        <a
+          routerLink="/dashboard"
+          routerLinkActive="active-dashboard"
+          #rlaDash="routerLinkActive"
+          [routerLinkActiveOptions]="{ exact: true }"
+          class="mb-6 flex items-center gap-3 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors no-underline"
+          [class.bg-primary]="rlaDash.isActive"
+          [style.color]="rlaDash.isActive ? '#ffffff' : '#0a0a0a'"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="1.5"
+              d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25a2.25 2.25 0 01-2.25-2.25v-2.25z"
+            />
+          </svg>
+          {{ 'SIDEBAR.DASHBOARD' | translate }}
+        </a>
+
+        <!-- Sections -->
+        @for (section of visibleSections(); track section.labelKey) {
+          <div class="mb-6">
+            <span
+              class="mb-2 block px-4 text-[11px] font-semibold uppercase tracking-wider text-text-muted"
+            >
+              {{ section.labelKey | translate }}
+            </span>
+            @for (item of section.items; track item.route) {
               <a
-                [routerLink]="item.path"
-                routerLinkActive="bg-primary-light text-primary"
-                [routerLinkActiveOptions]="{ exact: item.path === '/dashboard' }"
-                class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-text-secondary hover:bg-gray-50 hover:text-text-primary transition-colors"
+                [routerLink]="item.route"
+                routerLinkActive="active-section"
+                #rla="routerLinkActive"
+                [routerLinkActiveOptions]="{ exact: item.exact || false }"
+                class="flex items-center gap-3 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors no-underline"
+                [class.bg-primary-light]="rla.isActive"
+                [style.color]="rla.isActive ? '#4f39f6' : '#585858'"
               >
-                <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     stroke-linecap="round"
                     stroke-linejoin="round"
@@ -43,105 +89,192 @@ interface NavItem {
                     [attr.d]="item.icon"
                   />
                 </svg>
-                {{ item.label }}
+                {{ item.labelKey | translate }}
               </a>
-            </li>
-          }
-        </ul>
+            }
+          </div>
+        }
       </nav>
 
-      <!-- User Info + Logout -->
-      <div class="px-3 py-4 border-t border-sidebar-border">
-        <div class="px-3 py-2 mb-2">
-          <p class="text-sm font-medium text-text-primary truncate">
-            {{ auth.admin()?.firstName }} {{ auth.admin()?.lastName }}
-          </p>
-          <p class="text-xs text-text-muted capitalize">
-            {{ auth.admin()?.role?.replace('_', ' ') }}
-          </p>
-        </div>
+      <!-- Account + Logout -->
+      <div class="border-t border-border-light px-3 py-3">
+        <a
+          routerLink="/account"
+          routerLinkActive="active-account"
+          #rlaAccount="routerLinkActive"
+          class="flex items-center gap-3 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors no-underline"
+          [class.bg-primary-light]="rlaAccount.isActive"
+          [style.color]="rlaAccount.isActive ? '#4f39f6' : '#585858'"
+        >
+          <ng-icon name="phosphorUser" size="20" />
+          {{ 'SIDEBAR.ACCOUNT' | translate }}
+        </a>
         <button
           (click)="auth.logout()"
-          class="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium text-text-secondary hover:bg-danger-light hover:text-danger transition-colors"
+          class="flex items-center gap-3 w-full rounded-lg px-4 py-2.5 text-sm font-medium text-text-muted transition-colors hover:text-error hover:bg-error-light border-none bg-transparent cursor-pointer"
         >
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="1.5"
-              d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-            />
-          </svg>
-          Sign out
+          <ng-icon name="phosphorSignOut" size="20" />
+          {{ 'SIDEBAR.SIGN_OUT' | translate }}
         </button>
       </div>
     </aside>
 
-    <!-- Main Content -->
-    <main class="ml-64 min-h-screen">
-      <div class="p-8">
+    <!-- ========== MAIN CONTENT ========== -->
+    <main class="ml-64 min-h-screen bg-background">
+      <!-- Topbar -->
+      <div class="fixed top-0 right-0 left-64 z-20 border-b border-border-light bg-surface">
+        <div class="flex items-center justify-between px-8 py-4">
+          <div class="min-w-0">
+            <h1 class="m-0 truncate text-xl font-bold text-text-primary">
+              {{ pageTitleKey() | translate }}
+            </h1>
+          </div>
+          <span class="text-sm text-text-secondary">
+            {{ auth.admin()?.firstName }} {{ auth.admin()?.lastName }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Page content -->
+      <div class="p-8 pt-[72px]">
         <router-outlet />
       </div>
     </main>
   `,
 })
-export class AdminLayoutComponent {
+export class AdminLayoutComponent implements OnInit, OnDestroy {
   readonly auth = inject(AdminAuthService);
+  private readonly router = inject(Router);
+  private readonly translate = inject(TranslateService);
+  private routerSub?: Subscription;
 
-  private readonly navItems: NavItem[] = [
-    {
-      label: 'Dashboard',
-      path: '/dashboard',
-      icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0h4',
-    },
-    {
-      label: 'Products',
-      path: '/products',
-      icon: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4',
-    },
-    {
-      label: 'Categories',
-      path: '/categories',
-      icon: 'M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10',
-    },
-    {
-      label: 'Orders',
-      path: '/orders',
-      icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01',
-      superAdminOnly: true,
-    },
-    {
-      label: 'Subscriptions',
-      path: '/subscriptions',
-      icon: 'M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15',
-    },
-    {
-      label: 'Customers',
-      path: '/customers',
-      icon: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z',
-      superAdminOnly: true,
-    },
-    {
-      label: 'Analytics',
-      path: '/analytics',
-      icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z',
-    },
-    {
-      label: 'Content',
-      path: '/content',
-      icon: 'M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2',
-      superAdminOnly: true,
-    },
-    {
-      label: 'Admins',
-      path: '/admins',
-      icon: 'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z',
-      superAdminOnly: true,
-    },
+  private readonly currentUrl = signal(this.router.url);
+
+  pageTitleKey = computed(() => {
+    const path = this.currentUrl();
+    const titleKeys: Record<string, string> = {
+      '/dashboard': 'PAGES.DASHBOARD',
+      '/products': 'PAGES.PRODUCTS',
+      '/services': 'PAGES.SERVICES',
+      '/licences': 'PAGES.LICENCES',
+      '/orders': 'PAGES.ORDERS',
+      '/subscriptions': 'PAGES.SUBSCRIPTIONS',
+      '/customers': 'PAGES.CUSTOMERS',
+      '/analytics': 'PAGES.ANALYTICS',
+      '/content': 'PAGES.CONTENT',
+      '/admins': 'PAGES.ADMIN_MANAGEMENT',
+      '/account': 'PAGES.ACCOUNT',
+    };
+    for (const [key, value] of Object.entries(titleKeys)) {
+      if (path.startsWith(key)) return value;
+    }
+    return 'PAGES.DASHBOARD';
+  });
+
+  ngOnInit() {
+    this.routerSub = this.router.events
+      .pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd))
+      .subscribe((e) => this.currentUrl.set(e.urlAfterRedirects));
+  }
+
+  ngOnDestroy() {
+    this.routerSub?.unsubscribe();
+  }
+
+  private readonly catalogueSection: NavSection = {
+    labelKey: 'SIDEBAR.CATALOGUE',
+    items: [
+      {
+        route: '/products',
+        labelKey: 'SIDEBAR.PRODUCTS',
+        icon: 'M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z',
+      },
+      {
+        route: '/services',
+        labelKey: 'SIDEBAR.SERVICES',
+        icon: 'M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z',
+      },
+      {
+        route: '/licences',
+        labelKey: 'SIDEBAR.LICENCES',
+        icon: 'M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z',
+      },
+    ],
+  };
+
+  private readonly managementSection: NavSection = {
+    labelKey: 'SIDEBAR.MANAGEMENT',
+    items: [
+      {
+        route: '/orders',
+        labelKey: 'SIDEBAR.ORDERS',
+        icon: 'M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25z',
+        superAdminOnly: true,
+      },
+      {
+        route: '/subscriptions',
+        labelKey: 'SIDEBAR.SUBSCRIPTIONS',
+        icon: 'M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182',
+      },
+    ],
+  };
+
+  private readonly userManagementSection: NavSection = {
+    labelKey: 'SIDEBAR.USER_MANAGEMENT',
+    items: [
+      {
+        route: '/customers',
+        labelKey: 'SIDEBAR.CUSTOMERS',
+        icon: 'M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z',
+        superAdminOnly: true,
+      },
+      {
+        route: '/admins',
+        labelKey: 'SIDEBAR.ADMINS',
+        icon: 'M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.241-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 010-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28z M15 12a3 3 0 11-6 0 3 3 0 016 0z',
+        superAdminOnly: true,
+      },
+    ],
+  };
+
+  private readonly insightsSection: NavSection = {
+    labelKey: 'SIDEBAR.INSIGHTS',
+    items: [
+      {
+        route: '/analytics',
+        labelKey: 'SIDEBAR.ANALYTICS',
+        icon: 'M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z',
+      },
+    ],
+  };
+
+  private readonly settingsSection: NavSection = {
+    labelKey: 'SIDEBAR.SETTINGS',
+    items: [
+      {
+        route: '/content',
+        labelKey: 'SIDEBAR.CONTENT',
+        icon: 'M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z',
+        superAdminOnly: true,
+      },
+    ],
+  };
+
+  private readonly allSections: NavSection[] = [
+    this.catalogueSection,
+    this.managementSection,
+    this.userManagementSection,
+    this.insightsSection,
+    this.settingsSection,
   ];
 
-  visibleNavItems = computed(() => {
+  visibleSections = computed(() => {
     const isSuperAdmin = this.auth.isSuperAdmin();
-    return this.navItems.filter((item) => !item.superAdminOnly || isSuperAdmin);
+    return this.allSections
+      .map((section) => ({
+        ...section,
+        items: section.items.filter((item) => !item.superAdminOnly || isSuperAdmin),
+      }))
+      .filter((section) => section.items.length > 0);
   });
 }
