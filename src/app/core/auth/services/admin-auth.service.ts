@@ -1,9 +1,14 @@
 import { Injectable, inject, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Observable, tap, catchError, throwError } from 'rxjs';
+import { Observable, tap, map, catchError, throwError } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { Admin, AdminLoginResponse, AdminAuthResponse } from '../../models/admin.model';
+
+interface ApiResponse<T> {
+  data: T;
+  meta?: { timestamp: string; requestId: string };
+}
 
 @Injectable({ providedIn: 'root' })
 export class AdminAuthService {
@@ -23,20 +28,24 @@ export class AdminAuthService {
   readonly isCommercial = computed(() => this._admin()?.role === 'commercial');
 
   login(email: string, password: string): Observable<AdminLoginResponse> {
-    return this.http.post<AdminLoginResponse>(`${this.baseUrl}/login`, { email, password }).pipe(
-      tap((response) => {
-        if (response.requires2FA) {
-          this._tempToken.set(response.tempToken);
-        }
-      }),
-    );
+    return this.http
+      .post<ApiResponse<AdminLoginResponse>>(`${this.baseUrl}/login`, { email, password })
+      .pipe(
+        map((r) => r.data),
+        tap((response) => {
+          if (response.requires2FA) {
+            this._tempToken.set(response.tempToken);
+          }
+        }),
+      );
   }
 
   verify2FA(code: string): Observable<AdminAuthResponse> {
     const tempToken = this._tempToken();
     return this.http
-      .post<AdminAuthResponse>(`${this.baseUrl}/verify-2fa`, { tempToken, code })
+      .post<ApiResponse<AdminAuthResponse>>(`${this.baseUrl}/verify-2fa`, { tempToken, code })
       .pipe(
+        map((r) => r.data),
         tap((response) => {
           this._accessToken.set(response.accessToken);
           this._admin.set(response.admin);
@@ -47,17 +56,23 @@ export class AdminAuthService {
 
   resend2FA(): Observable<AdminLoginResponse> {
     const tempToken = this._tempToken();
-    return this.http.post<AdminLoginResponse>(`${this.baseUrl}/resend-2fa`, { tempToken }).pipe(
-      tap((response) => {
-        this._tempToken.set(response.tempToken);
-      }),
-    );
+    return this.http
+      .post<ApiResponse<AdminLoginResponse>>(`${this.baseUrl}/resend-2fa`, { tempToken })
+      .pipe(
+        map((r) => r.data),
+        tap((response) => {
+          this._tempToken.set(response.tempToken);
+        }),
+      );
   }
 
   refreshToken(): Observable<AdminAuthResponse> {
     return this.http
-      .post<AdminAuthResponse>(`${this.baseUrl}/refresh-token`, {}, { withCredentials: true })
+      .post<
+        ApiResponse<AdminAuthResponse>
+      >(`${this.baseUrl}/refresh-token`, {}, { withCredentials: true })
       .pipe(
+        map((r) => r.data),
         tap((response) => {
           this._accessToken.set(response.accessToken);
           this._admin.set(response.admin);

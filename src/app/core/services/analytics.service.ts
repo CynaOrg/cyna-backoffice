@@ -5,11 +5,11 @@ import { ApiService } from './api.service';
 import { environment } from '../../../environments/environment';
 import {
   DashboardData,
+  StockStatusResponse,
   SalesDataPoint,
   SalesByCategoryData,
   SalesByProductTypeData,
   MrrDataPoint,
-  StockItem,
 } from '../models/analytics.model';
 
 @Injectable({ providedIn: 'root' })
@@ -20,19 +20,19 @@ export class AnalyticsService {
 
   getDashboard(period?: string): Observable<DashboardData> {
     const params = period ? { period } : undefined;
-    return this.api.getRaw<DashboardData>(`${this.basePath}/dashboard`, params);
+    return this.api.get<DashboardData>(`${this.basePath}/dashboard`, params);
   }
 
   getSales(period?: string, groupBy?: string): Observable<{ sales: SalesDataPoint[] }> {
     const params: Record<string, string> = {};
     if (period) params['period'] = period;
     if (groupBy) params['groupBy'] = groupBy;
-    return this.api.getRaw<{ sales: SalesDataPoint[] }>(`${this.basePath}/sales`, params);
+    return this.api.get<{ sales: SalesDataPoint[] }>(`${this.basePath}/sales`, params);
   }
 
   getSalesByCategory(period?: string): Observable<{ data: SalesByCategoryData[] }> {
     const params = period ? { period } : undefined;
-    return this.api.getRaw<{ data: SalesByCategoryData[] }>(
+    return this.api.get<{ data: SalesByCategoryData[] }>(
       `${this.basePath}/sales-by-category`,
       params,
     );
@@ -40,7 +40,7 @@ export class AnalyticsService {
 
   getSalesByProductType(period?: string): Observable<{ data: SalesByProductTypeData[] }> {
     const params = period ? { period } : undefined;
-    return this.api.getRaw<{ data: SalesByProductTypeData[] }>(
+    return this.api.get<{ data: SalesByProductTypeData[] }>(
       `${this.basePath}/sales-by-product-type`,
       params,
     );
@@ -48,18 +48,18 @@ export class AnalyticsService {
 
   getAverageCart(period?: string): Observable<{ avgCart: number; history: SalesDataPoint[] }> {
     const params = period ? { period } : undefined;
-    return this.api.getRaw<{ avgCart: number; history: SalesDataPoint[] }>(
+    return this.api.get<{ avgCart: number; history: SalesDataPoint[] }>(
       `${this.basePath}/average-cart`,
       params,
     );
   }
 
   getMrr(): Observable<{ current: number; history: MrrDataPoint[] }> {
-    return this.api.getRaw<{ current: number; history: MrrDataPoint[] }>(`${this.basePath}/mrr`);
+    return this.api.get<{ current: number; history: MrrDataPoint[] }>(`${this.basePath}/mrr`);
   }
 
-  getStockStatus(): Observable<{ items: StockItem[] }> {
-    return this.api.getRaw<{ items: StockItem[] }>(`${this.basePath}/stock`);
+  getStockStatus(): Observable<StockStatusResponse> {
+    return this.api.get<StockStatusResponse>(`${this.basePath}/stock`);
   }
 
   exportData(

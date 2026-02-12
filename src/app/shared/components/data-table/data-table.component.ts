@@ -13,13 +13,11 @@ import { NgTemplateOutlet } from '@angular/common';
   standalone: true,
   imports: [NgTemplateOutlet],
   template: `
-    <div class="bg-card-bg rounded-xl border border-border-light shadow-sm overflow-hidden">
+    <div class="bg-surface rounded-xl border border-border-light shadow-sm overflow-hidden">
       @if (title() || headerTpl) {
         <div class="px-6 py-4 border-b border-border-light flex items-center justify-between">
           @if (title()) {
-            <h3
-              class="text-lg font-semibold text-text-primary font-[family-name:var(--font-heading)]"
-            >
+            <h3 class="text-lg font-semibold text-text-primary">
               {{ title() }}
             </h3>
           }

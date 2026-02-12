@@ -5,9 +5,10 @@ import { Component, input, computed } from '@angular/core';
   standalone: true,
   template: `
     <span
-      class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-      [class]="badgeClass()"
+      class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium"
+      [class]="badgeClasses()"
     >
+      <span class="w-1.5 h-1.5 rounded-full" [class]="dotClass()"></span>
       {{ displayLabel() }}
     </span>
   `,
@@ -18,24 +19,33 @@ export class StatusBadgeComponent {
 
   displayLabel = computed(() => this.label() || this.status().replace(/_/g, ' '));
 
-  badgeClass = computed(() => {
-    const s = this.status();
-    const map: Record<string, string> = {
-      active: 'bg-emerald-100 text-emerald-700',
-      paid: 'bg-emerald-100 text-emerald-700',
-      completed: 'bg-emerald-100 text-emerald-700',
-      delivered: 'bg-emerald-100 text-emerald-700',
-      verified: 'bg-emerald-100 text-emerald-700',
-      pending: 'bg-amber-100 text-amber-700',
-      processing: 'bg-blue-100 text-blue-700',
-      shipped: 'bg-blue-100 text-blue-700',
-      past_due: 'bg-orange-100 text-orange-700',
-      cancelled: 'bg-gray-100 text-gray-600',
-      refunded: 'bg-purple-100 text-purple-700',
-      unpaid: 'bg-red-100 text-red-700',
-      paused: 'bg-gray-100 text-gray-600',
-      inactive: 'bg-red-100 text-red-700',
+  private readonly statusConfig: Record<string, { bg: string; text: string; dot: string }> = {
+    active: { bg: 'bg-success-light', text: 'text-success', dot: 'bg-success' },
+    paid: { bg: 'bg-success-light', text: 'text-success', dot: 'bg-success' },
+    completed: { bg: 'bg-success-light', text: 'text-success', dot: 'bg-success' },
+    delivered: { bg: 'bg-success-light', text: 'text-success', dot: 'bg-success' },
+    verified: { bg: 'bg-success-light', text: 'text-success', dot: 'bg-success' },
+    pending: { bg: 'bg-warning-light', text: 'text-warning', dot: 'bg-warning' },
+    processing: { bg: 'bg-info-light', text: 'text-info', dot: 'bg-info' },
+    shipped: { bg: 'bg-info-light', text: 'text-info', dot: 'bg-info' },
+    past_due: { bg: 'bg-warning-light', text: 'text-warning', dot: 'bg-warning' },
+    cancelled: { bg: 'bg-[#f3f4f6]', text: 'text-text-muted', dot: 'bg-text-muted' },
+    paused: { bg: 'bg-[#f3f4f6]', text: 'text-text-muted', dot: 'bg-text-muted' },
+    refunded: { bg: 'bg-primary-light', text: 'text-primary', dot: 'bg-primary' },
+    unpaid: { bg: 'bg-error-light', text: 'text-error', dot: 'bg-error' },
+    inactive: { bg: 'bg-error-light', text: 'text-error', dot: 'bg-error' },
+  };
+
+  badgeClasses = computed(() => {
+    const config = this.statusConfig[this.status()] || {
+      bg: 'bg-[#f3f4f6]',
+      text: 'text-text-secondary',
     };
-    return map[s] || 'bg-gray-100 text-gray-600';
+    return `${config.bg} ${config.text}`;
+  });
+
+  dotClass = computed(() => {
+    const config = this.statusConfig[this.status()];
+    return config?.dot || 'bg-text-muted';
   });
 }

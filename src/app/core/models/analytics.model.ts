@@ -13,14 +13,39 @@ export interface DashboardKPIs {
 }
 
 export interface DashboardData {
-  kpis: DashboardKPIs;
-  recentOrders: {
-    id: string;
-    orderNumber: string;
-    status: string;
+  orders: {
     total: number;
-    createdAt: string;
-  }[];
+    pending: number;
+    cancelled: number;
+    completed: number;
+    changePercent: number;
+  };
+  revenue: {
+    total: number;
+    oneTime: number;
+    currency: string;
+    recurring: number;
+    changePercent: number;
+  };
+  subscriptions: {
+    mrr: number;
+    new: number;
+    active: number;
+    churned: number;
+    changePercent: number;
+  };
+  conversionRate: number;
+  averageOrderValue: number;
+}
+
+export interface StockStatusResponse {
+  summary: {
+    inStock: number;
+    lowStock: number;
+    outOfStock: number;
+    totalProducts: number;
+  };
+  products: StockItem[];
 }
 
 export interface SalesDataPoint {

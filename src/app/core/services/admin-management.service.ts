@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { ApiService } from './api.service';
 import { Admin, CreateAdminDto, UpdateAdminDto } from '../models/admin.model';
 
@@ -9,19 +9,25 @@ export class AdminManagementService {
   private readonly basePath = 'admin/admins';
 
   getAdmins(): Observable<Admin[]> {
-    return this.api.getRaw<Admin[]>(this.basePath);
+    return this.api.get<any>(this.basePath).pipe(
+      map((res) => {
+        if (Array.isArray(res)) return res;
+        if (res?.data && Array.isArray(res.data)) return res.data;
+        return [];
+      }),
+    );
   }
 
   getAdmin(adminId: string): Observable<Admin> {
-    return this.api.getRaw<Admin>(`${this.basePath}/${adminId}`);
+    return this.api.get<Admin>(`${this.basePath}/${adminId}`);
   }
 
   createAdmin(dto: CreateAdminDto): Observable<Admin> {
-    return this.api.postRaw<CreateAdminDto, Admin>(this.basePath, dto);
+    return this.api.post<CreateAdminDto, Admin>(this.basePath, dto);
   }
 
   updateAdmin(adminId: string, dto: UpdateAdminDto): Observable<Admin> {
-    return this.api.patchRaw<UpdateAdminDto, Admin>(`${this.basePath}/${adminId}`, dto);
+    return this.api.patch<UpdateAdminDto, Admin>(`${this.basePath}/${adminId}`, dto);
   }
 
   deleteAdmin(adminId: string): Observable<void> {
