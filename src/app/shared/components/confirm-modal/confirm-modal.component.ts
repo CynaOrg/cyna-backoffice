@@ -8,9 +8,7 @@ import { Component, input, output } from '@angular/core';
       <div class="fixed inset-0 z-50 flex items-center justify-center">
         <div class="absolute inset-0 bg-black/40" (click)="cancel.emit()"></div>
         <div class="relative bg-white rounded-xl shadow-xl p-6 max-w-md w-full mx-4">
-          <h3
-            class="text-lg font-semibold text-text-primary font-[family-name:var(--font-heading)]"
-          >
+          <h3 class="text-lg font-semibold text-text-primary">
             {{ title() }}
           </h3>
           <p class="mt-2 text-sm text-text-secondary">{{ message() }}</p>
@@ -26,8 +24,8 @@ import { Component, input, output } from '@angular/core';
               class="px-4 py-2 text-sm font-medium text-white rounded-lg"
               [class]="
                 variant() === 'danger'
-                  ? 'bg-danger hover:bg-red-600'
-                  : 'bg-primary hover:bg-primary-dark'
+                  ? 'bg-error hover:bg-red-600'
+                  : 'bg-primary hover:bg-primary-hover'
               "
             >
               {{ confirmLabel() }}

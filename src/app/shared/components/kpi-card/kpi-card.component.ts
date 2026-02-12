@@ -4,7 +4,9 @@ import { Component, input } from '@angular/core';
   selector: 'app-kpi-card',
   standalone: true,
   template: `
-    <div class="bg-card-bg rounded-xl border border-border-light p-6 shadow-sm">
+    <div
+      class="rounded-xl border border-border-light bg-surface p-6 shadow-sm hover:shadow-md hover:-translate-y-px transition-all duration-200"
+    >
       <div class="flex items-center justify-between mb-4">
         <div class="w-10 h-10 rounded-lg flex items-center justify-center" [class]="iconBgClass()">
           <svg
@@ -26,16 +28,14 @@ import { Component, input } from '@angular/core';
           <span
             class="text-xs font-semibold px-2 py-1 rounded-full"
             [class]="
-              variation()! >= 0 ? 'bg-success-light text-success' : 'bg-danger-light text-danger'
+              variation()! >= 0 ? 'bg-success-light text-success' : 'bg-error-light text-error'
             "
           >
             {{ variation()! >= 0 ? '+' : '' }}{{ variation() }}%
           </span>
         }
       </div>
-      <div class="text-2xl font-bold text-text-primary font-[family-name:var(--font-heading)]">
-        {{ value() }}
-      </div>
+      <div class="text-2xl font-bold text-text-primary">{{ value() }}</div>
       <div class="text-sm text-text-secondary mt-1">{{ label() }}</div>
     </div>
   `,
