@@ -1,5 +1,6 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ApiService } from '../../../core/services/api.service';
 import { AdminAuthService } from '../../../core/auth/services/admin-auth.service';
 import { NotificationService } from '../../../core/services/notification.service';
@@ -11,22 +12,26 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
 @Component({
   selector: 'app-category-list',
   standalone: true,
-  imports: [FormsModule, StatusBadgeComponent, LoadingSpinnerComponent, ConfirmModalComponent],
+  imports: [
+    FormsModule,
+    TranslateModule,
+    StatusBadgeComponent,
+    LoadingSpinnerComponent,
+    ConfirmModalComponent,
+  ],
   template: `
     <div>
       <div class="flex items-center justify-between mb-6">
         <div>
-          <h1 class="text-2xl font-bold text-text-primary font-[family-name:var(--font-heading)]">
-            Categories
-          </h1>
-          <p class="text-sm text-text-secondary mt-1">Manage product categories</p>
+          <h1 class="text-2xl font-bold text-text-primary">{{ 'CATEGORIES.TITLE' | translate }}</h1>
+          <p class="text-sm text-text-secondary mt-1">{{ 'CATEGORIES.SUBTITLE' | translate }}</p>
         </div>
         @if (auth.isSuperAdmin()) {
           <button
             (click)="openForm()"
-            class="px-4 py-2.5 bg-primary text-white text-sm font-medium rounded-lg hover:bg-primary-dark"
+            class="px-4 py-2.5 bg-primary text-white text-sm font-medium rounded-lg hover:bg-primary-hover"
           >
-            + New Category
+            {{ 'CATEGORIES.NEW_CATEGORY' | translate }}
           </button>
         }
       </div>
@@ -34,7 +39,7 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
       @if (loading()) {
         <app-loading-spinner />
       } @else {
-        <div class="bg-card-bg rounded-xl border border-border-light shadow-sm overflow-hidden">
+        <div class="bg-surface rounded-xl border border-border-light shadow-sm overflow-hidden">
           <div class="overflow-x-auto">
             <table class="w-full">
               <thead>
@@ -42,28 +47,28 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
                   <th
                     class="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider"
                   >
-                    Name
+                    {{ 'CATEGORIES.NAME' | translate }}
                   </th>
                   <th
                     class="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider"
                   >
-                    Slug
+                    {{ 'CATEGORIES.SLUG' | translate }}
                   </th>
                   <th
                     class="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider"
                   >
-                    Order
+                    {{ 'CATEGORIES.ORDER' | translate }}
                   </th>
                   <th
                     class="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider"
                   >
-                    Status
+                    {{ 'CATEGORIES.STATUS' | translate }}
                   </th>
                   @if (auth.isSuperAdmin()) {
                     <th
                       class="px-6 py-3 text-right text-xs font-semibold text-text-secondary uppercase tracking-wider"
                     >
-                      Actions
+                      {{ 'CATEGORIES.ACTIONS' | translate }}
                     </th>
                   }
                 </tr>
@@ -92,15 +97,15 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
                         <div class="flex items-center justify-end gap-2">
                           <button
                             (click)="openForm(cat)"
-                            class="text-sm text-primary hover:text-primary-dark"
+                            class="text-sm text-primary hover:text-primary-hover"
                           >
-                            Edit
+                            {{ 'CATEGORIES.EDIT' | translate }}
                           </button>
                           <button
                             (click)="confirmDelete(cat)"
-                            class="text-sm text-danger hover:text-red-700"
+                            class="text-sm text-error hover:text-red-700"
                           >
-                            Delete
+                            {{ 'CATEGORIES.DELETE' | translate }}
                           </button>
                         </div>
                       </td>
@@ -109,7 +114,7 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
                 } @empty {
                   <tr>
                     <td colspan="5" class="px-6 py-12 text-center text-text-muted text-sm">
-                      No categories
+                      {{ 'CATEGORIES.NO_CATEGORIES' | translate }}
                     </td>
                   </tr>
                 }
@@ -124,24 +129,28 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
         <div class="fixed inset-0 z-50 flex items-center justify-center">
           <div class="absolute inset-0 bg-black/40" (click)="showForm.set(false)"></div>
           <div class="relative bg-white rounded-xl shadow-xl p-6 max-w-lg w-full mx-4">
-            <h3 class="text-lg font-semibold mb-4 font-[family-name:var(--font-heading)]">
-              {{ editingCategory() ? 'Edit Category' : 'New Category' }}
+            <h3 class="text-lg font-semibold mb-4">
+              {{
+                editingCategory()
+                  ? ('CATEGORIES.EDIT_TITLE' | translate)
+                  : ('CATEGORIES.NEW_TITLE' | translate)
+              }}
             </h3>
             <div class="space-y-4">
               <div class="grid grid-cols-2 gap-4">
                 <div>
-                  <label class="block text-sm font-medium text-text-secondary mb-1"
-                    >Name (FR)</label
-                  >
+                  <label class="block text-sm font-medium text-text-secondary mb-1">{{
+                    'CATEGORIES.NAME_FR' | translate
+                  }}</label>
                   <input
                     [(ngModel)]="formData.nameFr"
                     class="w-full px-3 py-2 rounded-lg border border-border bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                   />
                 </div>
                 <div>
-                  <label class="block text-sm font-medium text-text-secondary mb-1"
-                    >Name (EN)</label
-                  >
+                  <label class="block text-sm font-medium text-text-secondary mb-1">{{
+                    'CATEGORIES.NAME_EN' | translate
+                  }}</label>
                   <input
                     [(ngModel)]="formData.nameEn"
                     class="w-full px-3 py-2 rounded-lg border border-border bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
@@ -149,14 +158,18 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
                 </div>
               </div>
               <div>
-                <label class="block text-sm font-medium text-text-secondary mb-1">Slug</label>
+                <label class="block text-sm font-medium text-text-secondary mb-1">{{
+                  'CATEGORIES.SLUG' | translate
+                }}</label>
                 <input
                   [(ngModel)]="formData.slug"
                   class="w-full px-3 py-2 rounded-lg border border-border bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                 />
               </div>
               <div>
-                <label class="block text-sm font-medium text-text-secondary mb-1">Image URL</label>
+                <label class="block text-sm font-medium text-text-secondary mb-1">{{
+                  'CATEGORIES.IMAGE_URL' | translate
+                }}</label>
                 <input
                   [(ngModel)]="formData.imageUrl"
                   class="w-full px-3 py-2 rounded-lg border border-border bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
@@ -164,9 +177,9 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
               </div>
               <div class="grid grid-cols-2 gap-4">
                 <div>
-                  <label class="block text-sm font-medium text-text-secondary mb-1"
-                    >Display Order</label
-                  >
+                  <label class="block text-sm font-medium text-text-secondary mb-1">{{
+                    'CATEGORIES.DISPLAY_ORDER' | translate
+                  }}</label>
                   <input
                     type="number"
                     [(ngModel)]="formData.displayOrder"
@@ -176,7 +189,7 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
                 <div class="flex items-end pb-1">
                   <label class="flex items-center gap-2 text-sm"
                     ><input type="checkbox" [(ngModel)]="formData.isActive" class="rounded" />
-                    Active</label
+                    {{ 'CATEGORIES.ACTIVE' | translate }}</label
                   >
                 </div>
               </div>
@@ -186,14 +199,14 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
                 (click)="showForm.set(false)"
                 class="px-4 py-2 text-sm border border-border rounded-lg hover:bg-gray-50"
               >
-                Cancel
+                {{ 'CATEGORIES.CANCEL' | translate }}
               </button>
               <button
                 (click)="saveCategory()"
                 [disabled]="saving()"
-                class="px-4 py-2 bg-primary text-white text-sm font-medium rounded-lg hover:bg-primary-dark disabled:opacity-60"
+                class="px-4 py-2 bg-primary text-white text-sm font-medium rounded-lg hover:bg-primary-hover disabled:opacity-60"
               >
-                {{ saving() ? 'Saving...' : 'Save' }}
+                {{ saving() ? ('CATEGORIES.SAVING' | translate) : ('CATEGORIES.SAVE' | translate) }}
               </button>
             </div>
           </div>
@@ -203,9 +216,9 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
 
     <app-confirm-modal
       [open]="showDeleteModal()"
-      title="Delete Category"
-      message="Are you sure you want to delete this category?"
-      confirmLabel="Delete"
+      [title]="'CATEGORIES.DELETE_TITLE' | translate"
+      [message]="'CATEGORIES.DELETE_CONFIRM' | translate"
+      [confirmLabel]="'CATEGORIES.DELETE_BTN' | translate"
       variant="danger"
       (confirm)="deleteCategory()"
       (cancel)="showDeleteModal.set(false)"
@@ -216,6 +229,7 @@ export class CategoryListComponent implements OnInit {
   private readonly api = inject(ApiService);
   readonly auth = inject(AdminAuthService);
   private readonly notifications = inject(NotificationService);
+  private readonly translate = inject(TranslateService);
 
   categories = signal<Category[]>([]);
   loading = signal(true);
@@ -233,13 +247,15 @@ export class CategoryListComponent implements OnInit {
 
   loadCategories() {
     this.loading.set(true);
-    this.api.getList<Category>('admin/catalog/categories').subscribe({
-      next: (cats) => {
+    this.api.get<any>('admin/catalog/categories').subscribe({
+      next: (res) => {
+        // Handle both array and wrapped formats
+        const cats = Array.isArray(res) ? res : res?.data || res || [];
         this.categories.set(cats);
         this.loading.set(false);
       },
       error: () => {
-        this.notifications.error('Failed to load categories');
+        this.notifications.error(this.translate.instant('CATEGORIES.LOAD_FAILED'));
         this.loading.set(false);
       },
     });
@@ -279,13 +295,19 @@ export class CategoryListComponent implements OnInit {
 
     request.subscribe({
       next: () => {
-        this.notifications.success(editing ? 'Category updated' : 'Category created');
+        this.notifications.success(
+          editing
+            ? this.translate.instant('CATEGORIES.UPDATED')
+            : this.translate.instant('CATEGORIES.CREATED'),
+        );
         this.showForm.set(false);
         this.saving.set(false);
         this.loadCategories();
       },
       error: (err) => {
-        this.notifications.error(err.error?.message || 'Failed to save');
+        this.notifications.error(
+          err.error?.message || this.translate.instant('CATEGORIES.SAVE_FAILED'),
+        );
         this.saving.set(false);
       },
     });
@@ -301,12 +323,14 @@ export class CategoryListComponent implements OnInit {
     if (!cat) return;
     this.api.delete(`admin/catalog/categories/${cat.id}`).subscribe({
       next: () => {
-        this.notifications.success('Category deleted');
+        this.notifications.success(this.translate.instant('CATEGORIES.DELETED'));
         this.categories.update((c) => c.filter((x) => x.id !== cat.id));
         this.showDeleteModal.set(false);
       },
       error: (err) => {
-        this.notifications.error(err.error?.message || 'Failed to delete');
+        this.notifications.error(
+          err.error?.message || this.translate.instant('CATEGORIES.DELETE_FAILED'),
+        );
         this.showDeleteModal.set(false);
       },
     });

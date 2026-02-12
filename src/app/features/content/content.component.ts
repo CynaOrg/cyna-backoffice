@@ -12,6 +12,7 @@ import {
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
 import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
 import { ConfirmModalComponent } from '../../shared/components/confirm-modal/confirm-modal.component';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-content',
@@ -22,16 +23,15 @@ import { ConfirmModalComponent } from '../../shared/components/confirm-modal/con
     LoadingSpinnerComponent,
     StatusBadgeComponent,
     ConfirmModalComponent,
+    TranslateModule,
   ],
   template: `
     <div>
       <!-- Header -->
       <div class="mb-6">
-        <h1 class="text-2xl font-bold text-text-primary font-[family-name:var(--font-heading)]">
-          Content Management
-        </h1>
+        <h1 class="text-2xl font-bold text-text-primary">{{ 'CONTENT.TITLE' | translate }}</h1>
         <p class="text-sm text-text-secondary mt-1">
-          Manage carousel, hero text, top products and contact messages
+          {{ 'CONTENT.SUBTITLE' | translate }}
         </p>
       </div>
 
@@ -46,7 +46,7 @@ import { ConfirmModalComponent } from '../../shared/components/confirm-modal/con
               : 'border-transparent text-text-secondary hover:text-text-primary'
           "
         >
-          Carousel
+          {{ 'CONTENT.CAROUSEL' | translate }}
         </button>
         <button
           (click)="switchTab('top-products')"
@@ -57,7 +57,7 @@ import { ConfirmModalComponent } from '../../shared/components/confirm-modal/con
               : 'border-transparent text-text-secondary hover:text-text-primary'
           "
         >
-          Top Products
+          {{ 'CONTENT.TOP_PRODUCTS' | translate }}
         </button>
         <button
           (click)="switchTab('hero-text')"
@@ -68,7 +68,7 @@ import { ConfirmModalComponent } from '../../shared/components/confirm-modal/con
               : 'border-transparent text-text-secondary hover:text-text-primary'
           "
         >
-          Hero Text
+          {{ 'CONTENT.HERO_TEXT' | translate }}
         </button>
         <button
           (click)="switchTab('messages')"
@@ -79,7 +79,7 @@ import { ConfirmModalComponent } from '../../shared/components/confirm-modal/con
               : 'border-transparent text-text-secondary hover:text-text-primary'
           "
         >
-          Contact Messages
+          {{ 'CONTENT.CONTACT_MESSAGES' | translate }}
         </button>
       </div>
 
@@ -87,16 +87,14 @@ import { ConfirmModalComponent } from '../../shared/components/confirm-modal/con
       @if (activeTab() === 'carousel') {
         <div>
           <div class="flex items-center justify-between mb-4">
-            <h2
-              class="text-lg font-semibold text-text-primary font-[family-name:var(--font-heading)]"
-            >
-              Carousel Slides
+            <h2 class="text-lg font-semibold text-text-primary">
+              {{ 'CONTENT.CAROUSEL_SLIDES' | translate }}
             </h2>
             <button
               (click)="openSlideModal()"
-              class="bg-primary text-white hover:bg-primary-dark rounded-lg px-4 py-2 text-sm font-medium"
+              class="bg-primary text-white hover:bg-primary-hover rounded-lg px-4 py-2 text-sm font-medium"
             >
-              + Add Slide
+              {{ 'CONTENT.ADD_SLIDE' | translate }}
             </button>
           </div>
 
@@ -106,7 +104,7 @@ import { ConfirmModalComponent } from '../../shared/components/confirm-modal/con
             <div class="grid gap-4">
               @for (slide of slides(); track slide.id; let i = $index) {
                 <div
-                  class="bg-card-bg rounded-xl border border-border-light shadow-sm p-4 flex items-center gap-4"
+                  class="bg-surface rounded-xl border border-border-light shadow-sm p-4 flex items-center gap-4"
                 >
                   <!-- Image Preview -->
                   <div class="flex-shrink-0">
@@ -154,7 +152,7 @@ import { ConfirmModalComponent } from '../../shared/components/confirm-modal/con
                       (click)="moveSlide(i, 'up')"
                       [disabled]="i === 0"
                       class="p-1 rounded hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed text-text-secondary"
-                      title="Move up"
+                      [title]="'CONTENT.MOVE_UP' | translate"
                     >
                       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path
@@ -169,7 +167,7 @@ import { ConfirmModalComponent } from '../../shared/components/confirm-modal/con
                       (click)="moveSlide(i, 'down')"
                       [disabled]="i === slides().length - 1"
                       class="p-1 rounded hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed text-text-secondary"
-                      title="Move down"
+                      [title]="'CONTENT.MOVE_DOWN' | translate"
                     >
                       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path
@@ -186,23 +184,23 @@ import { ConfirmModalComponent } from '../../shared/components/confirm-modal/con
                   <div class="flex items-center gap-2">
                     <button
                       (click)="openSlideModal(slide)"
-                      class="text-sm text-primary hover:text-primary-dark font-medium"
+                      class="text-sm text-primary hover:text-primary-hover font-medium"
                     >
-                      Edit
+                      {{ 'CONTENT.EDIT' | translate }}
                     </button>
                     <button
                       (click)="confirmDeleteSlide(slide)"
-                      class="text-sm text-danger hover:text-red-700 font-medium"
+                      class="text-sm text-error hover:text-red-700 font-medium"
                     >
-                      Delete
+                      {{ 'CONTENT.DELETE' | translate }}
                     </button>
                   </div>
                 </div>
               } @empty {
                 <div
-                  class="bg-card-bg rounded-xl border border-border-light shadow-sm p-12 text-center"
+                  class="bg-surface rounded-xl border border-border-light shadow-sm p-12 text-center"
                 >
-                  <p class="text-sm text-text-muted">No carousel slides yet</p>
+                  <p class="text-sm text-text-muted">{{ 'CONTENT.NO_SLIDES' | translate }}</p>
                 </div>
               }
             </div>
@@ -217,62 +215,66 @@ import { ConfirmModalComponent } from '../../shared/components/confirm-modal/con
             <app-loading-spinner />
           } @else {
             <!-- Top Services -->
-            <div class="bg-card-bg rounded-xl border border-border-light shadow-sm p-6">
-              <h2
-                class="text-lg font-semibold text-text-primary mb-4 font-[family-name:var(--font-heading)]"
-              >
-                Top Services
+            <div class="bg-surface rounded-xl border border-border-light shadow-sm p-6">
+              <h2 class="text-lg font-semibold text-text-primary mb-4">
+                {{ 'CONTENT.TOP_SERVICES' | translate }}
               </h2>
               <div class="space-y-3">
                 <div>
                   <label class="block text-sm font-medium text-text-primary mb-1">
-                    Product IDs (comma-separated)
+                    {{ 'CONTENT.PRODUCT_IDS_LABEL' | translate }}
                   </label>
                   <input
                     type="text"
                     [(ngModel)]="topServicesInput"
                     class="w-full px-3 py-2 border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                    placeholder="e.g. uuid-1, uuid-2, uuid-3"
+                    [placeholder]="'CONTENT.PRODUCT_IDS_PLACEHOLDER' | translate"
                   />
                 </div>
                 <div class="flex justify-end">
                   <button
                     (click)="saveTopConfig('top_services')"
                     [disabled]="savingTopConfig()"
-                    class="bg-primary text-white hover:bg-primary-dark rounded-lg px-4 py-2 text-sm font-medium disabled:opacity-60"
+                    class="bg-primary text-white hover:bg-primary-hover rounded-lg px-4 py-2 text-sm font-medium disabled:opacity-60"
                   >
-                    {{ savingTopConfig() ? 'Saving...' : 'Save Top Services' }}
+                    {{
+                      savingTopConfig()
+                        ? ('CONTENT.SAVING' | translate)
+                        : ('CONTENT.SAVE_TOP_SERVICES' | translate)
+                    }}
                   </button>
                 </div>
               </div>
             </div>
 
             <!-- Top Products -->
-            <div class="bg-card-bg rounded-xl border border-border-light shadow-sm p-6">
-              <h2
-                class="text-lg font-semibold text-text-primary mb-4 font-[family-name:var(--font-heading)]"
-              >
-                Top Products
+            <div class="bg-surface rounded-xl border border-border-light shadow-sm p-6">
+              <h2 class="text-lg font-semibold text-text-primary mb-4">
+                {{ 'CONTENT.TOP_PRODUCTS' | translate }}
               </h2>
               <div class="space-y-3">
                 <div>
                   <label class="block text-sm font-medium text-text-primary mb-1">
-                    Product IDs (comma-separated)
+                    {{ 'CONTENT.PRODUCT_IDS_LABEL' | translate }}
                   </label>
                   <input
                     type="text"
                     [(ngModel)]="topProductsInput"
                     class="w-full px-3 py-2 border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                    placeholder="e.g. uuid-1, uuid-2, uuid-3"
+                    [placeholder]="'CONTENT.PRODUCT_IDS_PLACEHOLDER' | translate"
                   />
                 </div>
                 <div class="flex justify-end">
                   <button
                     (click)="saveTopConfig('top_products')"
                     [disabled]="savingTopConfig()"
-                    class="bg-primary text-white hover:bg-primary-dark rounded-lg px-4 py-2 text-sm font-medium disabled:opacity-60"
+                    class="bg-primary text-white hover:bg-primary-hover rounded-lg px-4 py-2 text-sm font-medium disabled:opacity-60"
                   >
-                    {{ savingTopConfig() ? 'Saving...' : 'Save Top Products' }}
+                    {{
+                      savingTopConfig()
+                        ? ('CONTENT.SAVING' | translate)
+                        : ('CONTENT.SAVE_TOP_PRODUCTS' | translate)
+                    }}
                   </button>
                 </div>
               </div>
@@ -287,17 +289,15 @@ import { ConfirmModalComponent } from '../../shared/components/confirm-modal/con
           @if (loadingHero()) {
             <app-loading-spinner />
           } @else {
-            <div class="bg-card-bg rounded-xl border border-border-light shadow-sm p-6">
-              <h2
-                class="text-lg font-semibold text-text-primary mb-4 font-[family-name:var(--font-heading)]"
-              >
-                Hero Text
+            <div class="bg-surface rounded-xl border border-border-light shadow-sm p-6">
+              <h2 class="text-lg font-semibold text-text-primary mb-4">
+                {{ 'CONTENT.HERO_TEXT' | translate }}
               </h2>
               <form [formGroup]="heroForm" (ngSubmit)="saveHeroText()" class="space-y-4">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label class="block text-sm font-medium text-text-primary mb-1">
-                      Title (FR)
+                      {{ 'CONTENT.TITLE_FR' | translate }}
                     </label>
                     <input
                       formControlName="titleFr"
@@ -306,7 +306,7 @@ import { ConfirmModalComponent } from '../../shared/components/confirm-modal/con
                   </div>
                   <div>
                     <label class="block text-sm font-medium text-text-primary mb-1">
-                      Title (EN)
+                      {{ 'CONTENT.TITLE_EN' | translate }}
                     </label>
                     <input
                       formControlName="titleEn"
@@ -317,7 +317,7 @@ import { ConfirmModalComponent } from '../../shared/components/confirm-modal/con
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label class="block text-sm font-medium text-text-primary mb-1">
-                      Subtitle (FR)
+                      {{ 'CONTENT.SUBTITLE_FR' | translate }}
                     </label>
                     <textarea
                       formControlName="subtitleFr"
@@ -327,7 +327,7 @@ import { ConfirmModalComponent } from '../../shared/components/confirm-modal/con
                   </div>
                   <div>
                     <label class="block text-sm font-medium text-text-primary mb-1">
-                      Subtitle (EN)
+                      {{ 'CONTENT.SUBTITLE_EN' | translate }}
                     </label>
                     <textarea
                       formControlName="subtitleEn"
@@ -340,9 +340,13 @@ import { ConfirmModalComponent } from '../../shared/components/confirm-modal/con
                   <button
                     type="submit"
                     [disabled]="savingHero()"
-                    class="bg-primary text-white hover:bg-primary-dark rounded-lg px-4 py-2 text-sm font-medium disabled:opacity-60"
+                    class="bg-primary text-white hover:bg-primary-hover rounded-lg px-4 py-2 text-sm font-medium disabled:opacity-60"
                   >
-                    {{ savingHero() ? 'Saving...' : 'Save Hero Text' }}
+                    {{
+                      savingHero()
+                        ? ('CONTENT.SAVING' | translate)
+                        : ('CONTENT.SAVE_HERO' | translate)
+                    }}
                   </button>
                 </div>
               </form>
@@ -357,7 +361,7 @@ import { ConfirmModalComponent } from '../../shared/components/confirm-modal/con
           @if (loadingMessages()) {
             <app-loading-spinner />
           } @else {
-            <div class="bg-card-bg rounded-xl border border-border-light shadow-sm overflow-hidden">
+            <div class="bg-surface rounded-xl border border-border-light shadow-sm overflow-hidden">
               <div class="overflow-x-auto">
                 <table class="w-full">
                   <thead>
@@ -365,32 +369,32 @@ import { ConfirmModalComponent } from '../../shared/components/confirm-modal/con
                       <th
                         class="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider"
                       >
-                        Name
+                        {{ 'CONTENT.NAME' | translate }}
                       </th>
                       <th
                         class="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider"
                       >
-                        Email
+                        {{ 'CONTENT.EMAIL' | translate }}
                       </th>
                       <th
                         class="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider"
                       >
-                        Subject
+                        {{ 'CONTENT.SUBJECT' | translate }}
                       </th>
                       <th
                         class="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider"
                       >
-                        Date
+                        {{ 'CONTENT.DATE' | translate }}
                       </th>
                       <th
                         class="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider"
                       >
-                        Status
+                        {{ 'CONTENT.STATUS' | translate }}
                       </th>
                       <th
                         class="px-6 py-3 text-right text-xs font-semibold text-text-secondary uppercase tracking-wider"
                       >
-                        Actions
+                        {{ 'CONTENT.ACTIONS' | translate }}
                       </th>
                     </tr>
                   </thead>
@@ -414,10 +418,17 @@ import { ConfirmModalComponent } from '../../shared/components/confirm-modal/con
                           <div class="flex items-center gap-1.5">
                             <app-status-badge
                               [status]="msg.isRead ? 'active' : 'pending'"
-                              [label]="msg.isRead ? 'Read' : 'Unread'"
+                              [label]="
+                                msg.isRead
+                                  ? ('CONTENT.READ' | translate)
+                                  : ('CONTENT.UNREAD' | translate)
+                              "
                             />
                             @if (msg.isTreated) {
-                              <app-status-badge status="completed" label="Treated" />
+                              <app-status-badge
+                                status="completed"
+                                [label]="'CONTENT.TREATED' | translate"
+                              />
                             }
                           </div>
                         </td>
@@ -425,21 +436,29 @@ import { ConfirmModalComponent } from '../../shared/components/confirm-modal/con
                           <div class="flex items-center justify-end gap-2">
                             <button
                               (click)="toggleMessageRead(msg)"
-                              class="text-xs text-primary hover:text-primary-dark font-medium whitespace-nowrap"
+                              class="text-xs text-primary hover:text-primary-hover font-medium whitespace-nowrap"
                             >
-                              {{ msg.isRead ? 'Mark unread' : 'Mark read' }}
+                              {{
+                                msg.isRead
+                                  ? ('CONTENT.MARK_UNREAD' | translate)
+                                  : ('CONTENT.MARK_READ' | translate)
+                              }}
                             </button>
                             <button
                               (click)="toggleMessageTreated(msg)"
-                              class="text-xs text-primary hover:text-primary-dark font-medium whitespace-nowrap"
+                              class="text-xs text-primary hover:text-primary-hover font-medium whitespace-nowrap"
                             >
-                              {{ msg.isTreated ? 'Untreated' : 'Mark treated' }}
+                              {{
+                                msg.isTreated
+                                  ? ('CONTENT.UNTREATED' | translate)
+                                  : ('CONTENT.MARK_TREATED' | translate)
+                              }}
                             </button>
                             <button
                               (click)="confirmDeleteMessage(msg)"
-                              class="text-xs text-danger hover:text-red-700 font-medium"
+                              class="text-xs text-error hover:text-red-700 font-medium"
                             >
-                              Delete
+                              {{ 'CONTENT.DELETE' | translate }}
                             </button>
                           </div>
                         </td>
@@ -456,7 +475,7 @@ import { ConfirmModalComponent } from '../../shared/components/confirm-modal/con
                     } @empty {
                       <tr>
                         <td colspan="6" class="px-6 py-12 text-center text-text-muted text-sm">
-                          No contact messages
+                          {{ 'CONTENT.NO_MESSAGES' | translate }}
                         </td>
                       </tr>
                     }
@@ -474,16 +493,18 @@ import { ConfirmModalComponent } from '../../shared/components/confirm-modal/con
           <div
             class="bg-white rounded-xl shadow-xl max-w-lg w-full p-6 max-h-[80vh] overflow-y-auto mx-4"
           >
-            <h3
-              class="text-lg font-semibold text-text-primary mb-4 font-[family-name:var(--font-heading)]"
-            >
-              {{ editingSlide() ? 'Edit Slide' : 'New Slide' }}
+            <h3 class="text-lg font-semibold text-text-primary mb-4">
+              {{
+                editingSlide()
+                  ? ('CONTENT.EDIT_SLIDE' | translate)
+                  : ('CONTENT.NEW_SLIDE' | translate)
+              }}
             </h3>
             <form [formGroup]="slideForm" (ngSubmit)="saveSlide()" class="space-y-4">
               <div class="grid grid-cols-2 gap-4">
                 <div>
                   <label class="block text-sm font-medium text-text-primary mb-1">
-                    Title (FR)
+                    {{ 'CONTENT.TITLE_FR' | translate }}
                   </label>
                   <input
                     formControlName="titleFr"
@@ -492,7 +513,7 @@ import { ConfirmModalComponent } from '../../shared/components/confirm-modal/con
                 </div>
                 <div>
                   <label class="block text-sm font-medium text-text-primary mb-1">
-                    Title (EN)
+                    {{ 'CONTENT.TITLE_EN' | translate }}
                   </label>
                   <input
                     formControlName="titleEn"
@@ -503,7 +524,7 @@ import { ConfirmModalComponent } from '../../shared/components/confirm-modal/con
               <div class="grid grid-cols-2 gap-4">
                 <div>
                   <label class="block text-sm font-medium text-text-primary mb-1">
-                    Subtitle (FR)
+                    {{ 'CONTENT.SUBTITLE_FR' | translate }}
                   </label>
                   <input
                     formControlName="subtitleFr"
@@ -512,7 +533,7 @@ import { ConfirmModalComponent } from '../../shared/components/confirm-modal/con
                 </div>
                 <div>
                   <label class="block text-sm font-medium text-text-primary mb-1">
-                    Subtitle (EN)
+                    {{ 'CONTENT.SUBTITLE_EN' | translate }}
                   </label>
                   <input
                     formControlName="subtitleEn"
@@ -521,17 +542,19 @@ import { ConfirmModalComponent } from '../../shared/components/confirm-modal/con
                 </div>
               </div>
               <div>
-                <label class="block text-sm font-medium text-text-primary mb-1">Image URL</label>
+                <label class="block text-sm font-medium text-text-primary mb-1">{{
+                  'CONTENT.IMAGE_URL' | translate
+                }}</label>
                 <input
                   formControlName="imageUrl"
                   class="w-full px-3 py-2 border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                  placeholder="https://..."
+                  [placeholder]="'CONTENT.IMAGE_URL_PLACEHOLDER' | translate"
                 />
               </div>
               <div class="grid grid-cols-2 gap-4">
                 <div>
                   <label class="block text-sm font-medium text-text-primary mb-1">
-                    Button Text (FR)
+                    {{ 'CONTENT.BUTTON_TEXT_FR' | translate }}
                   </label>
                   <input
                     formControlName="buttonTextFr"
@@ -540,7 +563,7 @@ import { ConfirmModalComponent } from '../../shared/components/confirm-modal/con
                 </div>
                 <div>
                   <label class="block text-sm font-medium text-text-primary mb-1">
-                    Button Text (EN)
+                    {{ 'CONTENT.BUTTON_TEXT_EN' | translate }}
                   </label>
                   <input
                     formControlName="buttonTextEn"
@@ -549,15 +572,19 @@ import { ConfirmModalComponent } from '../../shared/components/confirm-modal/con
                 </div>
               </div>
               <div>
-                <label class="block text-sm font-medium text-text-primary mb-1">Button Link</label>
+                <label class="block text-sm font-medium text-text-primary mb-1">{{
+                  'CONTENT.BUTTON_LINK' | translate
+                }}</label>
                 <input
                   formControlName="buttonLink"
                   class="w-full px-3 py-2 border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                  placeholder="/products or https://..."
+                  [placeholder]="'CONTENT.BUTTON_LINK_PLACEHOLDER' | translate"
                 />
               </div>
               <div class="flex items-center gap-3">
-                <label class="block text-sm font-medium text-text-primary">Active</label>
+                <label class="block text-sm font-medium text-text-primary">{{
+                  'CONTENT.ACTIVE' | translate
+                }}</label>
                 <button
                   type="button"
                   (click)="toggleSlideActive()"
@@ -576,14 +603,16 @@ import { ConfirmModalComponent } from '../../shared/components/confirm-modal/con
                   (click)="showSlideModal.set(false)"
                   class="px-4 py-2 text-sm font-medium border border-border rounded-lg hover:bg-gray-50"
                 >
-                  Cancel
+                  {{ 'CONTENT.CANCEL' | translate }}
                 </button>
                 <button
                   type="submit"
                   [disabled]="savingSlide()"
-                  class="bg-primary text-white hover:bg-primary-dark rounded-lg px-4 py-2 text-sm font-medium disabled:opacity-60"
+                  class="bg-primary text-white hover:bg-primary-hover rounded-lg px-4 py-2 text-sm font-medium disabled:opacity-60"
                 >
-                  {{ savingSlide() ? 'Saving...' : 'Save' }}
+                  {{
+                    savingSlide() ? ('CONTENT.SAVING' | translate) : ('CONTENT.SAVE' | translate)
+                  }}
                 </button>
               </div>
             </form>
@@ -594,8 +623,8 @@ import { ConfirmModalComponent } from '../../shared/components/confirm-modal/con
       <!-- Confirm Delete Slide -->
       <app-confirm-modal
         [open]="showDeleteSlideModal()"
-        title="Delete Slide"
-        message="Are you sure you want to delete this carousel slide? This action cannot be undone."
+        [title]="'CONTENT.DELETE_SLIDE_TITLE' | translate"
+        [message]="'CONTENT.DELETE_SLIDE_CONFIRM' | translate"
         confirmLabel="Delete"
         variant="danger"
         (confirm)="deleteSlide()"
@@ -605,8 +634,8 @@ import { ConfirmModalComponent } from '../../shared/components/confirm-modal/con
       <!-- Confirm Delete Message -->
       <app-confirm-modal
         [open]="showDeleteMessageModal()"
-        title="Delete Message"
-        message="Are you sure you want to delete this contact message? This action cannot be undone."
+        [title]="'CONTENT.DELETE_MESSAGE_TITLE' | translate"
+        [message]="'CONTENT.DELETE_MESSAGE_CONFIRM' | translate"
         confirmLabel="Delete"
         variant="danger"
         (confirm)="deleteMessage()"
@@ -619,6 +648,7 @@ export class ContentComponent implements OnInit {
   private readonly contentService = inject(ContentService);
   private readonly notifications = inject(NotificationService);
   private readonly fb = inject(FormBuilder);
+  private readonly translate = inject(TranslateService);
 
   // Tab state
   activeTab = signal<'carousel' | 'top-products' | 'hero-text' | 'messages'>('carousel');
@@ -698,7 +728,7 @@ export class ContentComponent implements OnInit {
         this.loadingSlides.set(false);
       },
       error: () => {
-        this.notifications.error('Failed to load carousel slides');
+        this.notifications.error(this.translate.instant('CONTENT.LOAD_SLIDES_FAILED'));
         this.loadingSlides.set(false);
       },
     });
@@ -742,13 +772,19 @@ export class ContentComponent implements OnInit {
 
     request.subscribe({
       next: () => {
-        this.notifications.success(editing ? 'Slide updated' : 'Slide created');
+        this.notifications.success(
+          editing
+            ? this.translate.instant('CONTENT.SLIDE_UPDATED')
+            : this.translate.instant('CONTENT.SLIDE_CREATED'),
+        );
         this.showSlideModal.set(false);
         this.savingSlide.set(false);
         this.loadCarouselSlides();
       },
       error: (err) => {
-        this.notifications.error(err.error?.message || 'Failed to save slide');
+        this.notifications.error(
+          err.error?.message || this.translate.instant('CONTENT.SAVE_SLIDE_FAILED'),
+        );
         this.savingSlide.set(false);
       },
     });
@@ -764,12 +800,14 @@ export class ContentComponent implements OnInit {
     if (!slide) return;
     this.contentService.deleteSlide(slide.id).subscribe({
       next: () => {
-        this.notifications.success('Slide deleted');
+        this.notifications.success(this.translate.instant('CONTENT.SLIDE_DELETED'));
         this.slides.update((s) => s.filter((x) => x.id !== slide.id));
         this.showDeleteSlideModal.set(false);
       },
       error: (err) => {
-        this.notifications.error(err.error?.message || 'Failed to delete slide');
+        this.notifications.error(
+          err.error?.message || this.translate.instant('CONTENT.DELETE_SLIDE_FAILED'),
+        );
         this.showDeleteSlideModal.set(false);
       },
     });
@@ -791,10 +829,10 @@ export class ContentComponent implements OnInit {
     const slideIds = current.map((s) => s.id);
     this.contentService.reorderCarousel(slideIds).subscribe({
       next: () => {
-        this.notifications.success('Carousel order updated');
+        this.notifications.success(this.translate.instant('CONTENT.CAROUSEL_ORDER_UPDATED'));
       },
       error: () => {
-        this.notifications.error('Failed to reorder carousel');
+        this.notifications.error(this.translate.instant('CONTENT.REORDER_FAILED'));
         this.loadCarouselSlides();
       },
     });
@@ -841,12 +879,17 @@ export class ContentComponent implements OnInit {
 
     this.contentService.updateTopConfig(type, { productIds }).subscribe({
       next: () => {
-        const label = type === 'top_services' ? 'Top Services' : 'Top Products';
-        this.notifications.success(`${label} updated`);
+        const label =
+          type === 'top_services'
+            ? this.translate.instant('CONTENT.TOP_SERVICES')
+            : this.translate.instant('CONTENT.TOP_PRODUCTS');
+        this.notifications.success(this.translate.instant('CONTENT.CONFIG_UPDATED', { label }));
         this.savingTopConfig.set(false);
       },
       error: (err) => {
-        this.notifications.error(err.error?.message || 'Failed to update configuration');
+        this.notifications.error(
+          err.error?.message || this.translate.instant('CONTENT.UPDATE_CONFIG_FAILED'),
+        );
         this.savingTopConfig.set(false);
       },
     });
@@ -858,16 +901,18 @@ export class ContentComponent implements OnInit {
     this.loadingHero.set(true);
     this.contentService.getHeroText().subscribe({
       next: (hero) => {
-        this.heroForm.patchValue({
-          titleFr: hero.titleFr,
-          titleEn: hero.titleEn,
-          subtitleFr: hero.subtitleFr,
-          subtitleEn: hero.subtitleEn,
-        });
+        if (hero) {
+          this.heroForm.patchValue({
+            titleFr: hero.titleFr || '',
+            titleEn: hero.titleEn || '',
+            subtitleFr: hero.subtitleFr || '',
+            subtitleEn: hero.subtitleEn || '',
+          });
+        }
         this.loadingHero.set(false);
       },
       error: () => {
-        this.notifications.error('Failed to load hero text');
+        // Hero text may not exist yet (404) - this is handled gracefully in the service
         this.loadingHero.set(false);
       },
     });
@@ -877,11 +922,13 @@ export class ContentComponent implements OnInit {
     this.savingHero.set(true);
     this.contentService.updateHeroText(this.heroForm.value).subscribe({
       next: () => {
-        this.notifications.success('Hero text updated');
+        this.notifications.success(this.translate.instant('CONTENT.HERO_UPDATED'));
         this.savingHero.set(false);
       },
       error: (err) => {
-        this.notifications.error(err.error?.message || 'Failed to update hero text');
+        this.notifications.error(
+          err.error?.message || this.translate.instant('CONTENT.HERO_UPDATE_FAILED'),
+        );
         this.savingHero.set(false);
       },
     });
@@ -897,7 +944,7 @@ export class ContentComponent implements OnInit {
         this.loadingMessages.set(false);
       },
       error: () => {
-        this.notifications.error('Failed to load contact messages');
+        this.notifications.error(this.translate.instant('CONTENT.LOAD_MESSAGES_FAILED'));
         this.loadingMessages.set(false);
       },
     });
@@ -911,10 +958,14 @@ export class ContentComponent implements OnInit {
     this.contentService.updateContactMessage(msg.id, { isRead: !msg.isRead }).subscribe({
       next: (updated) => {
         this.messages.update((msgs) => msgs.map((m) => (m.id === msg.id ? updated : m)));
-        this.notifications.success(updated.isRead ? 'Marked as read' : 'Marked as unread');
+        this.notifications.success(
+          updated.isRead
+            ? this.translate.instant('CONTENT.MARKED_READ')
+            : this.translate.instant('CONTENT.MARKED_UNREAD'),
+        );
       },
       error: () => {
-        this.notifications.error('Failed to update message');
+        this.notifications.error(this.translate.instant('CONTENT.UPDATE_MESSAGE_FAILED'));
       },
     });
   }
@@ -923,10 +974,14 @@ export class ContentComponent implements OnInit {
     this.contentService.updateContactMessage(msg.id, { isTreated: !msg.isTreated }).subscribe({
       next: (updated) => {
         this.messages.update((msgs) => msgs.map((m) => (m.id === msg.id ? updated : m)));
-        this.notifications.success(updated.isTreated ? 'Marked as treated' : 'Marked as untreated');
+        this.notifications.success(
+          updated.isTreated
+            ? this.translate.instant('CONTENT.MARKED_TREATED')
+            : this.translate.instant('CONTENT.MARKED_UNTREATED'),
+        );
       },
       error: () => {
-        this.notifications.error('Failed to update message');
+        this.notifications.error(this.translate.instant('CONTENT.UPDATE_MESSAGE_FAILED'));
       },
     });
   }
@@ -941,12 +996,14 @@ export class ContentComponent implements OnInit {
     if (!msg) return;
     this.contentService.deleteContactMessage(msg.id).subscribe({
       next: () => {
-        this.notifications.success('Message deleted');
+        this.notifications.success(this.translate.instant('CONTENT.MESSAGE_DELETED'));
         this.messages.update((msgs) => msgs.filter((m) => m.id !== msg.id));
         this.showDeleteMessageModal.set(false);
       },
       error: (err) => {
-        this.notifications.error(err.error?.message || 'Failed to delete message');
+        this.notifications.error(
+          err.error?.message || this.translate.instant('CONTENT.DELETE_MESSAGE_FAILED'),
+        );
         this.showDeleteMessageModal.set(false);
       },
     });

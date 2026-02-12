@@ -1,5 +1,6 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ApiService } from '../../../core/services/api.service';
 import { AdminAuthService } from '../../../core/auth/services/admin-auth.service';
 import { NotificationService } from '../../../core/services/notification.service';
@@ -11,35 +12,41 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
 @Component({
   selector: 'app-subscription-list',
   standalone: true,
-  imports: [FormsModule, StatusBadgeComponent, LoadingSpinnerComponent, ConfirmModalComponent],
+  imports: [
+    FormsModule,
+    TranslateModule,
+    StatusBadgeComponent,
+    LoadingSpinnerComponent,
+    ConfirmModalComponent,
+  ],
   template: `
     <div>
       <div class="mb-6">
-        <h1 class="text-2xl font-bold text-text-primary font-[family-name:var(--font-heading)]">
-          Subscriptions
+        <h1 class="text-2xl font-bold text-text-primary">
+          {{ 'SUBSCRIPTIONS.TITLE' | translate }}
         </h1>
-        <p class="text-sm text-text-secondary mt-1">Manage customer subscriptions</p>
+        <p class="text-sm text-text-secondary mt-1">{{ 'SUBSCRIPTIONS.SUBTITLE' | translate }}</p>
       </div>
 
-      <div class="bg-card-bg rounded-xl border border-border-light shadow-sm p-4 mb-6">
+      <div class="bg-surface rounded-xl border border-border-light shadow-sm p-4 mb-6">
         <select
           [(ngModel)]="statusFilter"
           (change)="loadSubscriptions()"
           class="px-4 py-2 rounded-lg border border-border bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
         >
-          <option value="">All statuses</option>
-          <option value="active">Active</option>
-          <option value="past_due">Past Due</option>
-          <option value="cancelled">Cancelled</option>
-          <option value="unpaid">Unpaid</option>
-          <option value="paused">Paused</option>
+          <option value="">{{ 'SUBSCRIPTIONS.ALL_STATUSES' | translate }}</option>
+          <option value="active">{{ 'SUBSCRIPTIONS.ACTIVE' | translate }}</option>
+          <option value="past_due">{{ 'SUBSCRIPTIONS.PAST_DUE' | translate }}</option>
+          <option value="cancelled">{{ 'SUBSCRIPTIONS.CANCELLED' | translate }}</option>
+          <option value="unpaid">{{ 'SUBSCRIPTIONS.UNPAID' | translate }}</option>
+          <option value="paused">{{ 'SUBSCRIPTIONS.PAUSED' | translate }}</option>
         </select>
       </div>
 
       @if (loading()) {
         <app-loading-spinner />
       } @else {
-        <div class="bg-card-bg rounded-xl border border-border-light shadow-sm overflow-hidden">
+        <div class="bg-surface rounded-xl border border-border-light shadow-sm overflow-hidden">
           <div class="overflow-x-auto">
             <table class="w-full">
               <thead>
@@ -47,38 +54,38 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
                   <th
                     class="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider"
                   >
-                    Product
+                    {{ 'SUBSCRIPTIONS.PRODUCT' | translate }}
                   </th>
                   <th
                     class="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider"
                   >
-                    Customer
+                    {{ 'SUBSCRIPTIONS.CUSTOMER' | translate }}
                   </th>
                   <th
                     class="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider"
                   >
-                    Period
+                    {{ 'SUBSCRIPTIONS.PERIOD' | translate }}
                   </th>
                   <th
                     class="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider"
                   >
-                    Price
+                    {{ 'SUBSCRIPTIONS.PRICE' | translate }}
                   </th>
                   <th
                     class="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider"
                   >
-                    Status
+                    {{ 'SUBSCRIPTIONS.STATUS' | translate }}
                   </th>
                   <th
                     class="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider"
                   >
-                    Current Period End
+                    {{ 'SUBSCRIPTIONS.PERIOD_END' | translate }}
                   </th>
                   @if (auth.isSuperAdmin()) {
                     <th
                       class="px-6 py-3 text-right text-xs font-semibold text-text-secondary uppercase tracking-wider"
                     >
-                      Actions
+                      {{ 'SUBSCRIPTIONS.ACTIONS' | translate }}
                     </th>
                   }
                 </tr>
@@ -112,16 +119,16 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
                         @if (sub.status === 'active') {
                           <button
                             (click)="confirmAction(sub, 'cancel')"
-                            class="text-sm text-danger hover:text-red-700"
+                            class="text-sm text-error hover:text-red-700"
                           >
-                            Cancel
+                            {{ 'SUBSCRIPTIONS.CANCEL' | translate }}
                           </button>
                         } @else if (sub.status === 'cancelled' || sub.status === 'paused') {
                           <button
                             (click)="confirmAction(sub, 'reactivate')"
-                            class="text-sm text-primary hover:text-primary-dark"
+                            class="text-sm text-primary hover:text-primary-hover"
                           >
-                            Reactivate
+                            {{ 'SUBSCRIPTIONS.REACTIVATE' | translate }}
                           </button>
                         }
                       </td>
@@ -130,7 +137,7 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
                 } @empty {
                   <tr>
                     <td colspan="7" class="px-6 py-12 text-center text-text-muted text-sm">
-                      No subscriptions found
+                      {{ 'SUBSCRIPTIONS.NO_SUBSCRIPTIONS' | translate }}
                     </td>
                   </tr>
                 }
@@ -143,13 +150,21 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
 
     <app-confirm-modal
       [open]="showModal()"
-      [title]="modalAction() === 'cancel' ? 'Cancel Subscription' : 'Reactivate Subscription'"
+      [title]="
+        modalAction() === 'cancel'
+          ? ('SUBSCRIPTIONS.CANCEL_TITLE' | translate)
+          : ('SUBSCRIPTIONS.REACTIVATE_TITLE' | translate)
+      "
       [message]="
         modalAction() === 'cancel'
-          ? 'Are you sure you want to cancel this subscription?'
-          : 'Are you sure you want to reactivate this subscription?'
+          ? ('SUBSCRIPTIONS.CANCEL_CONFIRM' | translate)
+          : ('SUBSCRIPTIONS.REACTIVATE_CONFIRM' | translate)
       "
-      [confirmLabel]="modalAction() === 'cancel' ? 'Cancel Subscription' : 'Reactivate'"
+      [confirmLabel]="
+        modalAction() === 'cancel'
+          ? ('SUBSCRIPTIONS.CANCEL_BTN' | translate)
+          : ('SUBSCRIPTIONS.REACTIVATE_BTN' | translate)
+      "
       [variant]="modalAction() === 'cancel' ? 'danger' : 'primary'"
       (confirm)="executeAction()"
       (cancel)="showModal.set(false)"
@@ -160,6 +175,7 @@ export class SubscriptionListComponent implements OnInit {
   private readonly api = inject(ApiService);
   readonly auth = inject(AdminAuthService);
   private readonly notifications = inject(NotificationService);
+  private readonly translate = inject(TranslateService);
 
   subscriptions = signal<Subscription[]>([]);
   loading = signal(true);
@@ -177,10 +193,9 @@ export class SubscriptionListComponent implements OnInit {
     const params: Record<string, string | number> = {};
     if (this.statusFilter) params['status'] = this.statusFilter;
 
-    this.api.getRaw<any>('admin/payments/subscriptions', params).subscribe({
-      next: (res) => {
-        const data = Array.isArray(res) ? res : res?.data || [];
-        this.subscriptions.set(data);
+    this.api.getList<Subscription>('admin/payments/subscriptions', params).subscribe({
+      next: (data) => {
+        this.subscriptions.set(data || []);
         this.loading.set(false);
       },
       error: () => {
@@ -200,19 +215,21 @@ export class SubscriptionListComponent implements OnInit {
     const sub = this.selectedSub();
     if (!sub) return;
     this.api
-      .patchRaw<any, any>(`admin/payments/subscriptions/${sub.id}/status`, {
+      .patch<any, any>(`admin/payments/subscriptions/${sub.id}/status`, {
         action: this.modalAction(),
       })
       .subscribe({
         next: () => {
           this.notifications.success(
-            `Subscription ${this.modalAction() === 'cancel' ? 'cancelled' : 'reactivated'}`,
+            this.modalAction() === 'cancel'
+              ? this.translate.instant('SUBSCRIPTIONS.CANCELLED_SUCCESS')
+              : this.translate.instant('SUBSCRIPTIONS.REACTIVATED_SUCCESS'),
           );
           this.loadSubscriptions();
           this.showModal.set(false);
         },
         error: () => {
-          this.notifications.error('Failed to update subscription');
+          this.notifications.error(this.translate.instant('SUBSCRIPTIONS.UPDATE_FAILED'));
           this.showModal.set(false);
         },
       });

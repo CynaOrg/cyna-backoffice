@@ -1,5 +1,6 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { ActivatedRoute, RouterLink, Router } from '@angular/router';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ApiService } from '../../../core/services/api.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { User } from '../../../core/models/user.model';
@@ -9,7 +10,7 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
 @Component({
   selector: 'app-customer-detail',
   standalone: true,
-  imports: [RouterLink, StatusBadgeComponent, LoadingSpinnerComponent],
+  imports: [RouterLink, TranslateModule, StatusBadgeComponent, LoadingSpinnerComponent],
   template: `
     <div>
       @if (loading()) {
@@ -28,9 +29,7 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
               </svg>
             </a>
             <div>
-              <h1
-                class="text-2xl font-bold text-text-primary font-[family-name:var(--font-heading)]"
-              >
+              <h1 class="text-2xl font-bold text-text-primary">
                 {{ user()!.firstName }} {{ user()!.lastName }}
               </h1>
               <p class="text-sm text-text-secondary">{{ user()!.email }}</p>
@@ -42,57 +41,65 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
             class="px-4 py-2 text-sm font-medium rounded-lg border transition-colors"
             [class]="
               user()!.isActive
-                ? 'border-danger text-danger hover:bg-danger-light'
+                ? 'border-error text-error hover:bg-error-light'
                 : 'border-success text-success hover:bg-success-light'
             "
           >
-            {{ toggling() ? 'Updating...' : user()!.isActive ? 'Deactivate' : 'Activate' }}
+            {{
+              toggling()
+                ? ('CUSTOMERS.UPDATING' | translate)
+                : user()!.isActive
+                  ? ('CUSTOMERS.DEACTIVATE' | translate)
+                  : ('CUSTOMERS.ACTIVATE' | translate)
+            }}
           </button>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div class="bg-card-bg rounded-xl border border-border-light shadow-sm p-6">
-            <h3 class="text-lg font-semibold mb-4 font-[family-name:var(--font-heading)]">
-              Profile
-            </h3>
+          <div class="bg-surface rounded-xl border border-border-light shadow-sm p-6">
+            <h3 class="text-lg font-semibold mb-4">{{ 'CUSTOMERS.PROFILE' | translate }}</h3>
             <div class="space-y-3 text-sm">
               <div class="flex justify-between">
-                <span class="text-text-muted">Status</span
+                <span class="text-text-muted">{{ 'CUSTOMERS.STATUS' | translate }}</span
                 ><app-status-badge [status]="user()!.isActive ? 'active' : 'inactive'" />
               </div>
               <div class="flex justify-between">
-                <span class="text-text-muted">Verified</span
+                <span class="text-text-muted">{{ 'CUSTOMERS.VERIFIED' | translate }}</span
                 ><app-status-badge
                   [status]="user()!.isVerified ? 'verified' : 'pending'"
-                  [label]="user()!.isVerified ? 'Yes' : 'No'"
+                  [label]="
+                    user()!.isVerified
+                      ? ('CUSTOMERS.YES' | translate)
+                      : ('CUSTOMERS.NO' | translate)
+                  "
                 />
               </div>
               <div class="flex justify-between">
-                <span class="text-text-muted">Language</span
+                <span class="text-text-muted">{{ 'CUSTOMERS.LANGUAGE' | translate }}</span
                 ><span>{{ user()!.preferredLanguage }}</span>
               </div>
               <div class="flex justify-between">
-                <span class="text-text-muted">Joined</span
+                <span class="text-text-muted">{{ 'CUSTOMERS.JOINED' | translate }}</span
                 ><span>{{ formatDate(user()!.createdAt) }}</span>
               </div>
             </div>
           </div>
-          <div class="bg-card-bg rounded-xl border border-border-light shadow-sm p-6">
-            <h3 class="text-lg font-semibold mb-4 font-[family-name:var(--font-heading)]">
-              Business
-            </h3>
+          <div class="bg-surface rounded-xl border border-border-light shadow-sm p-6">
+            <h3 class="text-lg font-semibold mb-4">{{ 'CUSTOMERS.BUSINESS' | translate }}</h3>
             <div class="space-y-3 text-sm">
               <div class="flex justify-between">
-                <span class="text-text-muted">Company</span
-                ><span>{{ user()!.companyName || 'N/A' }}</span>
+                <span class="text-text-muted">{{ 'CUSTOMERS.COMPANY' | translate }}</span
+                ><span>{{ user()!.companyName || ('CUSTOMERS.NA' | translate) }}</span>
               </div>
               <div class="flex justify-between">
-                <span class="text-text-muted">VAT Number</span
-                ><span>{{ user()!.vatNumber || 'N/A' }}</span>
+                <span class="text-text-muted">{{ 'CUSTOMERS.VAT_NUMBER' | translate }}</span
+                ><span>{{ user()!.vatNumber || ('CUSTOMERS.NA' | translate) }}</span>
               </div>
               <div class="flex justify-between">
-                <span class="text-text-muted">Stripe Customer</span
-                ><span class="font-mono text-xs">{{ user()!.stripeCustomerId || 'N/A' }}</span>
+                <span class="text-text-muted">{{ 'CUSTOMERS.STRIPE_CUSTOMER' | translate }}</span
+                ><span class="font-mono text-xs">{{
+                  user()!.stripeCustomerId || ('CUSTOMERS.NA' | translate)
+                }}</span>
               </div>
             </div>
           </div>
@@ -106,6 +113,7 @@ export class CustomerDetailComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly api = inject(ApiService);
   private readonly notifications = inject(NotificationService);
+  private readonly translate = inject(TranslateService);
 
   user = signal<User | null>(null);
   loading = signal(true);
@@ -117,13 +125,13 @@ export class CustomerDetailComponent implements OnInit {
   }
 
   loadUser(id: string) {
-    this.api.getRaw<User>(`admin/users/${id}`).subscribe({
+    this.api.get<User>(`admin/users/${id}`).subscribe({
       next: (u) => {
         this.user.set(u);
         this.loading.set(false);
       },
       error: () => {
-        this.notifications.error('User not found');
+        this.notifications.error(this.translate.instant('CUSTOMERS.NOT_FOUND'));
         this.router.navigate(['/customers']);
       },
     });
@@ -133,14 +141,18 @@ export class CustomerDetailComponent implements OnInit {
     const u = this.user();
     if (!u) return;
     this.toggling.set(true);
-    this.api.patchRaw<any, any>(`admin/users/${u.id}/status`, { isActive: !u.isActive }).subscribe({
+    this.api.patch<any, any>(`admin/users/${u.id}/status`, { isActive: !u.isActive }).subscribe({
       next: () => {
         this.user.update((usr) => (usr ? { ...usr, isActive: !usr.isActive } : null));
-        this.notifications.success(`User ${!u.isActive ? 'activated' : 'deactivated'}`);
+        this.notifications.success(
+          !u.isActive
+            ? this.translate.instant('CUSTOMERS.ACTIVATED')
+            : this.translate.instant('CUSTOMERS.DEACTIVATED'),
+        );
         this.toggling.set(false);
       },
       error: () => {
-        this.notifications.error('Failed to update user');
+        this.notifications.error(this.translate.instant('CUSTOMERS.UPDATE_FAILED'));
         this.toggling.set(false);
       },
     });

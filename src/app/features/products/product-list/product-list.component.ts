@@ -1,6 +1,7 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { RouterLink, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ApiService } from '../../../core/services/api.service';
 import { AdminAuthService } from '../../../core/auth/services/admin-auth.service';
 import { NotificationService } from '../../../core/services/notification.service';
@@ -15,6 +16,7 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
   imports: [
     RouterLink,
     FormsModule,
+    TranslateModule,
     StatusBadgeComponent,
     LoadingSpinnerComponent,
     ConfirmModalComponent,
@@ -23,48 +25,48 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
     <div>
       <div class="flex items-center justify-between mb-6">
         <div>
-          <h1 class="text-2xl font-bold text-text-primary font-[family-name:var(--font-heading)]">
-            Products
-          </h1>
-          <p class="text-sm text-text-secondary mt-1">Manage your product catalog</p>
+          <h1 class="text-2xl font-bold text-text-primary">{{ titleKey | translate }}</h1>
+          <p class="text-sm text-text-secondary mt-1">{{ subtitleKey | translate }}</p>
         </div>
         @if (auth.isSuperAdmin()) {
           <a
-            routerLink="/products/new"
-            class="px-4 py-2.5 bg-primary text-white text-sm font-medium rounded-lg hover:bg-primary-dark transition-colors"
+            [routerLink]="newProductLink"
+            class="px-4 py-2.5 bg-primary text-white text-sm font-medium rounded-lg hover:bg-primary-hover transition-colors"
           >
-            + New Product
+            {{ newProductLabelKey | translate }}
           </a>
         }
       </div>
 
       <!-- Filters -->
-      <div class="bg-card-bg rounded-xl border border-border-light shadow-sm p-4 mb-6">
+      <div class="bg-surface rounded-xl border border-border-light shadow-sm p-4 mb-6">
         <div class="flex flex-wrap gap-4 items-center">
           <input
             type="text"
-            placeholder="Search by name or SKU..."
+            [placeholder]="'PRODUCTS.SEARCH_PLACEHOLDER' | translate"
             [(ngModel)]="searchQuery"
             (input)="onSearch()"
             class="px-4 py-2 rounded-lg border border-border bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary w-64"
           />
-          <select
-            [(ngModel)]="typeFilter"
-            (change)="loadProducts()"
-            class="px-4 py-2 rounded-lg border border-border bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-          >
-            <option value="">All types</option>
-            <option value="SAAS">SaaS</option>
-            <option value="PHYSICAL">Physical</option>
-            <option value="LICENSE">License</option>
-          </select>
+          @if (!fixedType) {
+            <select
+              [(ngModel)]="typeFilter"
+              (change)="loadProducts()"
+              class="px-4 py-2 rounded-lg border border-border bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+            >
+              <option value="">{{ 'PRODUCTS.ALL_TYPES' | translate }}</option>
+              <option value="saas">{{ 'PRODUCTS.SAAS' | translate }}</option>
+              <option value="physical">{{ 'PRODUCTS.PHYSICAL' | translate }}</option>
+              <option value="license">{{ 'PRODUCTS.LICENSE' | translate }}</option>
+            </select>
+          }
         </div>
       </div>
 
       @if (loading()) {
         <app-loading-spinner />
       } @else {
-        <div class="bg-card-bg rounded-xl border border-border-light shadow-sm overflow-hidden">
+        <div class="bg-surface rounded-xl border border-border-light shadow-sm overflow-hidden">
           <div class="overflow-x-auto">
             <table class="w-full">
               <thead>
@@ -72,32 +74,32 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
                   <th
                     class="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider"
                   >
-                    Product
+                    {{ 'PRODUCTS.PRODUCT' | translate }}
                   </th>
                   <th
                     class="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider"
                   >
-                    SKU
+                    {{ 'PRODUCTS.SKU' | translate }}
                   </th>
                   <th
                     class="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider"
                   >
-                    Type
+                    {{ 'PRODUCTS.TYPE' | translate }}
                   </th>
                   <th
                     class="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider"
                   >
-                    Price
+                    {{ 'PRODUCTS.PRICE' | translate }}
                   </th>
                   <th
                     class="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider"
                   >
-                    Status
+                    {{ 'PRODUCTS.STATUS' | translate }}
                   </th>
                   <th
                     class="px-6 py-3 text-right text-xs font-semibold text-text-secondary uppercase tracking-wider"
                   >
-                    Actions
+                    {{ 'PRODUCTS.ACTIONS' | translate }}
                   </th>
                 </tr>
               </thead>
@@ -133,7 +135,7 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
                         }
                         <div>
                           <a
-                            [routerLink]="['/products', product.id]"
+                            [routerLink]="[basePath, product.id]"
                             class="text-sm font-medium text-text-primary hover:text-primary"
                             >{{ product.nameFr }}</a
                           >
@@ -148,9 +150,9 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
                       <span
                         class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium"
                         [class]="
-                          product.productType === 'SAAS'
+                          product.productType?.toLowerCase() === 'saas'
                             ? 'bg-blue-100 text-blue-700'
-                            : product.productType === 'PHYSICAL'
+                            : product.productType?.toLowerCase() === 'physical'
                               ? 'bg-amber-100 text-amber-700'
                               : 'bg-purple-100 text-purple-700'
                         "
@@ -164,13 +166,17 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
                     <td class="px-6 py-4">
                       <app-status-badge
                         [status]="product.isAvailable ? 'active' : 'inactive'"
-                        [label]="product.isAvailable ? 'Available' : 'Unavailable'"
+                        [label]="
+                          product.isAvailable
+                            ? ('PRODUCTS.AVAILABLE' | translate)
+                            : ('PRODUCTS.UNAVAILABLE' | translate)
+                        "
                       />
                     </td>
                     <td class="px-6 py-4 text-right">
                       <div class="flex items-center justify-end gap-2">
                         <a
-                          [routerLink]="['/products', product.id]"
+                          [routerLink]="[basePath, product.id]"
                           class="p-1.5 text-text-muted hover:text-primary rounded-lg hover:bg-gray-100"
                           title="View"
                         >
@@ -196,7 +202,7 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
                         </a>
                         @if (auth.isSuperAdmin()) {
                           <a
-                            [routerLink]="['/products', product.id, 'edit']"
+                            [routerLink]="[basePath, product.id, 'edit']"
                             class="p-1.5 text-text-muted hover:text-primary rounded-lg hover:bg-gray-100"
                             title="Edit"
                           >
@@ -216,7 +222,7 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
                           </a>
                           <button
                             (click)="confirmDelete(product)"
-                            class="p-1.5 text-text-muted hover:text-danger rounded-lg hover:bg-red-50"
+                            class="p-1.5 text-text-muted hover:text-error rounded-lg hover:bg-red-50"
                             title="Delete"
                           >
                             <svg
@@ -240,7 +246,7 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
                 } @empty {
                   <tr>
                     <td colspan="6" class="px-6 py-12 text-center text-text-muted text-sm">
-                      No products found
+                      {{ 'PRODUCTS.NO_PRODUCTS' | translate }}
                     </td>
                   </tr>
                 }
@@ -253,9 +259,11 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
 
     <app-confirm-modal
       [open]="showDeleteModal()"
-      title="Delete Product"
-      [message]="'Are you sure you want to delete ' + (productToDelete()?.nameFr || '') + '?'"
-      confirmLabel="Delete"
+      [title]="'PRODUCTS.DELETE_TITLE' | translate"
+      [message]="
+        ('PRODUCTS.DELETE_WARNING' | translate) + ' ' + (productToDelete()?.nameFr || '') + '?'
+      "
+      [confirmLabel]="'PRODUCTS.DELETE_CONFIRM' | translate"
       variant="danger"
       (confirm)="deleteProduct()"
       (cancel)="showDeleteModal.set(false)"
@@ -266,17 +274,38 @@ export class ProductListComponent implements OnInit {
   private readonly api = inject(ApiService);
   readonly auth = inject(AdminAuthService);
   private readonly notifications = inject(NotificationService);
+  private readonly translate = inject(TranslateService);
+  private readonly route = inject(ActivatedRoute);
 
   products = signal<Product[]>([]);
   loading = signal(true);
   searchQuery = '';
   typeFilter = '';
+  fixedType = '';
   showDeleteModal = signal(false);
   productToDelete = signal<Product | null>(null);
+
+  titleKey = 'PRODUCTS.TITLE';
+  subtitleKey = 'PRODUCTS.SUBTITLE';
+  newProductLabelKey = 'PRODUCTS.NEW_PRODUCT';
+  newProductLink = '/products/new';
+  basePath = '/products';
 
   private searchTimeout: any;
 
   ngOnInit() {
+    const data = this.route.snapshot.data;
+    if (data['productType']) {
+      this.fixedType = data['productType'];
+      this.typeFilter = this.fixedType;
+    }
+    if (data['titleKey']) this.titleKey = data['titleKey'];
+    if (data['subtitleKey']) this.subtitleKey = data['subtitleKey'];
+    if (data['newLabelKey']) this.newProductLabelKey = data['newLabelKey'];
+    if (data['basePath']) {
+      this.basePath = data['basePath'];
+      this.newProductLink = data['basePath'] + '/new';
+    }
     this.loadProducts();
   }
 
@@ -285,13 +314,15 @@ export class ProductListComponent implements OnInit {
     const params: Record<string, string | number | boolean> = {};
     if (this.typeFilter) params['productType'] = this.typeFilter;
 
-    this.api.getList<Product>('admin/catalog/products', params).subscribe({
-      next: (products) => {
+    this.api.get<any>('admin/catalog/products', params).subscribe({
+      next: (res) => {
+        // Handle both array and paginated response formats
+        const products = Array.isArray(res) ? res : res?.data || [];
         this.products.set(products);
         this.loading.set(false);
       },
       error: () => {
-        this.notifications.error('Failed to load products');
+        this.notifications.error(this.translate.instant('PRODUCTS.LOAD_ERROR'));
         this.loading.set(false);
       },
     });
@@ -310,7 +341,9 @@ export class ProductListComponent implements OnInit {
 
   onSearch() {
     clearTimeout(this.searchTimeout);
-    this.searchTimeout = setTimeout(() => {}, 300);
+    this.searchTimeout = setTimeout(() => {
+      this.loadProducts();
+    }, 300);
   }
 
   getPrice(product: Product): string {
@@ -319,7 +352,7 @@ export class ProductListComponent implements OnInit {
     if (product.priceMonthly) return `${fmt(product.priceMonthly)}/mo`;
     if (product.priceYearly) return `${fmt(product.priceYearly)}/yr`;
     if (product.priceUnit) return fmt(product.priceUnit);
-    return 'N/A';
+    return this.translate.instant('PRODUCTS.NA');
   }
 
   confirmDelete(product: Product) {
@@ -332,12 +365,12 @@ export class ProductListComponent implements OnInit {
     if (!product) return;
     this.api.delete(`admin/catalog/products/${product.id}`).subscribe({
       next: () => {
-        this.notifications.success('Product deleted');
+        this.notifications.success(this.translate.instant('PRODUCTS.DELETED'));
         this.products.update((list) => list.filter((p) => p.id !== product.id));
         this.showDeleteModal.set(false);
       },
       error: () => {
-        this.notifications.error('Failed to delete product');
+        this.notifications.error(this.translate.instant('PRODUCTS.DELETE_ERROR'));
         this.showDeleteModal.set(false);
       },
     });

@@ -1,6 +1,7 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { ActivatedRoute, RouterLink, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ApiService } from '../../../core/services/api.service';
 import { AdminAuthService } from '../../../core/auth/services/admin-auth.service';
 import { NotificationService } from '../../../core/services/notification.service';
@@ -11,7 +12,13 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
 @Component({
   selector: 'app-order-detail',
   standalone: true,
-  imports: [RouterLink, FormsModule, StatusBadgeComponent, LoadingSpinnerComponent],
+  imports: [
+    RouterLink,
+    FormsModule,
+    TranslateModule,
+    StatusBadgeComponent,
+    LoadingSpinnerComponent,
+  ],
   template: `
     <div>
       @if (loading()) {
@@ -30,9 +37,7 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
               </svg>
             </a>
             <div>
-              <h1
-                class="text-2xl font-bold text-text-primary font-[family-name:var(--font-heading)]"
-              >
+              <h1 class="text-2xl font-bold text-text-primary">
                 {{ order()!.orderNumber }}
               </h1>
               <p class="text-sm text-text-secondary">{{ formatDate(order()!.createdAt) }}</p>
@@ -44,10 +49,8 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div class="lg:col-span-2 space-y-6">
             <!-- Items -->
-            <div class="bg-card-bg rounded-xl border border-border-light shadow-sm p-6">
-              <h3 class="text-lg font-semibold mb-4 font-[family-name:var(--font-heading)]">
-                Order Items
-              </h3>
+            <div class="bg-surface rounded-xl border border-border-light shadow-sm p-6">
+              <h3 class="text-lg font-semibold mb-4">{{ 'ORDERS.ITEMS' | translate }}</h3>
               <div class="space-y-3">
                 @for (item of order()!.items; track item.id) {
                   <div
@@ -58,7 +61,7 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
                         {{ item.productSnapshot?.name || item.productName || item.productId }}
                       </p>
                       <p class="text-xs text-text-muted">
-                        Qty: {{ item.quantity }}
+                        {{ 'ORDERS.QTY' | translate }}: {{ item.quantity }}
                         {{ item.billingPeriod ? '(' + item.billingPeriod + ')' : '' }}
                       </p>
                     </div>
@@ -71,29 +74,27 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
             </div>
 
             <!-- Summary -->
-            <div class="bg-card-bg rounded-xl border border-border-light shadow-sm p-6">
-              <h3 class="text-lg font-semibold mb-4 font-[family-name:var(--font-heading)]">
-                Summary
-              </h3>
+            <div class="bg-surface rounded-xl border border-border-light shadow-sm p-6">
+              <h3 class="text-lg font-semibold mb-4">{{ 'ORDERS.SUMMARY' | translate }}</h3>
               <div class="space-y-2">
                 <div class="flex justify-between text-sm">
-                  <span class="text-text-secondary">Subtotal</span>
+                  <span class="text-text-secondary">{{ 'ORDERS.SUBTOTAL' | translate }}</span>
                   <span>{{ formatCurrency(order()!.subtotal) }}</span>
                 </div>
                 <div class="flex justify-between text-sm">
-                  <span class="text-text-secondary">Tax</span>
+                  <span class="text-text-secondary">{{ 'ORDERS.TAX' | translate }}</span>
                   <span>{{ formatCurrency(order()!.taxAmount) }}</span>
                 </div>
                 @if (order()!.shippingAmount > 0) {
                   <div class="flex justify-between text-sm">
-                    <span class="text-text-secondary">Shipping</span>
+                    <span class="text-text-secondary">{{ 'ORDERS.SHIPPING' | translate }}</span>
                     <span>{{ formatCurrency(order()!.shippingAmount) }}</span>
                   </div>
                 }
                 <div
                   class="flex justify-between text-sm font-bold pt-2 border-t border-border-light"
                 >
-                  <span>Total</span>
+                  <span>{{ 'ORDERS.TOTAL' | translate }}</span>
                   <span>{{ formatCurrency(order()!.total) }}</span>
                 </div>
               </div>
@@ -104,46 +105,48 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
           <div class="space-y-6">
             <!-- Status Update -->
             @if (auth.isSuperAdmin()) {
-              <div class="bg-card-bg rounded-xl border border-border-light shadow-sm p-6">
-                <h3 class="text-lg font-semibold mb-4 font-[family-name:var(--font-heading)]">
-                  Update Status
-                </h3>
+              <div class="bg-surface rounded-xl border border-border-light shadow-sm p-6">
+                <h3 class="text-lg font-semibold mb-4">{{ 'ORDERS.UPDATE_STATUS' | translate }}</h3>
                 <select
                   [(ngModel)]="newStatus"
                   class="w-full px-4 py-2.5 rounded-lg border border-border bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary mb-3"
                 >
-                  <option value="pending">Pending</option>
-                  <option value="paid">Paid</option>
-                  <option value="processing">Processing</option>
-                  <option value="shipped">Shipped</option>
-                  <option value="delivered">Delivered</option>
-                  <option value="completed">Completed</option>
-                  <option value="cancelled">Cancelled</option>
-                  <option value="refunded">Refunded</option>
+                  <option value="pending">{{ 'ORDERS.PENDING' | translate }}</option>
+                  <option value="paid">{{ 'ORDERS.PAID' | translate }}</option>
+                  <option value="processing">{{ 'ORDERS.PROCESSING' | translate }}</option>
+                  <option value="shipped">{{ 'ORDERS.SHIPPED' | translate }}</option>
+                  <option value="delivered">{{ 'ORDERS.DELIVERED' | translate }}</option>
+                  <option value="completed">{{ 'ORDERS.COMPLETED' | translate }}</option>
+                  <option value="cancelled">{{ 'ORDERS.CANCELLED' | translate }}</option>
+                  <option value="refunded">{{ 'ORDERS.REFUNDED' | translate }}</option>
                 </select>
                 <button
                   (click)="updateStatus()"
                   [disabled]="updating()"
-                  class="w-full py-2 bg-primary text-white text-sm font-medium rounded-lg hover:bg-primary-dark disabled:opacity-60"
+                  class="w-full py-2 bg-primary text-white text-sm font-medium rounded-lg hover:bg-primary-hover disabled:opacity-60"
                 >
-                  {{ updating() ? 'Updating...' : 'Update Status' }}
+                  {{
+                    updating()
+                      ? ('ORDERS.UPDATING' | translate)
+                      : ('ORDERS.UPDATE_STATUS' | translate)
+                  }}
                 </button>
               </div>
             }
 
             <!-- Customer Info -->
-            <div class="bg-card-bg rounded-xl border border-border-light shadow-sm p-6">
-              <h3 class="text-lg font-semibold mb-4 font-[family-name:var(--font-heading)]">
-                Customer
-              </h3>
+            <div class="bg-surface rounded-xl border border-border-light shadow-sm p-6">
+              <h3 class="text-lg font-semibold mb-4">{{ 'ORDERS.CUSTOMER' | translate }}</h3>
               <div class="space-y-2 text-sm">
                 <div>
-                  <span class="text-text-muted">ID:</span>
-                  <span class="text-text-primary">{{ order()!.userId || 'Guest' }}</span>
+                  <span class="text-text-muted">{{ 'ORDERS.ID' | translate }}:</span>
+                  <span class="text-text-primary">{{
+                    order()!.userId || ('ORDERS.GUEST' | translate)
+                  }}</span>
                 </div>
                 @if (order()!.guestEmail) {
                   <div>
-                    <span class="text-text-muted">Email:</span>
+                    <span class="text-text-muted">{{ 'ORDERS.EMAIL' | translate }}:</span>
                     <span class="text-text-primary">{{ order()!.guestEmail }}</span>
                   </div>
                 }
@@ -151,30 +154,28 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
             </div>
 
             <!-- Dates -->
-            <div class="bg-card-bg rounded-xl border border-border-light shadow-sm p-6">
-              <h3 class="text-lg font-semibold mb-4 font-[family-name:var(--font-heading)]">
-                Timeline
-              </h3>
+            <div class="bg-surface rounded-xl border border-border-light shadow-sm p-6">
+              <h3 class="text-lg font-semibold mb-4">{{ 'ORDERS.TIMELINE' | translate }}</h3>
               <div class="space-y-2 text-sm">
                 <div class="flex justify-between">
-                  <span class="text-text-muted">Created</span>
+                  <span class="text-text-muted">{{ 'ORDERS.CREATED' | translate }}</span>
                   <span>{{ formatDate(order()!.createdAt) }}</span>
                 </div>
                 @if (order()!.paidAt) {
                   <div class="flex justify-between">
-                    <span class="text-text-muted">Paid</span>
+                    <span class="text-text-muted">{{ 'ORDERS.PAID' | translate }}</span>
                     <span>{{ formatDate(order()!.paidAt!) }}</span>
                   </div>
                 }
                 @if (order()!.shippedAt) {
                   <div class="flex justify-between">
-                    <span class="text-text-muted">Shipped</span>
+                    <span class="text-text-muted">{{ 'ORDERS.SHIPPED' | translate }}</span>
                     <span>{{ formatDate(order()!.shippedAt!) }}</span>
                   </div>
                 }
                 @if (order()!.deliveredAt) {
                   <div class="flex justify-between">
-                    <span class="text-text-muted">Delivered</span>
+                    <span class="text-text-muted">{{ 'ORDERS.DELIVERED' | translate }}</span>
                     <span>{{ formatDate(order()!.deliveredAt!) }}</span>
                   </div>
                 }
@@ -192,6 +193,7 @@ export class OrderDetailComponent implements OnInit {
   private readonly api = inject(ApiService);
   readonly auth = inject(AdminAuthService);
   private readonly notifications = inject(NotificationService);
+  private readonly translate = inject(TranslateService);
 
   order = signal<Order | null>(null);
   loading = signal(true);
@@ -211,7 +213,7 @@ export class OrderDetailComponent implements OnInit {
         this.loading.set(false);
       },
       error: () => {
-        this.notifications.error('Order not found');
+        this.notifications.error(this.translate.instant('ORDERS.NOT_FOUND'));
         this.router.navigate(['/orders']);
       },
     });
@@ -221,19 +223,17 @@ export class OrderDetailComponent implements OnInit {
     const o = this.order();
     if (!o) return;
     this.updating.set(true);
-    this.api
-      .patchRaw<any, any>(`admin/orders/${o.id}/status`, { status: this.newStatus })
-      .subscribe({
-        next: () => {
-          this.order.update((ord) => (ord ? { ...ord, status: this.newStatus as any } : null));
-          this.notifications.success('Status updated');
-          this.updating.set(false);
-        },
-        error: () => {
-          this.notifications.error('Failed to update status');
-          this.updating.set(false);
-        },
-      });
+    this.api.patch<any, any>(`admin/orders/${o.id}/status`, { status: this.newStatus }).subscribe({
+      next: () => {
+        this.order.update((ord) => (ord ? { ...ord, status: this.newStatus as any } : null));
+        this.notifications.success(this.translate.instant('ORDERS.STATUS_UPDATED'));
+        this.updating.set(false);
+      },
+      error: () => {
+        this.notifications.error(this.translate.instant('ORDERS.UPDATE_FAILED'));
+        this.updating.set(false);
+      },
+    });
   }
 
   formatCurrency(v: number) {
