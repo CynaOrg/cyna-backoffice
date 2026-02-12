@@ -1,5 +1,6 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AdminManagementService } from '../../../core/services/admin-management.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { Admin, CreateAdminDto, UpdateAdminDto } from '../../../core/models/admin.model';
@@ -12,6 +13,7 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
   standalone: true,
   imports: [
     ReactiveFormsModule,
+    TranslateModule,
     StatusBadgeComponent,
     LoadingSpinnerComponent,
     ConfirmModalComponent,
@@ -21,16 +23,14 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
       <!-- Header -->
       <div class="flex items-center justify-between mb-6">
         <div>
-          <h1 class="text-2xl font-bold text-text-primary font-[family-name:var(--font-heading)]">
-            Admins
-          </h1>
-          <p class="text-sm text-text-secondary mt-1">Manage administrator accounts</p>
+          <h1 class="text-2xl font-bold text-text-primary">{{ 'ADMINS.TITLE' | translate }}</h1>
+          <p class="text-sm text-text-secondary mt-1">{{ 'ADMINS.SUBTITLE' | translate }}</p>
         </div>
         <button
           (click)="openCreateModal()"
-          class="bg-primary text-white hover:bg-primary-dark rounded-lg px-4 py-2 text-sm font-medium"
+          class="bg-primary text-white hover:bg-primary-hover rounded-lg px-4 py-2 text-sm font-medium"
         >
-          + New Admin
+          {{ 'ADMINS.NEW_ADMIN' | translate }}
         </button>
       </div>
 
@@ -39,7 +39,7 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
         <app-loading-spinner />
       } @else {
         <!-- Table -->
-        <div class="bg-card-bg rounded-xl border border-border-light shadow-sm overflow-hidden">
+        <div class="bg-surface rounded-xl border border-border-light shadow-sm overflow-hidden">
           <div class="overflow-x-auto">
             <table class="w-full">
               <thead>
@@ -47,32 +47,32 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
                   <th
                     class="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider"
                   >
-                    Name
+                    {{ 'ADMINS.NAME' | translate }}
                   </th>
                   <th
                     class="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider"
                   >
-                    Email
+                    {{ 'ADMINS.EMAIL' | translate }}
                   </th>
                   <th
                     class="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider"
                   >
-                    Role
+                    {{ 'ADMINS.ROLE' | translate }}
                   </th>
                   <th
                     class="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider"
                   >
-                    Status
+                    {{ 'ADMINS.STATUS' | translate }}
                   </th>
                   <th
                     class="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider"
                   >
-                    Last Login
+                    {{ 'ADMINS.LAST_LOGIN' | translate }}
                   </th>
                   <th
                     class="px-6 py-3 text-right text-xs font-semibold text-text-secondary uppercase tracking-wider"
                   >
-                    Actions
+                    {{ 'ADMINS.ACTIONS' | translate }}
                   </th>
                 </tr>
               </thead>
@@ -96,17 +96,29 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
                             : 'bg-blue-100 text-blue-700'
                         "
                       >
-                        {{ admin.role === 'super_admin' ? 'Super Admin' : 'Commercial' }}
+                        {{
+                          admin.role === 'super_admin'
+                            ? ('ADMINS.SUPER_ADMIN' | translate)
+                            : ('ADMINS.COMMERCIAL' | translate)
+                        }}
                       </span>
                     </td>
                     <td class="px-6 py-4">
                       <app-status-badge
                         [status]="admin.isActive ? 'active' : 'inactive'"
-                        [label]="admin.isActive ? 'Active' : 'Inactive'"
+                        [label]="
+                          admin.isActive
+                            ? ('ADMINS.ACTIVE' | translate)
+                            : ('ADMINS.INACTIVE' | translate)
+                        "
                       />
                     </td>
                     <td class="px-6 py-4 text-sm text-text-secondary">
-                      {{ admin.lastLoginAt ? formatDate(admin.lastLoginAt) : 'Never' }}
+                      {{
+                        admin.lastLoginAt
+                          ? formatDate(admin.lastLoginAt)
+                          : ('ADMINS.NEVER' | translate)
+                      }}
                     </td>
                     <td class="px-6 py-4 text-right">
                       <div class="flex items-center justify-end gap-2">
@@ -119,19 +131,23 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
                               : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'
                           "
                         >
-                          {{ admin.isActive ? 'Deactivate' : 'Activate' }}
+                          {{
+                            admin.isActive
+                              ? ('ADMINS.DEACTIVATE' | translate)
+                              : ('ADMINS.ACTIVATE' | translate)
+                          }}
                         </button>
                         <button
                           (click)="openEditModal(admin)"
-                          class="text-sm text-primary hover:text-primary-dark"
+                          class="text-sm text-primary hover:text-primary-hover"
                         >
-                          Edit
+                          {{ 'ADMINS.EDIT' | translate }}
                         </button>
                         <button
                           (click)="confirmDelete(admin)"
-                          class="text-sm text-danger hover:text-red-700"
+                          class="text-sm text-error hover:text-red-700"
                         >
-                          Delete
+                          {{ 'ADMINS.DELETE' | translate }}
                         </button>
                       </div>
                     </td>
@@ -139,7 +155,7 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
                 } @empty {
                   <tr>
                     <td colspan="6" class="px-6 py-12 text-center text-text-muted text-sm">
-                      No administrators found
+                      {{ 'ADMINS.NO_ADMINS' | translate }}
                     </td>
                   </tr>
                 }
@@ -153,70 +169,82 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
       @if (showCreateModal()) {
         <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-6 mx-4">
-            <h3
-              class="text-lg font-semibold text-text-primary font-[family-name:var(--font-heading)] mb-4"
-            >
-              New Admin
+            <h3 class="text-lg font-semibold text-text-primary mb-4">
+              {{ 'ADMINS.NEW_ADMIN_TITLE' | translate }}
             </h3>
             <form [formGroup]="createForm" (ngSubmit)="createAdmin()" class="space-y-4">
               <div class="grid grid-cols-2 gap-4">
                 <div>
-                  <label class="block text-sm font-medium text-text-primary mb-1">First Name</label>
+                  <label class="block text-sm font-medium text-text-primary mb-1">{{
+                    'ADMINS.FIRST_NAME' | translate
+                  }}</label>
                   <input
                     formControlName="firstName"
                     class="w-full px-3 py-2 border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                    placeholder="John"
+                    [placeholder]="'ADMINS.FIRST_NAME_PLACEHOLDER' | translate"
                   />
                   @if (
                     createForm.get('firstName')?.touched && createForm.get('firstName')?.invalid
                   ) {
-                    <p class="text-xs text-danger mt-1">First name is required</p>
+                    <p class="text-xs text-error mt-1">
+                      {{ 'ADMINS.FIRST_NAME_REQUIRED' | translate }}
+                    </p>
                   }
                 </div>
                 <div>
-                  <label class="block text-sm font-medium text-text-primary mb-1">Last Name</label>
+                  <label class="block text-sm font-medium text-text-primary mb-1">{{
+                    'ADMINS.LAST_NAME' | translate
+                  }}</label>
                   <input
                     formControlName="lastName"
                     class="w-full px-3 py-2 border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                    placeholder="Doe"
+                    [placeholder]="'ADMINS.LAST_NAME_PLACEHOLDER' | translate"
                   />
                   @if (createForm.get('lastName')?.touched && createForm.get('lastName')?.invalid) {
-                    <p class="text-xs text-danger mt-1">Last name is required</p>
+                    <p class="text-xs text-error mt-1">
+                      {{ 'ADMINS.LAST_NAME_REQUIRED' | translate }}
+                    </p>
                   }
                 </div>
               </div>
               <div>
-                <label class="block text-sm font-medium text-text-primary mb-1">Email</label>
+                <label class="block text-sm font-medium text-text-primary mb-1">{{
+                  'ADMINS.EMAIL' | translate
+                }}</label>
                 <input
                   formControlName="email"
                   type="email"
                   class="w-full px-3 py-2 border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                  placeholder="admin@cyna.com"
+                  [placeholder]="'ADMINS.EMAIL_PLACEHOLDER' | translate"
                 />
                 @if (createForm.get('email')?.touched && createForm.get('email')?.invalid) {
-                  <p class="text-xs text-danger mt-1">Valid email is required</p>
+                  <p class="text-xs text-error mt-1">{{ 'ADMINS.EMAIL_REQUIRED' | translate }}</p>
                 }
               </div>
               <div>
-                <label class="block text-sm font-medium text-text-primary mb-1">Password</label>
+                <label class="block text-sm font-medium text-text-primary mb-1">{{
+                  'ADMINS.PASSWORD' | translate
+                }}</label>
                 <input
                   formControlName="password"
                   type="password"
                   class="w-full px-3 py-2 border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                  placeholder="Min. 8 characters"
+                  [placeholder]="'ADMINS.PASSWORD_PLACEHOLDER' | translate"
                 />
                 @if (createForm.get('password')?.touched && createForm.get('password')?.invalid) {
-                  <p class="text-xs text-danger mt-1">Password must be at least 8 characters</p>
+                  <p class="text-xs text-error mt-1">{{ 'ADMINS.PASSWORD_MIN' | translate }}</p>
                 }
               </div>
               <div>
-                <label class="block text-sm font-medium text-text-primary mb-1">Role</label>
+                <label class="block text-sm font-medium text-text-primary mb-1">{{
+                  'ADMINS.ROLE' | translate
+                }}</label>
                 <select
                   formControlName="role"
                   class="w-full px-3 py-2 border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary"
                 >
-                  <option value="super_admin">Super Admin</option>
-                  <option value="commercial">Commercial</option>
+                  <option value="super_admin">{{ 'ADMINS.SUPER_ADMIN' | translate }}</option>
+                  <option value="commercial">{{ 'ADMINS.COMMERCIAL' | translate }}</option>
                 </select>
               </div>
               <div class="flex justify-end gap-3 pt-2">
@@ -225,14 +253,16 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
                   (click)="showCreateModal.set(false)"
                   class="px-4 py-2 text-sm font-medium text-text-secondary border border-border rounded-lg hover:bg-gray-50"
                 >
-                  Cancel
+                  {{ 'ADMINS.CANCEL' | translate }}
                 </button>
                 <button
                   type="submit"
                   [disabled]="createForm.invalid || saving()"
-                  class="bg-primary text-white hover:bg-primary-dark rounded-lg px-4 py-2 text-sm font-medium disabled:opacity-60"
+                  class="bg-primary text-white hover:bg-primary-hover rounded-lg px-4 py-2 text-sm font-medium disabled:opacity-60"
                 >
-                  {{ saving() ? 'Creating...' : 'Create Admin' }}
+                  {{
+                    saving() ? ('ADMINS.CREATING' | translate) : ('ADMINS.CREATE_ADMIN' | translate)
+                  }}
                 </button>
               </div>
             </form>
@@ -244,52 +274,64 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
       @if (showEditModal()) {
         <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-6 mx-4">
-            <h3
-              class="text-lg font-semibold text-text-primary font-[family-name:var(--font-heading)] mb-4"
-            >
-              Edit Admin
+            <h3 class="text-lg font-semibold text-text-primary mb-4">
+              {{ 'ADMINS.EDIT_ADMIN_TITLE' | translate }}
             </h3>
             <form [formGroup]="editForm" (ngSubmit)="updateAdmin()" class="space-y-4">
               <div class="grid grid-cols-2 gap-4">
                 <div>
-                  <label class="block text-sm font-medium text-text-primary mb-1">First Name</label>
+                  <label class="block text-sm font-medium text-text-primary mb-1">{{
+                    'ADMINS.FIRST_NAME' | translate
+                  }}</label>
                   <input
                     formControlName="firstName"
                     class="w-full px-3 py-2 border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary"
                   />
                   @if (editForm.get('firstName')?.touched && editForm.get('firstName')?.invalid) {
-                    <p class="text-xs text-danger mt-1">First name is required</p>
+                    <p class="text-xs text-error mt-1">
+                      {{ 'ADMINS.FIRST_NAME_REQUIRED' | translate }}
+                    </p>
                   }
                 </div>
                 <div>
-                  <label class="block text-sm font-medium text-text-primary mb-1">Last Name</label>
+                  <label class="block text-sm font-medium text-text-primary mb-1">{{
+                    'ADMINS.LAST_NAME' | translate
+                  }}</label>
                   <input
                     formControlName="lastName"
                     class="w-full px-3 py-2 border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary"
                   />
                   @if (editForm.get('lastName')?.touched && editForm.get('lastName')?.invalid) {
-                    <p class="text-xs text-danger mt-1">Last name is required</p>
+                    <p class="text-xs text-error mt-1">
+                      {{ 'ADMINS.LAST_NAME_REQUIRED' | translate }}
+                    </p>
                   }
                 </div>
               </div>
               <div>
-                <label class="block text-sm font-medium text-text-primary mb-1">Email</label>
+                <label class="block text-sm font-medium text-text-primary mb-1">{{
+                  'ADMINS.EMAIL' | translate
+                }}</label>
                 <input
                   type="email"
                   class="w-full px-3 py-2 border border-border rounded-lg text-sm bg-gray-50 text-text-muted cursor-not-allowed"
                   [value]="editingAdmin()?.email"
                   disabled
                 />
-                <p class="text-xs text-text-muted mt-1">Email cannot be changed</p>
+                <p class="text-xs text-text-muted mt-1">
+                  {{ 'ADMINS.EMAIL_READONLY' | translate }}
+                </p>
               </div>
               <div>
-                <label class="block text-sm font-medium text-text-primary mb-1">Role</label>
+                <label class="block text-sm font-medium text-text-primary mb-1">{{
+                  'ADMINS.ROLE' | translate
+                }}</label>
                 <select
                   formControlName="role"
                   class="w-full px-3 py-2 border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary"
                 >
-                  <option value="super_admin">Super Admin</option>
-                  <option value="commercial">Commercial</option>
+                  <option value="super_admin">{{ 'ADMINS.SUPER_ADMIN' | translate }}</option>
+                  <option value="commercial">{{ 'ADMINS.COMMERCIAL' | translate }}</option>
                 </select>
               </div>
               <div class="flex justify-end gap-3 pt-2">
@@ -298,14 +340,16 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
                   (click)="showEditModal.set(false)"
                   class="px-4 py-2 text-sm font-medium text-text-secondary border border-border rounded-lg hover:bg-gray-50"
                 >
-                  Cancel
+                  {{ 'ADMINS.CANCEL' | translate }}
                 </button>
                 <button
                   type="submit"
                   [disabled]="editForm.invalid || saving()"
-                  class="bg-primary text-white hover:bg-primary-dark rounded-lg px-4 py-2 text-sm font-medium disabled:opacity-60"
+                  class="bg-primary text-white hover:bg-primary-hover rounded-lg px-4 py-2 text-sm font-medium disabled:opacity-60"
                 >
-                  {{ saving() ? 'Saving...' : 'Save Changes' }}
+                  {{
+                    saving() ? ('ADMINS.CREATING' | translate) : ('ADMINS.SAVE_CHANGES' | translate)
+                  }}
                 </button>
               </div>
             </form>
@@ -316,15 +360,13 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
       <!-- Delete Confirmation Modal -->
       <app-confirm-modal
         [open]="showDeleteModal()"
-        title="Delete Admin"
+        [title]="'ADMINS.DELETE_ADMIN_TITLE' | translate"
         [message]="
-          'Are you sure you want to delete ' +
-          (adminToDelete()?.firstName || '') +
-          ' ' +
-          (adminToDelete()?.lastName || '') +
-          '? This action cannot be undone.'
+          translate.instant('ADMINS.DELETE_CONFIRM', {
+            name: (adminToDelete()?.firstName || '') + ' ' + (adminToDelete()?.lastName || ''),
+          })
         "
-        confirmLabel="Delete"
+        [confirmLabel]="'ADMINS.DELETE_BTN' | translate"
         variant="danger"
         (confirm)="deleteAdmin()"
         (cancel)="showDeleteModal.set(false)"
@@ -336,6 +378,7 @@ export class AdminListComponent implements OnInit {
   private readonly adminService = inject(AdminManagementService);
   private readonly notifications = inject(NotificationService);
   private readonly fb = inject(FormBuilder);
+  readonly translate = inject(TranslateService);
 
   admins = signal<Admin[]>([]);
   loading = signal(true);
@@ -372,7 +415,7 @@ export class AdminListComponent implements OnInit {
         this.loading.set(false);
       },
       error: () => {
-        this.notifications.error('Failed to load administrators');
+        this.notifications.error(this.translate.instant('ADMINS.LOAD_FAILED'));
         this.loading.set(false);
       },
     });
@@ -407,13 +450,15 @@ export class AdminListComponent implements OnInit {
 
     this.adminService.createAdmin(dto).subscribe({
       next: () => {
-        this.notifications.success('Administrator created successfully');
+        this.notifications.success(this.translate.instant('ADMINS.CREATED_SUCCESS'));
         this.showCreateModal.set(false);
         this.saving.set(false);
         this.loadAdmins();
       },
       error: (err) => {
-        this.notifications.error(err.error?.message || 'Failed to create administrator');
+        this.notifications.error(
+          err.error?.message || this.translate.instant('ADMINS.CREATE_FAILED'),
+        );
         this.saving.set(false);
       },
     });
@@ -428,13 +473,15 @@ export class AdminListComponent implements OnInit {
 
     this.adminService.updateAdmin(admin.id, dto).subscribe({
       next: () => {
-        this.notifications.success('Administrator updated successfully');
+        this.notifications.success(this.translate.instant('ADMINS.UPDATED_SUCCESS'));
         this.showEditModal.set(false);
         this.saving.set(false);
         this.loadAdmins();
       },
       error: (err) => {
-        this.notifications.error(err.error?.message || 'Failed to update administrator');
+        this.notifications.error(
+          err.error?.message || this.translate.instant('ADMINS.UPDATE_FAILED'),
+        );
         this.saving.set(false);
       },
     });
@@ -445,14 +492,18 @@ export class AdminListComponent implements OnInit {
     this.adminService.updateAdmin(admin.id, dto).subscribe({
       next: () => {
         this.notifications.success(
-          admin.isActive ? 'Administrator deactivated' : 'Administrator activated',
+          admin.isActive
+            ? this.translate.instant('ADMINS.DEACTIVATED_SUCCESS')
+            : this.translate.instant('ADMINS.ACTIVATED_SUCCESS'),
         );
         this.admins.update((list) =>
           list.map((a) => (a.id === admin.id ? { ...a, isActive: !a.isActive } : a)),
         );
       },
       error: (err) => {
-        this.notifications.error(err.error?.message || 'Failed to update status');
+        this.notifications.error(
+          err.error?.message || this.translate.instant('ADMINS.STATUS_FAILED'),
+        );
       },
     });
   }
@@ -468,12 +519,14 @@ export class AdminListComponent implements OnInit {
 
     this.adminService.deleteAdmin(admin.id).subscribe({
       next: () => {
-        this.notifications.success('Administrator deleted');
+        this.notifications.success(this.translate.instant('ADMINS.DELETED_SUCCESS'));
         this.admins.update((list) => list.filter((a) => a.id !== admin.id));
         this.showDeleteModal.set(false);
       },
       error: (err) => {
-        this.notifications.error(err.error?.message || 'Failed to delete administrator');
+        this.notifications.error(
+          err.error?.message || this.translate.instant('ADMINS.DELETE_FAILED'),
+        );
         this.showDeleteModal.set(false);
       },
     });

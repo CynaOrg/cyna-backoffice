@@ -1,5 +1,6 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { ActivatedRoute, RouterLink, Router } from '@angular/router';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ApiService } from '../../../core/services/api.service';
 import { AdminAuthService } from '../../../core/auth/services/admin-auth.service';
 import { NotificationService } from '../../../core/services/notification.service';
@@ -11,7 +12,13 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
 @Component({
   selector: 'app-product-detail',
   standalone: true,
-  imports: [RouterLink, StatusBadgeComponent, LoadingSpinnerComponent, ConfirmModalComponent],
+  imports: [
+    RouterLink,
+    TranslateModule,
+    StatusBadgeComponent,
+    LoadingSpinnerComponent,
+    ConfirmModalComponent,
+  ],
   template: `
     <div>
       @if (loading()) {
@@ -19,7 +26,7 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
       } @else if (product()) {
         <div class="flex items-center justify-between mb-6">
           <div class="flex items-center gap-3">
-            <a routerLink="/products" class="p-2 rounded-lg hover:bg-gray-100 text-text-muted">
+            <a [routerLink]="basePath" class="p-2 rounded-lg hover:bg-gray-100 text-text-muted">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   stroke-linecap="round"
@@ -30,9 +37,7 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
               </svg>
             </a>
             <div>
-              <h1
-                class="text-2xl font-bold text-text-primary font-[family-name:var(--font-heading)]"
-              >
+              <h1 class="text-2xl font-bold text-text-primary">
                 {{ product()!.nameFr }}
               </h1>
               <p class="text-sm text-text-secondary">{{ product()!.sku }}</p>
@@ -41,15 +46,15 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
           @if (auth.isSuperAdmin()) {
             <div class="flex items-center gap-2">
               <a
-                [routerLink]="['/products', product()!.id, 'edit']"
-                class="px-4 py-2 bg-primary text-white text-sm font-medium rounded-lg hover:bg-primary-dark"
-                >Edit</a
+                [routerLink]="[basePath, product()!.id, 'edit']"
+                class="px-4 py-2 bg-primary text-white text-sm font-medium rounded-lg hover:bg-primary-hover"
+                >{{ 'PRODUCTS.EDIT' | translate }}</a
               >
               <button
                 (click)="showDeleteModal.set(true)"
-                class="px-4 py-2 border border-danger text-danger text-sm font-medium rounded-lg hover:bg-danger-light"
+                class="px-4 py-2 border border-error text-error text-sm font-medium rounded-lg hover:bg-error-light"
               >
-                Delete
+                {{ 'PRODUCTS.DELETE' | translate }}
               </button>
             </div>
           }
@@ -58,13 +63,13 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <!-- Main Info -->
           <div class="lg:col-span-2 space-y-6">
-            <div class="bg-card-bg rounded-xl border border-border-light shadow-sm p-6">
-              <h3 class="text-lg font-semibold mb-4 font-[family-name:var(--font-heading)]">
-                Details
-              </h3>
+            <div class="bg-surface rounded-xl border border-border-light shadow-sm p-6">
+              <h3 class="text-lg font-semibold mb-4">{{ 'PRODUCTS.DETAILS' | translate }}</h3>
               <div class="grid grid-cols-2 gap-4">
                 <div>
-                  <p class="text-xs text-text-muted uppercase mb-1">Type</p>
+                  <p class="text-xs text-text-muted uppercase mb-1">
+                    {{ 'PRODUCTS.TYPE' | translate }}
+                  </p>
                   <span
                     class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium"
                     [class]="
@@ -79,36 +84,50 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
                   </span>
                 </div>
                 <div>
-                  <p class="text-xs text-text-muted uppercase mb-1">Status</p>
+                  <p class="text-xs text-text-muted uppercase mb-1">
+                    {{ 'PRODUCTS.STATUS' | translate }}
+                  </p>
                   <app-status-badge
                     [status]="product()!.isAvailable ? 'active' : 'inactive'"
-                    [label]="product()!.isAvailable ? 'Available' : 'Unavailable'"
+                    [label]="
+                      product()!.isAvailable
+                        ? ('PRODUCTS.AVAILABLE' | translate)
+                        : ('PRODUCTS.UNAVAILABLE' | translate)
+                    "
                   />
                 </div>
                 <div>
-                  <p class="text-xs text-text-muted uppercase mb-1">Category</p>
+                  <p class="text-xs text-text-muted uppercase mb-1">
+                    {{ 'PRODUCTS.CATEGORY' | translate }}
+                  </p>
                   <p class="text-sm text-text-primary">
-                    {{ product()!.category?.nameFr || 'N/A' }}
+                    {{ product()!.category?.nameFr || ('PRODUCTS.NA' | translate) }}
                   </p>
                 </div>
                 <div>
-                  <p class="text-xs text-text-muted uppercase mb-1">Featured</p>
+                  <p class="text-xs text-text-muted uppercase mb-1">
+                    {{ 'PRODUCTS.FEATURED' | translate }}
+                  </p>
                   <p class="text-sm text-text-primary">
-                    {{ product()!.isFeatured ? 'Yes' : 'No' }}
+                    {{
+                      product()!.isFeatured
+                        ? ('PRODUCTS.YES' | translate)
+                        : ('PRODUCTS.NO' | translate)
+                    }}
                   </p>
                 </div>
               </div>
             </div>
 
             <!-- Pricing -->
-            <div class="bg-card-bg rounded-xl border border-border-light shadow-sm p-6">
-              <h3 class="text-lg font-semibold mb-4 font-[family-name:var(--font-heading)]">
-                Pricing
-              </h3>
+            <div class="bg-surface rounded-xl border border-border-light shadow-sm p-6">
+              <h3 class="text-lg font-semibold mb-4">{{ 'PRODUCTS.PRICING' | translate }}</h3>
               <div class="grid grid-cols-3 gap-4">
                 @if (product()!.priceMonthly) {
                   <div class="p-4 bg-blue-50 rounded-lg">
-                    <p class="text-xs text-blue-600 uppercase mb-1">Monthly</p>
+                    <p class="text-xs text-blue-600 uppercase mb-1">
+                      {{ 'PRODUCTS.MONTHLY' | translate }}
+                    </p>
                     <p class="text-lg font-bold text-blue-700">
                       {{ formatCurrency(product()!.priceMonthly!) }}
                     </p>
@@ -116,7 +135,9 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
                 }
                 @if (product()!.priceYearly) {
                   <div class="p-4 bg-green-50 rounded-lg">
-                    <p class="text-xs text-green-600 uppercase mb-1">Yearly</p>
+                    <p class="text-xs text-green-600 uppercase mb-1">
+                      {{ 'PRODUCTS.YEARLY' | translate }}
+                    </p>
                     <p class="text-lg font-bold text-green-700">
                       {{ formatCurrency(product()!.priceYearly!) }}
                     </p>
@@ -124,7 +145,9 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
                 }
                 @if (product()!.priceUnit) {
                   <div class="p-4 bg-purple-50 rounded-lg">
-                    <p class="text-xs text-purple-600 uppercase mb-1">Unit Price</p>
+                    <p class="text-xs text-purple-600 uppercase mb-1">
+                      {{ 'PRODUCTS.UNIT_PRICE' | translate }}
+                    </p>
                     <p class="text-lg font-bold text-purple-700">
                       {{ formatCurrency(product()!.priceUnit!) }}
                     </p>
@@ -134,19 +157,21 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
             </div>
 
             <!-- Description -->
-            <div class="bg-card-bg rounded-xl border border-border-light shadow-sm p-6">
-              <h3 class="text-lg font-semibold mb-4 font-[family-name:var(--font-heading)]">
-                Description
-              </h3>
+            <div class="bg-surface rounded-xl border border-border-light shadow-sm p-6">
+              <h3 class="text-lg font-semibold mb-4">{{ 'PRODUCTS.DESCRIPTION' | translate }}</h3>
               <div class="space-y-4">
                 <div>
-                  <p class="text-xs text-text-muted uppercase mb-1">French</p>
+                  <p class="text-xs text-text-muted uppercase mb-1">
+                    {{ 'PRODUCTS.FRENCH' | translate }}
+                  </p>
                   <p class="text-sm text-text-primary whitespace-pre-wrap">
                     {{ product()!.descriptionFr }}
                   </p>
                 </div>
                 <div>
-                  <p class="text-xs text-text-muted uppercase mb-1">English</p>
+                  <p class="text-xs text-text-muted uppercase mb-1">
+                    {{ 'PRODUCTS.ENGLISH' | translate }}
+                  </p>
                   <p class="text-sm text-text-primary whitespace-pre-wrap">
                     {{ product()!.descriptionEn }}
                   </p>
@@ -158,10 +183,8 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
           <!-- Sidebar -->
           <div class="space-y-6">
             <!-- Images -->
-            <div class="bg-card-bg rounded-xl border border-border-light shadow-sm p-6">
-              <h3 class="text-lg font-semibold mb-4 font-[family-name:var(--font-heading)]">
-                Images
-              </h3>
+            <div class="bg-surface rounded-xl border border-border-light shadow-sm p-6">
+              <h3 class="text-lg font-semibold mb-4">{{ 'PRODUCTS.IMAGES' | translate }}</h3>
               @if (product()!.images?.length) {
                 <div class="grid grid-cols-2 gap-2">
                   @for (img of product()!.images; track img.id) {
@@ -173,23 +196,27 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
                   }
                 </div>
               } @else {
-                <p class="text-sm text-text-muted text-center py-4">No images</p>
+                <p class="text-sm text-text-muted text-center py-4">
+                  {{ 'PRODUCTS.NO_IMAGES' | translate }}
+                </p>
               }
             </div>
 
             <!-- Stock (physical only) -->
             @if (product()!.productType === 'PHYSICAL') {
-              <div class="bg-card-bg rounded-xl border border-border-light shadow-sm p-6">
-                <h3 class="text-lg font-semibold mb-4 font-[family-name:var(--font-heading)]">
-                  Stock
-                </h3>
+              <div class="bg-surface rounded-xl border border-border-light shadow-sm p-6">
+                <h3 class="text-lg font-semibold mb-4">{{ 'PRODUCTS.STOCK' | translate }}</h3>
                 <div class="space-y-3">
                   <div class="flex justify-between">
-                    <span class="text-sm text-text-secondary">Quantity</span>
+                    <span class="text-sm text-text-secondary">{{
+                      'PRODUCTS.QUANTITY' | translate
+                    }}</span>
                     <span class="text-sm font-medium">{{ product()!.stockQuantity ?? 0 }}</span>
                   </div>
                   <div class="flex justify-between">
-                    <span class="text-sm text-text-secondary">Alert threshold</span>
+                    <span class="text-sm text-text-secondary">{{
+                      'PRODUCTS.ALERT_THRESHOLD' | translate
+                    }}</span>
                     <span class="text-sm font-medium">{{ product()!.stockAlertThreshold }}</span>
                   </div>
                 </div>
@@ -198,9 +225,9 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
 
             <!-- Characteristics -->
             @if (product()!.characteristics?.length) {
-              <div class="bg-card-bg rounded-xl border border-border-light shadow-sm p-6">
-                <h3 class="text-lg font-semibold mb-4 font-[family-name:var(--font-heading)]">
-                  Characteristics
+              <div class="bg-surface rounded-xl border border-border-light shadow-sm p-6">
+                <h3 class="text-lg font-semibold mb-4">
+                  {{ 'PRODUCTS.CHARACTERISTICS' | translate }}
                 </h3>
                 <div class="space-y-2">
                   @for (char of product()!.characteristics; track char.id) {
@@ -219,9 +246,9 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
 
     <app-confirm-modal
       [open]="showDeleteModal()"
-      title="Delete Product"
-      [message]="'Are you sure you want to delete this product? This action cannot be undone.'"
-      confirmLabel="Delete"
+      [title]="'PRODUCTS.DELETE_TITLE' | translate"
+      [message]="'PRODUCTS.DELETE_WARNING' | translate"
+      [confirmLabel]="'PRODUCTS.DELETE_CONFIRM' | translate"
       variant="danger"
       (confirm)="deleteProduct()"
       (cancel)="showDeleteModal.set(false)"
@@ -234,12 +261,16 @@ export class ProductDetailComponent implements OnInit {
   private readonly api = inject(ApiService);
   readonly auth = inject(AdminAuthService);
   private readonly notifications = inject(NotificationService);
+  private readonly translate = inject(TranslateService);
 
   product = signal<Product | null>(null);
   loading = signal(true);
   showDeleteModal = signal(false);
+  basePath = '/products';
 
   ngOnInit() {
+    const data = this.route.snapshot.data;
+    if (data['basePath']) this.basePath = data['basePath'];
     const id = this.route.snapshot.paramMap.get('id');
     if (id) this.loadProduct(id);
   }
@@ -251,8 +282,8 @@ export class ProductDetailComponent implements OnInit {
         this.loading.set(false);
       },
       error: () => {
-        this.notifications.error('Product not found');
-        this.router.navigate(['/products']);
+        this.notifications.error(this.translate.instant('PRODUCTS.NOT_FOUND'));
+        this.router.navigate([this.basePath]);
       },
     });
   }
@@ -262,11 +293,11 @@ export class ProductDetailComponent implements OnInit {
     if (!p) return;
     this.api.delete(`admin/catalog/products/${p.id}`).subscribe({
       next: () => {
-        this.notifications.success('Product deleted');
-        this.router.navigate(['/products']);
+        this.notifications.success(this.translate.instant('PRODUCTS.DELETED'));
+        this.router.navigate([this.basePath]);
       },
       error: () => {
-        this.notifications.error('Failed to delete product');
+        this.notifications.error(this.translate.instant('PRODUCTS.DELETE_ERROR'));
         this.showDeleteModal.set(false);
       },
     });

@@ -1,6 +1,7 @@
 import { Component, inject, signal, OnInit, computed } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AdminAuthService } from '../../core/auth/services/admin-auth.service';
 import { AnalyticsService } from '../../core/services/analytics.service';
 import { ContentService } from '../../core/services/content.service';
@@ -8,25 +9,42 @@ import { NotificationService } from '../../core/services/notification.service';
 import { KpiCardComponent } from '../../shared/components/kpi-card/kpi-card.component';
 import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
-import { DashboardData, StockItem } from '../../core/models/analytics.model';
+import { DashboardData, DashboardKPIs } from '../../core/models/analytics.model';
 import { ContactMessage } from '../../core/models/content.model';
+
+interface DashboardViewModel {
+  kpis: DashboardKPIs;
+  recentOrders: {
+    id: string;
+    orderNumber: string;
+    status: string;
+    total: number;
+    createdAt: string;
+  }[];
+}
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [RouterLink, KpiCardComponent, StatusBadgeComponent, LoadingSpinnerComponent],
+  imports: [
+    RouterLink,
+    KpiCardComponent,
+    StatusBadgeComponent,
+    LoadingSpinnerComponent,
+    TranslateModule,
+  ],
   template: `
-    <div>
-      <!-- Role-aware header -->
+    <div style="animation: fadeInUp 0.45s ease-out">
+      <!-- Welcome header -->
       <div class="mb-8">
-        <h1 class="text-2xl font-bold text-text-primary font-[family-name:var(--font-heading)]">
-          Welcome back, {{ adminFirstName() }}
+        <h1 class="text-2xl font-bold text-text-primary !m-0">
+          {{ 'DASHBOARD.WELCOME_BACK' | translate: { name: adminFirstName() } }}
         </h1>
-        <p class="text-sm text-text-secondary mt-1">
+        <p class="text-sm text-text-secondary mt-1 !m-0">
           @if (authService.isSuperAdmin()) {
-            Full overview of your business metrics and operations
+            {{ 'DASHBOARD.SUBTITLE' | translate }}
           } @else {
-            Overview of your sales performance
+            {{ 'DASHBOARD.SALES_OVERVIEW' | translate }}
           }
         </p>
       </div>
@@ -35,158 +53,175 @@ import { ContactMessage } from '../../core/models/content.model';
         <app-loading-spinner />
       } @else {
         <!-- KPI Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <app-kpi-card
             [value]="formatCurrency(data()?.kpis?.totalRevenue || 0)"
-            label="Total Revenue"
+            [label]="'DASHBOARD.TOTAL_REVENUE' | translate"
             [variation]="data()?.kpis?.revenueVariation"
-            iconPath="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-            iconBgClass="bg-emerald-50"
-            iconClass="text-emerald-600"
+            iconPath="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            iconBgClass="bg-success-light"
+            iconClass="text-success"
           />
           <app-kpi-card
             [value]="formatCurrency(data()?.kpis?.mrr || 0)"
-            label="Monthly Recurring Revenue"
+            [label]="'DASHBOARD.MRR' | translate"
             [variation]="data()?.kpis?.mrrVariation"
-            iconPath="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
-            iconBgClass="bg-blue-50"
-            iconClass="text-blue-600"
+            iconPath="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941"
+            iconBgClass="bg-info-light"
+            iconClass="text-info"
           />
           <app-kpi-card
             [value]="(data()?.kpis?.totalOrders || 0).toString()"
-            label="Total Orders"
+            [label]="'DASHBOARD.TOTAL_ORDERS' | translate"
             [variation]="data()?.kpis?.ordersVariation"
-            iconPath="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-            iconBgClass="bg-purple-50"
-            iconClass="text-purple-600"
+            iconPath="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25z"
+            iconBgClass="bg-primary-light"
+            iconClass="text-primary"
           />
           <app-kpi-card
             [value]="(data()?.kpis?.activeSubscriptions || 0).toString()"
-            label="Active Subscriptions"
+            [label]="'DASHBOARD.ACTIVE_SUBSCRIPTIONS' | translate"
             [variation]="data()?.kpis?.subscriptionsVariation"
-            iconPath="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-            iconBgClass="bg-amber-50"
-            iconClass="text-amber-600"
+            iconPath="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182"
+            iconBgClass="bg-warning-light"
+            iconClass="text-warning"
           />
         </div>
 
         <!-- Super Admin: Quick Access Cards -->
         @if (authService.isSuperAdmin()) {
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
             <!-- Low Stock Alerts -->
             <a
               routerLink="/analytics"
-              class="block bg-amber-50 rounded-xl border border-amber-200 p-6 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+              class="group flex items-center gap-4 rounded-xl border border-border-light bg-surface p-6 shadow-sm hover:shadow-md hover:-translate-y-px transition-all duration-200 no-underline"
             >
-              <div class="flex items-center gap-4">
-                <div
-                  class="w-12 h-12 rounded-lg bg-amber-100 flex items-center justify-center flex-shrink-0"
+              <div
+                class="w-12 h-12 rounded-lg bg-warning-light flex items-center justify-center shrink-0"
+              >
+                <svg
+                  class="w-6 h-6 text-warning"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
                 >
-                  <svg
-                    class="w-6 h-6 text-amber-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"
-                    />
-                  </svg>
-                </div>
-                <div>
-                  <div
-                    class="text-2xl font-bold text-amber-800 font-[family-name:var(--font-heading)]"
-                  >
-                    {{ lowStockCount() }}
-                  </div>
-                  <div class="text-sm text-amber-700">Low Stock Alerts</div>
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
+                  />
+                </svg>
+              </div>
+              <div>
+                <div class="text-2xl font-bold text-text-primary">{{ lowStockCount() }}</div>
+                <div class="text-sm text-text-secondary">
+                  {{ 'DASHBOARD.LOW_STOCK' | translate }}
                 </div>
               </div>
+              <svg
+                class="w-5 h-5 text-text-muted ml-auto opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="m8.25 4.5 7.5 7.5-7.5 7.5"
+                />
+              </svg>
             </a>
 
             <!-- Unread Messages -->
             <a
               routerLink="/content"
-              class="block bg-blue-50 rounded-xl border border-blue-200 p-6 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+              class="group flex items-center gap-4 rounded-xl border border-border-light bg-surface p-6 shadow-sm hover:shadow-md hover:-translate-y-px transition-all duration-200 no-underline"
             >
-              <div class="flex items-center gap-4">
-                <div
-                  class="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0"
+              <div
+                class="w-12 h-12 rounded-lg bg-info-light flex items-center justify-center shrink-0"
+              >
+                <svg
+                  class="w-6 h-6 text-info"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
                 >
-                  <svg
-                    class="w-6 h-6 text-blue-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                    />
-                  </svg>
-                </div>
-                <div>
-                  <div
-                    class="text-2xl font-bold text-blue-800 font-[family-name:var(--font-heading)]"
-                  >
-                    {{ unreadMessages() }}
-                  </div>
-                  <div class="text-sm text-blue-700">Unread Messages</div>
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"
+                  />
+                </svg>
+              </div>
+              <div>
+                <div class="text-2xl font-bold text-text-primary">{{ unreadMessages() }}</div>
+                <div class="text-sm text-text-secondary">
+                  {{ 'DASHBOARD.UNREAD_MESSAGES' | translate }}
                 </div>
               </div>
+              <svg
+                class="w-5 h-5 text-text-muted ml-auto opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="m8.25 4.5 7.5 7.5-7.5 7.5"
+                />
+              </svg>
             </a>
           </div>
         }
 
         <!-- Super Admin: Recent Orders Table -->
         @if (authService.isSuperAdmin()) {
-          <div class="bg-card-bg rounded-xl border border-border-light shadow-sm">
+          <div class="rounded-xl border border-border-light bg-surface shadow-sm">
             <div class="px-6 py-4 border-b border-border-light flex items-center justify-between">
-              <h3
-                class="text-lg font-semibold text-text-primary font-[family-name:var(--font-heading)]"
-              >
-                Recent Orders
+              <h3 class="text-lg font-semibold text-text-primary !m-0">
+                {{ 'DASHBOARD.RECENT_ORDERS' | translate }}
               </h3>
               <a
                 routerLink="/orders"
-                class="text-sm text-primary hover:text-primary-dark font-medium"
-                >View all</a
+                class="text-sm text-primary hover:text-primary-hover font-medium no-underline"
               >
+                {{ 'DASHBOARD.VIEW_ALL' | translate }}
+              </a>
             </div>
             <div class="overflow-x-auto">
               <table class="w-full">
                 <thead>
                   <tr class="border-b border-border-light">
                     <th
-                      class="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider"
+                      class="px-6 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-text-muted"
                     >
-                      Order
+                      {{ 'DASHBOARD.ORDER' | translate }}
                     </th>
                     <th
-                      class="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider"
+                      class="px-6 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-text-muted"
                     >
-                      Date
+                      {{ 'DASHBOARD.DATE' | translate }}
                     </th>
                     <th
-                      class="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider"
+                      class="px-6 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-text-muted"
                     >
-                      Status
+                      {{ 'DASHBOARD.STATUS' | translate }}
                     </th>
                     <th
-                      class="px-6 py-3 text-right text-xs font-semibold text-text-secondary uppercase tracking-wider"
+                      class="px-6 py-3 text-right text-[11px] font-semibold uppercase tracking-wider text-text-muted"
                     >
-                      Total
+                      {{ 'DASHBOARD.TOTAL' | translate }}
                     </th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-border-light">
                   @for (order of data()?.recentOrders || []; track order.id) {
-                    <tr class="hover:bg-gray-50/50">
+                    <tr class="hover:bg-background transition-colors">
                       <td class="px-6 py-4 text-sm font-medium text-text-primary">
                         {{ order.orderNumber }}
                       </td>
@@ -203,7 +238,7 @@ import { ContactMessage } from '../../core/models/content.model';
                   } @empty {
                     <tr>
                       <td colspan="4" class="px-6 py-12 text-center text-text-muted text-sm">
-                        No orders yet
+                        {{ 'DASHBOARD.NO_ORDERS' | translate }}
                       </td>
                     </tr>
                   }
@@ -215,38 +250,35 @@ import { ContactMessage } from '../../core/models/content.model';
 
         <!-- Commercial: Sales Overview -->
         @if (authService.isCommercial()) {
-          <div class="bg-card-bg rounded-xl border border-border-light shadow-sm p-6">
-            <h3
-              class="text-lg font-semibold text-text-primary font-[family-name:var(--font-heading)] mb-4"
-            >
-              Sales Overview
+          <div class="rounded-xl border border-border-light bg-surface shadow-sm p-6">
+            <h3 class="text-lg font-semibold text-text-primary !m-0 mb-4">
+              {{ 'DASHBOARD.SALES_OVERVIEW' | translate }}
             </h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <!-- Average Cart Value -->
-              <div class="bg-gray-50 rounded-lg p-5">
-                <div class="text-sm text-text-secondary mb-1">Average Cart Value</div>
-                <div
-                  class="text-xl font-bold text-text-primary font-[family-name:var(--font-heading)]"
-                >
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="rounded-lg bg-background p-5">
+                <div class="text-sm text-text-secondary mb-1">
+                  {{ 'DASHBOARD.AVG_CART' | translate }}
+                </div>
+                <div class="text-xl font-bold text-text-primary">
                   {{ formatCurrency(data()?.kpis?.avgCartValue || 0) }}
                 </div>
                 @if (data()?.kpis?.avgCartVariation !== undefined) {
                   <span
                     class="text-xs font-semibold mt-1 inline-block"
-                    [class]="data()!.kpis.avgCartVariation! >= 0 ? 'text-success' : 'text-danger'"
+                    [class]="data()!.kpis.avgCartVariation! >= 0 ? 'text-success' : 'text-error'"
                   >
                     {{ data()!.kpis.avgCartVariation! >= 0 ? '+' : ''
-                    }}{{ data()!.kpis.avgCartVariation }}% vs last period
+                    }}{{ data()!.kpis.avgCartVariation }}%
+                    {{ 'DASHBOARD.VS_LAST_PERIOD' | translate }}
                   </span>
                 }
               </div>
 
-              <!-- Conversion summary -->
-              <div class="bg-gray-50 rounded-lg p-5">
-                <div class="text-sm text-text-secondary mb-1">Conversion Rate</div>
-                <div
-                  class="text-xl font-bold text-text-primary font-[family-name:var(--font-heading)]"
-                >
+              <div class="rounded-lg bg-background p-5">
+                <div class="text-sm text-text-secondary mb-1">
+                  {{ 'DASHBOARD.CONVERSION_RATE' | translate }}
+                </div>
+                <div class="text-xl font-bold text-text-primary">
                   {{
                     data()?.kpis?.conversionRate !== undefined
                       ? data()!.kpis.conversionRate + '%'
@@ -254,20 +286,21 @@ import { ContactMessage } from '../../core/models/content.model';
                   }}
                 </div>
                 <span class="text-xs text-text-secondary mt-1 inline-block">
-                  Based on current period
+                  {{ 'DASHBOARD.BASED_ON_PERIOD' | translate }}
                 </span>
               </div>
             </div>
 
-            <!-- Quick revenue breakdown bar -->
             <div class="mt-6 pt-6 border-t border-border-light">
               <div class="flex items-center justify-between mb-2">
-                <span class="text-sm text-text-secondary">Revenue Target Progress</span>
+                <span class="text-sm text-text-secondary">{{
+                  'DASHBOARD.REVENUE_TARGET' | translate
+                }}</span>
                 <span class="text-sm font-medium text-text-primary">
                   {{ formatCurrency(data()?.kpis?.totalRevenue || 0) }}
                 </span>
               </div>
-              <div class="w-full bg-gray-200 rounded-full h-3">
+              <div class="w-full bg-border-light rounded-full h-3">
                 <div
                   class="bg-primary rounded-full h-3 transition-all duration-500"
                   [style.width.%]="revenueProgress()"
@@ -285,9 +318,10 @@ export class DashboardComponent implements OnInit {
   private readonly analyticsService = inject(AnalyticsService);
   private readonly contentService = inject(ContentService);
   private readonly notifications = inject(NotificationService);
+  private readonly translate = inject(TranslateService);
 
   loading = signal(true);
-  data = signal<DashboardData | null>(null);
+  data = signal<DashboardViewModel | null>(null);
   lowStockCount = signal(0);
   unreadMessages = signal(0);
 
@@ -295,7 +329,6 @@ export class DashboardComponent implements OnInit {
 
   revenueProgress = computed(() => {
     const revenue = this.data()?.kpis?.totalRevenue || 0;
-    // Estimate progress as percentage capped at 100
     const target = 100000;
     return Math.min((revenue / target) * 100, 100);
   });
@@ -308,17 +341,32 @@ export class DashboardComponent implements OnInit {
     this.loading.set(true);
 
     this.analyticsService.getDashboard().subscribe({
-      next: (data) => {
-        this.data.set(data);
+      next: (apiData: DashboardData) => {
+        // Map the actual API response to the view model the template expects
+        const viewModel: DashboardViewModel = {
+          kpis: {
+            totalRevenue: apiData?.revenue?.total ?? 0,
+            revenueVariation: apiData?.revenue?.changePercent,
+            mrr: apiData?.subscriptions?.mrr ?? 0,
+            mrrVariation: apiData?.subscriptions?.changePercent,
+            totalOrders: apiData?.orders?.total ?? 0,
+            ordersVariation: apiData?.orders?.changePercent,
+            activeSubscriptions: apiData?.subscriptions?.active ?? 0,
+            subscriptionsVariation: apiData?.subscriptions?.changePercent,
+            avgCartValue: apiData?.averageOrderValue ?? 0,
+            conversionRate: apiData?.conversionRate,
+          },
+          recentOrders: [], // API does not return recent orders in dashboard endpoint
+        };
+        this.data.set(viewModel);
         this.loading.set(false);
       },
       error: () => {
-        this.notifications.error('Failed to load dashboard data');
+        this.notifications.error(this.translate.instant('DASHBOARD.LOAD_ERROR'));
         this.loading.set(false);
       },
     });
 
-    // Super admin: load additional data
     if (this.authService.isSuperAdmin()) {
       this.loadSuperAdminData();
     }
@@ -330,18 +378,14 @@ export class DashboardComponent implements OnInit {
       messages: this.contentService.getContactMessages(),
     }).subscribe({
       next: ({ stock, messages }) => {
-        const lowStockItems = stock.items.filter(
-          (item: StockItem) =>
-            item.status === 'low' || item.status === 'critical' || item.status === 'out_of_stock',
-        );
-        this.lowStockCount.set(lowStockItems.length);
+        // Stock response is { summary: { lowStock, outOfStock, ... }, products: [] }
+        const lowStockAlerts = (stock?.summary?.lowStock ?? 0) + (stock?.summary?.outOfStock ?? 0);
+        this.lowStockCount.set(lowStockAlerts);
 
-        const unread = messages.filter((msg: ContactMessage) => !msg.isRead);
+        const unread = (messages || []).filter((msg: ContactMessage) => !msg.isRead);
         this.unreadMessages.set(unread.length);
       },
-      error: () => {
-        // Non-critical: silently fail, counts stay at 0
-      },
+      error: () => {},
     });
   }
 

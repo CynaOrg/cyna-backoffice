@@ -1,6 +1,7 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ApiService } from '../../../core/services/api.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { Order, OrderStatus } from '../../../core/models/order.model';
@@ -14,6 +15,7 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
   imports: [
     RouterLink,
     FormsModule,
+    TranslateModule,
     StatusBadgeComponent,
     PaginationComponent,
     LoadingSpinnerComponent,
@@ -21,17 +23,15 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
   template: `
     <div>
       <div class="mb-6">
-        <h1 class="text-2xl font-bold text-text-primary font-[family-name:var(--font-heading)]">
-          Orders
-        </h1>
-        <p class="text-sm text-text-secondary mt-1">Manage customer orders</p>
+        <h1 class="text-2xl font-bold text-text-primary">{{ 'ORDERS.TITLE' | translate }}</h1>
+        <p class="text-sm text-text-secondary mt-1">{{ 'ORDERS.SUBTITLE' | translate }}</p>
       </div>
 
-      <div class="bg-card-bg rounded-xl border border-border-light shadow-sm p-4 mb-6">
+      <div class="bg-surface rounded-xl border border-border-light shadow-sm p-4 mb-6">
         <div class="flex flex-wrap gap-4 items-center">
           <input
             type="text"
-            placeholder="Search orders..."
+            [placeholder]="'ORDERS.SEARCH_PLACEHOLDER' | translate"
             [(ngModel)]="search"
             (input)="loadOrders()"
             class="px-4 py-2 rounded-lg border border-border bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary w-64"
@@ -41,15 +41,15 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
             (change)="loadOrders()"
             class="px-4 py-2 rounded-lg border border-border bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
           >
-            <option value="">All statuses</option>
-            <option value="pending">Pending</option>
-            <option value="paid">Paid</option>
-            <option value="processing">Processing</option>
-            <option value="shipped">Shipped</option>
-            <option value="delivered">Delivered</option>
-            <option value="completed">Completed</option>
-            <option value="cancelled">Cancelled</option>
-            <option value="refunded">Refunded</option>
+            <option value="">{{ 'ORDERS.ALL_STATUSES' | translate }}</option>
+            <option value="pending">{{ 'ORDERS.PENDING' | translate }}</option>
+            <option value="paid">{{ 'ORDERS.PAID' | translate }}</option>
+            <option value="processing">{{ 'ORDERS.PROCESSING' | translate }}</option>
+            <option value="shipped">{{ 'ORDERS.SHIPPED' | translate }}</option>
+            <option value="delivered">{{ 'ORDERS.DELIVERED' | translate }}</option>
+            <option value="completed">{{ 'ORDERS.COMPLETED' | translate }}</option>
+            <option value="cancelled">{{ 'ORDERS.CANCELLED' | translate }}</option>
+            <option value="refunded">{{ 'ORDERS.REFUNDED' | translate }}</option>
           </select>
         </div>
       </div>
@@ -57,7 +57,7 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
       @if (loading()) {
         <app-loading-spinner />
       } @else {
-        <div class="bg-card-bg rounded-xl border border-border-light shadow-sm overflow-hidden">
+        <div class="bg-surface rounded-xl border border-border-light shadow-sm overflow-hidden">
           <div class="overflow-x-auto">
             <table class="w-full">
               <thead>
@@ -65,37 +65,37 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
                   <th
                     class="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider"
                   >
-                    Order
+                    {{ 'ORDERS.ORDER' | translate }}
                   </th>
                   <th
                     class="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider"
                   >
-                    Customer
+                    {{ 'ORDERS.CUSTOMER' | translate }}
                   </th>
                   <th
                     class="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider"
                   >
-                    Date
+                    {{ 'ORDERS.DATE' | translate }}
                   </th>
                   <th
                     class="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider"
                   >
-                    Type
+                    {{ 'ORDERS.TYPE' | translate }}
                   </th>
                   <th
                     class="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider"
                   >
-                    Status
+                    {{ 'ORDERS.STATUS' | translate }}
                   </th>
                   <th
                     class="px-6 py-3 text-right text-xs font-semibold text-text-secondary uppercase tracking-wider"
                   >
-                    Total
+                    {{ 'ORDERS.TOTAL' | translate }}
                   </th>
                   <th
                     class="px-6 py-3 text-right text-xs font-semibold text-text-secondary uppercase tracking-wider"
                   >
-                    Actions
+                    {{ 'ORDERS.ACTIONS' | translate }}
                   </th>
                 </tr>
               </thead>
@@ -105,13 +105,13 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
                     <td class="px-6 py-4">
                       <a
                         [routerLink]="['/orders', order.id]"
-                        class="text-sm font-medium text-primary hover:text-primary-dark"
+                        class="text-sm font-medium text-primary hover:text-primary-hover"
                       >
                         {{ order.orderNumber }}
                       </a>
                     </td>
                     <td class="px-6 py-4 text-sm text-text-secondary">
-                      {{ order.userId || order.guestEmail || 'Guest' }}
+                      {{ order.userId || order.guestEmail || ('ORDERS.GUEST' | translate) }}
                     </td>
                     <td class="px-6 py-4 text-sm text-text-secondary">
                       {{ formatDate(order.createdAt) }}
@@ -128,16 +128,16 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
                     <td class="px-6 py-4 text-right">
                       <a
                         [routerLink]="['/orders', order.id]"
-                        class="text-sm text-primary hover:text-primary-dark"
+                        class="text-sm text-primary hover:text-primary-hover"
                       >
-                        View
+                        {{ 'ORDERS.VIEW' | translate }}
                       </a>
                     </td>
                   </tr>
                 } @empty {
                   <tr>
                     <td colspan="7" class="px-6 py-12 text-center text-text-muted text-sm">
-                      No orders found
+                      {{ 'ORDERS.NO_ORDERS' | translate }}
                     </td>
                   </tr>
                 }
@@ -158,6 +158,7 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
 export class OrderListComponent implements OnInit {
   private readonly api = inject(ApiService);
   private readonly notifications = inject(NotificationService);
+  private readonly translate = inject(TranslateService);
 
   orders = signal<Order[]>([]);
   loading = signal(true);
@@ -176,10 +177,10 @@ export class OrderListComponent implements OnInit {
     if (this.search) params['search'] = this.search;
     if (this.statusFilter) params['status'] = this.statusFilter;
 
-    this.api.getRaw<any>('admin/orders', params).subscribe({
+    this.api.get<any>('admin/orders', params).subscribe({
       next: (res) => {
-        this.orders.set(res.data || []);
-        this.total.set(res.total || 0);
+        this.orders.set(res?.data || []);
+        this.total.set(res?.total || 0);
         this.loading.set(false);
       },
       error: () => {

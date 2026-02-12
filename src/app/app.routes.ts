@@ -31,6 +31,13 @@ export const routes: Routes = [
           import('./features/products/product-list/product-list.component').then(
             (m) => m.ProductListComponent,
           ),
+        data: {
+          productType: 'physical',
+          titleKey: 'PRODUCTS.TITLE',
+          subtitleKey: 'PRODUCTS.SUBTITLE',
+          newLabelKey: 'PRODUCTS.NEW_PRODUCT',
+          basePath: '/products',
+        },
       },
       {
         path: 'products/new',
@@ -39,6 +46,7 @@ export const routes: Routes = [
             (m) => m.ProductFormComponent,
           ),
         canActivate: [superAdminGuard],
+        data: { basePath: '/products', newTitleKey: 'PRODUCTS.NEW_PRODUCT' },
       },
       {
         path: 'products/:id/edit',
@@ -47,6 +55,7 @@ export const routes: Routes = [
             (m) => m.ProductFormComponent,
           ),
         canActivate: [superAdminGuard],
+        data: { basePath: '/products' },
       },
       {
         path: 'products/:id',
@@ -54,13 +63,87 @@ export const routes: Routes = [
           import('./features/products/product-detail/product-detail.component').then(
             (m) => m.ProductDetailComponent,
           ),
+        data: { basePath: '/products' },
       },
       {
-        path: 'categories',
+        path: 'services',
         loadComponent: () =>
-          import('./features/categories/category-list/category-list.component').then(
-            (m) => m.CategoryListComponent,
+          import('./features/products/product-list/product-list.component').then(
+            (m) => m.ProductListComponent,
           ),
+        data: {
+          productType: 'saas',
+          titleKey: 'SERVICES.TITLE',
+          subtitleKey: 'SERVICES.SUBTITLE',
+          newLabelKey: 'SERVICES.NEW_SERVICE',
+          basePath: '/services',
+        },
+      },
+      {
+        path: 'services/new',
+        loadComponent: () =>
+          import('./features/products/product-form/product-form.component').then(
+            (m) => m.ProductFormComponent,
+          ),
+        canActivate: [superAdminGuard],
+        data: { basePath: '/services', newTitleKey: 'SERVICES.NEW_SERVICE' },
+      },
+      {
+        path: 'services/:id/edit',
+        loadComponent: () =>
+          import('./features/products/product-form/product-form.component').then(
+            (m) => m.ProductFormComponent,
+          ),
+        canActivate: [superAdminGuard],
+        data: { basePath: '/services' },
+      },
+      {
+        path: 'services/:id',
+        loadComponent: () =>
+          import('./features/products/product-detail/product-detail.component').then(
+            (m) => m.ProductDetailComponent,
+          ),
+        data: { basePath: '/services' },
+      },
+      {
+        path: 'licences',
+        loadComponent: () =>
+          import('./features/products/product-list/product-list.component').then(
+            (m) => m.ProductListComponent,
+          ),
+        data: {
+          productType: 'license',
+          titleKey: 'LICENCES.TITLE',
+          subtitleKey: 'LICENCES.SUBTITLE',
+          newLabelKey: 'LICENCES.NEW_LICENCE',
+          basePath: '/licences',
+        },
+      },
+      {
+        path: 'licences/new',
+        loadComponent: () =>
+          import('./features/products/product-form/product-form.component').then(
+            (m) => m.ProductFormComponent,
+          ),
+        canActivate: [superAdminGuard],
+        data: { basePath: '/licences', newTitleKey: 'LICENCES.NEW_LICENCE' },
+      },
+      {
+        path: 'licences/:id/edit',
+        loadComponent: () =>
+          import('./features/products/product-form/product-form.component').then(
+            (m) => m.ProductFormComponent,
+          ),
+        canActivate: [superAdminGuard],
+        data: { basePath: '/licences' },
+      },
+      {
+        path: 'licences/:id',
+        loadComponent: () =>
+          import('./features/products/product-detail/product-detail.component').then(
+            (m) => m.ProductDetailComponent,
+          ),
+        data: { basePath: '/licences' },
       },
       {
         path: 'orders',
@@ -119,6 +202,11 @@ export const routes: Routes = [
             (m) => m.AdminListComponent,
           ),
         canActivate: [superAdminGuard],
+      },
+      {
+        path: 'account',
+        loadComponent: () =>
+          import('./features/account/account.component').then((m) => m.AccountComponent),
       },
     ],
   },

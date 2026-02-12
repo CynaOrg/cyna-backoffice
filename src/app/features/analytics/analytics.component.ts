@@ -12,42 +12,60 @@ import { NotificationService } from '../../core/services/notification.service';
 import { KpiCardComponent } from '../../shared/components/kpi-card/kpi-card.component';
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
 import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import {
   DashboardData,
+  DashboardKPIs,
+  StockStatusResponse,
   SalesDataPoint,
   SalesByCategoryData,
   SalesByProductTypeData,
   MrrDataPoint,
   StockItem,
 } from '../../core/models/analytics.model';
+
+interface AnalyticsKPIs {
+  totalRevenue: number;
+  revenueVariation?: number;
+  mrr: number;
+  mrrVariation?: number;
+  totalOrders: number;
+  ordersVariation?: number;
+  avgCartValue: number;
+  avgCartVariation?: number;
+}
+
+interface AnalyticsViewModel {
+  kpis: AnalyticsKPIs;
+}
 import { Chart, registerables } from 'chart.js';
-import { forkJoin } from 'rxjs';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 Chart.register(...registerables);
 
 @Component({
   selector: 'app-analytics',
   standalone: true,
-  imports: [KpiCardComponent, LoadingSpinnerComponent, StatusBadgeComponent],
+  imports: [KpiCardComponent, LoadingSpinnerComponent, StatusBadgeComponent, TranslateModule],
   template: `
     <div>
       <!-- Header -->
       <div class="flex items-center justify-between mb-6">
         <div>
-          <h1 class="text-2xl font-bold text-text-primary font-[family-name:var(--font-heading)]">
-            Analytics
-          </h1>
-          <p class="text-sm text-text-secondary mt-1">Sales, revenue and performance insights</p>
+          <h1 class="text-2xl font-bold text-text-primary">{{ 'ANALYTICS.TITLE' | translate }}</h1>
+          <p class="text-sm text-text-secondary mt-1">{{ 'ANALYTICS.SUBTITLE' | translate }}</p>
         </div>
         <select
           class="px-3 py-2 border border-border rounded-lg text-sm bg-white"
           [value]="selectedPeriod()"
           (change)="onPeriodChange($event)"
         >
-          <option value="7d">Last 7 days</option>
-          <option value="30d">Last 30 days</option>
-          <option value="90d">Last 90 days</option>
-          <option value="12m">Last 12 months</option>
+          <option value="today">{{ 'ANALYTICS.TODAY' | translate }}</option>
+          <option value="week">{{ 'ANALYTICS.THIS_WEEK' | translate }}</option>
+          <option value="month">{{ 'ANALYTICS.THIS_MONTH' | translate }}</option>
+          <option value="quarter">{{ 'ANALYTICS.THIS_QUARTER' | translate }}</option>
+          <option value="year">{{ 'ANALYTICS.THIS_YEAR' | translate }}</option>
         </select>
       </div>
 
@@ -58,7 +76,7 @@ Chart.register(...registerables);
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <app-kpi-card
             [value]="formatCurrency(dashboard()?.kpis?.totalRevenue || 0)"
-            label="Total Revenue"
+            [label]="'ANALYTICS.TOTAL_REVENUE' | translate"
             iconBgClass="bg-emerald-50"
             iconClass="text-emerald-600"
             iconPath="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
@@ -66,7 +84,7 @@ Chart.register(...registerables);
           />
           <app-kpi-card
             [value]="formatCurrency(dashboard()?.kpis?.mrr || 0)"
-            label="MRR"
+            [label]="'ANALYTICS.MRR' | translate"
             iconBgClass="bg-blue-50"
             iconClass="text-blue-600"
             iconPath="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
@@ -74,7 +92,7 @@ Chart.register(...registerables);
           />
           <app-kpi-card
             [value]="(dashboard()?.kpis?.totalOrders || 0).toString()"
-            label="Total Orders"
+            [label]="'ANALYTICS.TOTAL_ORDERS' | translate"
             iconBgClass="bg-purple-50"
             iconClass="text-purple-600"
             iconPath="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
@@ -82,7 +100,7 @@ Chart.register(...registerables);
           />
           <app-kpi-card
             [value]="formatCurrency(dashboard()?.kpis?.avgCartValue || 0)"
-            label="Avg. Cart Value"
+            [label]="'ANALYTICS.AVG_CART' | translate"
             iconBgClass="bg-amber-50"
             iconClass="text-amber-600"
             iconPath="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"
@@ -91,11 +109,9 @@ Chart.register(...registerables);
         </div>
 
         <!-- Sales Chart -->
-        <div class="bg-card-bg rounded-xl border border-border-light shadow-sm p-6 mb-6">
+        <div class="bg-surface rounded-xl border border-border-light shadow-sm p-6 mb-6">
           <div class="flex items-center justify-between mb-4">
-            <h3 class="text-lg font-semibold font-[family-name:var(--font-heading)]">
-              Sales Overview
-            </h3>
+            <h3 class="text-lg font-semibold">{{ 'ANALYTICS.SALES_OVERVIEW' | translate }}</h3>
             <div class="flex items-center gap-1">
               <button
                 (click)="onGroupByChange('day')"
@@ -106,7 +122,7 @@ Chart.register(...registerables);
                     : 'bg-gray-100 text-text-secondary hover:bg-gray-200'
                 "
               >
-                Day
+                {{ 'ANALYTICS.DAY' | translate }}
               </button>
               <button
                 (click)="onGroupByChange('week')"
@@ -117,7 +133,7 @@ Chart.register(...registerables);
                     : 'bg-gray-100 text-text-secondary hover:bg-gray-200'
                 "
               >
-                Week
+                {{ 'ANALYTICS.WEEK' | translate }}
               </button>
               <button
                 (click)="onGroupByChange('month')"
@@ -128,7 +144,7 @@ Chart.register(...registerables);
                     : 'bg-gray-100 text-text-secondary hover:bg-gray-200'
                 "
               >
-                Month
+                {{ 'ANALYTICS.MONTH' | translate }}
               </button>
             </div>
           </div>
@@ -138,9 +154,9 @@ Chart.register(...registerables);
         <!-- Charts Row: Category + Product Type -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           <!-- Sales by Category -->
-          <div class="bg-card-bg rounded-xl border border-border-light shadow-sm p-6">
-            <h3 class="text-lg font-semibold font-[family-name:var(--font-heading)] mb-4">
-              Sales by Category
+          <div class="bg-surface rounded-xl border border-border-light shadow-sm p-6">
+            <h3 class="text-lg font-semibold mb-4">
+              {{ 'ANALYTICS.SALES_BY_CATEGORY' | translate }}
             </h3>
             <div class="flex items-center gap-6">
               <div class="w-48 h-48 flex-shrink-0">
@@ -153,17 +169,17 @@ Chart.register(...registerables);
                       <th
                         class="text-left text-xs font-semibold text-text-secondary uppercase tracking-wider pb-2"
                       >
-                        Category
+                        {{ 'ANALYTICS.CATEGORY' | translate }}
                       </th>
                       <th
                         class="text-right text-xs font-semibold text-text-secondary uppercase tracking-wider pb-2"
                       >
-                        Revenue
+                        {{ 'ANALYTICS.REVENUE' | translate }}
                       </th>
                       <th
                         class="text-right text-xs font-semibold text-text-secondary uppercase tracking-wider pb-2"
                       >
-                        %
+                        {{ 'ANALYTICS.PERCENT' | translate }}
                       </th>
                     </tr>
                   </thead>
@@ -194,10 +210,8 @@ Chart.register(...registerables);
           </div>
 
           <!-- Sales by Product Type -->
-          <div class="bg-card-bg rounded-xl border border-border-light shadow-sm p-6">
-            <h3 class="text-lg font-semibold font-[family-name:var(--font-heading)] mb-4">
-              Sales by Product Type
-            </h3>
+          <div class="bg-surface rounded-xl border border-border-light shadow-sm p-6">
+            <h3 class="text-lg font-semibold mb-4">{{ 'ANALYTICS.SALES_BY_TYPE' | translate }}</h3>
             <div class="flex items-center gap-6">
               <div class="w-48 h-48 flex-shrink-0">
                 <canvas #productTypeChart></canvas>
@@ -209,17 +223,17 @@ Chart.register(...registerables);
                       <th
                         class="text-left text-xs font-semibold text-text-secondary uppercase tracking-wider pb-2"
                       >
-                        Type
+                        {{ 'ANALYTICS.TYPE' | translate }}
                       </th>
                       <th
                         class="text-right text-xs font-semibold text-text-secondary uppercase tracking-wider pb-2"
                       >
-                        Revenue
+                        {{ 'ANALYTICS.REVENUE' | translate }}
                       </th>
                       <th
                         class="text-right text-xs font-semibold text-text-secondary uppercase tracking-wider pb-2"
                       >
-                        %
+                        {{ 'ANALYTICS.PERCENT' | translate }}
                       </th>
                     </tr>
                   </thead>
@@ -251,19 +265,15 @@ Chart.register(...registerables);
         </div>
 
         <!-- MRR Evolution -->
-        <div class="bg-card-bg rounded-xl border border-border-light shadow-sm p-6 mb-6">
-          <h3 class="text-lg font-semibold font-[family-name:var(--font-heading)] mb-4">
-            MRR Evolution
-          </h3>
+        <div class="bg-surface rounded-xl border border-border-light shadow-sm p-6 mb-6">
+          <h3 class="text-lg font-semibold mb-4">{{ 'ANALYTICS.MRR_EVOLUTION' | translate }}</h3>
           <canvas #mrrChart height="80"></canvas>
         </div>
 
         <!-- Stock Status -->
         @if (stockItems().length > 0) {
-          <div class="bg-card-bg rounded-xl border border-border-light shadow-sm p-6 mb-6">
-            <h3 class="text-lg font-semibold font-[family-name:var(--font-heading)] mb-4">
-              Stock Status
-            </h3>
+          <div class="bg-surface rounded-xl border border-border-light shadow-sm p-6 mb-6">
+            <h3 class="text-lg font-semibold mb-4">{{ 'ANALYTICS.STOCK_STATUS' | translate }}</h3>
             <div class="overflow-x-auto">
               <table class="w-full">
                 <thead>
@@ -271,27 +281,27 @@ Chart.register(...registerables);
                     <th
                       class="text-left text-xs font-semibold text-text-secondary uppercase tracking-wider pb-3 pr-4"
                     >
-                      Product Name
+                      {{ 'ANALYTICS.PRODUCT_NAME' | translate }}
                     </th>
                     <th
                       class="text-left text-xs font-semibold text-text-secondary uppercase tracking-wider pb-3 pr-4"
                     >
-                      SKU
+                      {{ 'ANALYTICS.SKU' | translate }}
                     </th>
                     <th
                       class="text-right text-xs font-semibold text-text-secondary uppercase tracking-wider pb-3 pr-4"
                     >
-                      Current Stock
+                      {{ 'ANALYTICS.CURRENT_STOCK' | translate }}
                     </th>
                     <th
                       class="text-right text-xs font-semibold text-text-secondary uppercase tracking-wider pb-3 pr-4"
                     >
-                      Alert Threshold
+                      {{ 'ANALYTICS.ALERT_THRESHOLD' | translate }}
                     </th>
                     <th
                       class="text-left text-xs font-semibold text-text-secondary uppercase tracking-wider pb-3"
                     >
-                      Status
+                      {{ 'ANALYTICS.STATUS' | translate }}
                     </th>
                   </tr>
                 </thead>
@@ -327,13 +337,13 @@ Chart.register(...registerables);
         }
 
         <!-- Export Section -->
-        <div class="bg-card-bg rounded-xl border border-border-light shadow-sm p-6">
-          <h3 class="text-lg font-semibold font-[family-name:var(--font-heading)] mb-4">
-            Export Data
-          </h3>
+        <div class="bg-surface rounded-xl border border-border-light shadow-sm p-6">
+          <h3 class="text-lg font-semibold mb-4">{{ 'ANALYTICS.EXPORT_DATA' | translate }}</h3>
           <div class="flex flex-wrap items-end gap-4">
             <div class="flex flex-col gap-1">
-              <label class="text-xs font-medium text-text-secondary">From</label>
+              <label class="text-xs font-medium text-text-secondary">{{
+                'ANALYTICS.FROM' | translate
+              }}</label>
               <input
                 type="date"
                 class="px-3 py-2 border border-border rounded-lg text-sm bg-white"
@@ -342,7 +352,9 @@ Chart.register(...registerables);
               />
             </div>
             <div class="flex flex-col gap-1">
-              <label class="text-xs font-medium text-text-secondary">To</label>
+              <label class="text-xs font-medium text-text-secondary">{{
+                'ANALYTICS.TO' | translate
+              }}</label>
               <input
                 type="date"
                 class="px-3 py-2 border border-border rounded-lg text-sm bg-white"
@@ -353,23 +365,23 @@ Chart.register(...registerables);
             <button
               (click)="exportData('sales')"
               [disabled]="exporting()"
-              class="bg-primary text-white hover:bg-primary-dark rounded-lg px-4 py-2 text-sm font-medium transition-colors disabled:opacity-50"
+              class="bg-primary text-white hover:bg-primary-hover rounded-lg px-4 py-2 text-sm font-medium transition-colors disabled:opacity-50"
             >
-              Export Sales
+              {{ 'ANALYTICS.EXPORT_SALES' | translate }}
             </button>
             <button
               (click)="exportData('orders')"
               [disabled]="exporting()"
-              class="bg-primary text-white hover:bg-primary-dark rounded-lg px-4 py-2 text-sm font-medium transition-colors disabled:opacity-50"
+              class="bg-primary text-white hover:bg-primary-hover rounded-lg px-4 py-2 text-sm font-medium transition-colors disabled:opacity-50"
             >
-              Export Orders
+              {{ 'ANALYTICS.EXPORT_ORDERS' | translate }}
             </button>
             <button
               (click)="exportData('subscriptions')"
               [disabled]="exporting()"
-              class="bg-primary text-white hover:bg-primary-dark rounded-lg px-4 py-2 text-sm font-medium transition-colors disabled:opacity-50"
+              class="bg-primary text-white hover:bg-primary-hover rounded-lg px-4 py-2 text-sm font-medium transition-colors disabled:opacity-50"
             >
-              Export Subscriptions
+              {{ 'ANALYTICS.EXPORT_SUBSCRIPTIONS' | translate }}
             </button>
           </div>
         </div>
@@ -385,12 +397,13 @@ export class AnalyticsComponent implements OnInit, AfterViewInit {
 
   private readonly analyticsService = inject(AnalyticsService);
   private readonly notifications = inject(NotificationService);
+  private readonly translate = inject(TranslateService);
 
   loading = signal(true);
-  selectedPeriod = signal<string>('30d');
+  selectedPeriod = signal<string>('month');
   groupBy = signal<string>('month');
 
-  dashboard = signal<DashboardData | null>(null);
+  dashboard = signal<AnalyticsViewModel | null>(null);
   salesData = signal<SalesDataPoint[]>([]);
   categoryData = signal<SalesByCategoryData[]>([]);
   productTypeData = signal<SalesByProductTypeData[]>([]);
@@ -439,25 +452,45 @@ export class AnalyticsComponent implements OnInit, AfterViewInit {
     const period = this.selectedPeriod();
 
     forkJoin({
-      dashboard: this.analyticsService.getDashboard(period),
-      sales: this.analyticsService.getSales(period, this.groupBy()),
-      category: this.analyticsService.getSalesByCategory(period),
-      productType: this.analyticsService.getSalesByProductType(period),
-      mrr: this.analyticsService.getMrr(),
-      stock: this.analyticsService.getStockStatus(),
+      dashboard: this.analyticsService.getDashboard(period).pipe(catchError(() => of(null))),
+      sales: this.analyticsService
+        .getSales(period, this.groupBy())
+        .pipe(catchError(() => of(null))),
+      category: this.analyticsService.getSalesByCategory(period).pipe(catchError(() => of(null))),
+      productType: this.analyticsService
+        .getSalesByProductType(period)
+        .pipe(catchError(() => of(null))),
+      mrr: this.analyticsService.getMrr().pipe(catchError(() => of(null))),
+      stock: this.analyticsService.getStockStatus().pipe(catchError(() => of(null))),
     }).subscribe({
       next: (results) => {
-        this.dashboard.set(results.dashboard);
-        this.salesData.set(results.sales.sales || []);
-        this.categoryData.set(results.category.data || []);
-        this.productTypeData.set(results.productType.data || []);
-        this.mrrHistory.set(results.mrr.history || []);
-        this.stockItems.set(results.stock.items || []);
+        // Map dashboard API data to view model
+        const apiDashboard = results.dashboard as DashboardData | null;
+        if (apiDashboard) {
+          this.dashboard.set({
+            kpis: {
+              totalRevenue: apiDashboard.revenue?.total ?? 0,
+              revenueVariation: apiDashboard.revenue?.changePercent,
+              mrr: apiDashboard.subscriptions?.mrr ?? 0,
+              mrrVariation: apiDashboard.subscriptions?.changePercent,
+              totalOrders: apiDashboard.orders?.total ?? 0,
+              ordersVariation: apiDashboard.orders?.changePercent,
+              avgCartValue: apiDashboard.averageOrderValue ?? 0,
+            },
+          });
+        }
+        this.salesData.set(results.sales?.sales || []);
+        this.categoryData.set(results.category?.data || []);
+        this.productTypeData.set(results.productType?.data || []);
+        this.mrrHistory.set(results.mrr?.history || []);
+        // Stock response is { summary, products }
+        const stockRes = results.stock as StockStatusResponse | null;
+        this.stockItems.set(stockRes?.products || []);
         this.loading.set(false);
         setTimeout(() => this.renderAllCharts(), 100);
       },
       error: () => {
-        this.notifications.error('Failed to load analytics data');
+        this.notifications.error(this.translate.instant('ANALYTICS.LOAD_FAILED'));
         this.loading.set(false);
       },
     });
@@ -467,11 +500,11 @@ export class AnalyticsComponent implements OnInit, AfterViewInit {
     const period = this.selectedPeriod();
     this.analyticsService.getSales(period, this.groupBy()).subscribe({
       next: (result) => {
-        this.salesData.set(result.sales || []);
+        this.salesData.set(result?.sales || []);
         setTimeout(() => this.renderSalesChart(), 100);
       },
       error: () => {
-        this.notifications.error('Failed to load sales data');
+        this.notifications.error(this.translate.instant('ANALYTICS.LOAD_FAILED'));
       },
     });
   }
@@ -686,10 +719,10 @@ export class AnalyticsComponent implements OnInit, AfterViewInit {
 
   getStockStatusLabel(status: StockItem['status']): string {
     const map: Record<string, string> = {
-      ok: 'OK',
-      low: 'Low',
-      critical: 'Critical',
-      out_of_stock: 'Out of Stock',
+      ok: this.translate.instant('ANALYTICS.OK'),
+      low: this.translate.instant('ANALYTICS.LOW'),
+      critical: this.translate.instant('ANALYTICS.CRITICAL'),
+      out_of_stock: this.translate.instant('ANALYTICS.OUT_OF_STOCK'),
     };
     return map[status] || status;
   }
@@ -699,7 +732,7 @@ export class AnalyticsComponent implements OnInit, AfterViewInit {
     const dateTo = this.exportDateTo();
 
     if (!dateFrom || !dateTo) {
-      this.notifications.error('Please select a date range for export');
+      this.notifications.error(this.translate.instant('ANALYTICS.SELECT_DATE_RANGE'));
       return;
     }
 
@@ -713,10 +746,10 @@ export class AnalyticsComponent implements OnInit, AfterViewInit {
         a.click();
         URL.revokeObjectURL(url);
         this.exporting.set(false);
-        this.notifications.success(`${type} data exported successfully`);
+        this.notifications.success(this.translate.instant('ANALYTICS.EXPORT_SUCCESS'));
       },
       error: () => {
-        this.notifications.error(`Failed to export ${type} data`);
+        this.notifications.error(this.translate.instant('ANALYTICS.EXPORT_FAILED'));
         this.exporting.set(false);
       },
     });

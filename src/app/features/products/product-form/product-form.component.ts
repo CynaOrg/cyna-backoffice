@@ -1,6 +1,7 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, Validators, FormArray, FormGroup } from '@angular/forms';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ApiService } from '../../../core/services/api.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { Product, Category } from '../../../core/models/product.model';
@@ -9,11 +10,11 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
 @Component({
   selector: 'app-product-form',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink, LoadingSpinnerComponent],
+  imports: [ReactiveFormsModule, RouterLink, TranslateModule, LoadingSpinnerComponent],
   template: `
     <div>
       <div class="flex items-center gap-3 mb-6">
-        <a routerLink="/products" class="p-2 rounded-lg hover:bg-gray-100 text-text-muted">
+        <a [routerLink]="basePath" class="p-2 rounded-lg hover:bg-gray-100 text-text-muted">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               stroke-linecap="round"
@@ -23,8 +24,8 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
             />
           </svg>
         </a>
-        <h1 class="text-2xl font-bold text-text-primary font-[family-name:var(--font-heading)]">
-          {{ isEdit() ? 'Edit Product' : 'New Product' }}
+        <h1 class="text-2xl font-bold text-text-primary">
+          {{ isEdit() ? ('PRODUCTS.EDIT' | translate) : (newTitleKey | translate) }}
         </h1>
       </div>
 
@@ -33,81 +34,83 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
       } @else {
         <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-6">
           <!-- Basic Info -->
-          <div class="bg-card-bg rounded-xl border border-border-light shadow-sm p-6">
-            <h3 class="text-lg font-semibold mb-4 font-[family-name:var(--font-heading)]">
-              Basic Information
-            </h3>
+          <div class="bg-surface rounded-xl border border-border-light shadow-sm p-6">
+            <h3 class="text-lg font-semibold mb-4">{{ 'PRODUCTS.BASIC_INFO' | translate }}</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label class="block text-sm font-medium text-text-secondary mb-1.5"
-                  >Name (FR)</label
-                >
+                <label class="block text-sm font-medium text-text-secondary mb-1.5">{{
+                  'PRODUCTS.NAME_FR' | translate
+                }}</label>
                 <input
                   formControlName="nameFr"
                   class="w-full px-4 py-2.5 rounded-lg border border-border bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                 />
               </div>
               <div>
-                <label class="block text-sm font-medium text-text-secondary mb-1.5"
-                  >Name (EN)</label
-                >
+                <label class="block text-sm font-medium text-text-secondary mb-1.5">{{
+                  'PRODUCTS.NAME_EN' | translate
+                }}</label>
                 <input
                   formControlName="nameEn"
                   class="w-full px-4 py-2.5 rounded-lg border border-border bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                 />
               </div>
               <div>
-                <label class="block text-sm font-medium text-text-secondary mb-1.5">Slug</label>
+                <label class="block text-sm font-medium text-text-secondary mb-1.5">{{
+                  'PRODUCTS.SLUG' | translate
+                }}</label>
                 <input
                   formControlName="slug"
                   class="w-full px-4 py-2.5 rounded-lg border border-border bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                 />
               </div>
               <div>
-                <label class="block text-sm font-medium text-text-secondary mb-1.5">SKU</label>
+                <label class="block text-sm font-medium text-text-secondary mb-1.5">{{
+                  'PRODUCTS.SKU' | translate
+                }}</label>
                 <input
                   formControlName="sku"
                   class="w-full px-4 py-2.5 rounded-lg border border-border bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                 />
               </div>
               <div>
-                <label class="block text-sm font-medium text-text-secondary mb-1.5">Category</label>
+                <label class="block text-sm font-medium text-text-secondary mb-1.5">{{
+                  'PRODUCTS.CATEGORY' | translate
+                }}</label>
                 <select
                   formControlName="categoryId"
                   class="w-full px-4 py-2.5 rounded-lg border border-border bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                 >
-                  <option value="">Select category</option>
+                  <option value="">{{ 'PRODUCTS.SELECT_CATEGORY' | translate }}</option>
                   @for (cat of categories(); track cat.id) {
                     <option [value]="cat.id">{{ cat.nameFr }}</option>
                   }
                 </select>
               </div>
               <div>
-                <label class="block text-sm font-medium text-text-secondary mb-1.5"
-                  >Product Type</label
-                >
+                <label class="block text-sm font-medium text-text-secondary mb-1.5">{{
+                  'PRODUCTS.PRODUCT_TYPE' | translate
+                }}</label>
                 <select
                   formControlName="productType"
                   class="w-full px-4 py-2.5 rounded-lg border border-border bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                 >
-                  <option value="SAAS">SaaS</option>
-                  <option value="PHYSICAL">Physical</option>
-                  <option value="LICENSE">License</option>
+                  <option value="SAAS">{{ 'PRODUCTS.SAAS' | translate }}</option>
+                  <option value="PHYSICAL">{{ 'PRODUCTS.PHYSICAL' | translate }}</option>
+                  <option value="LICENSE">{{ 'PRODUCTS.LICENSE' | translate }}</option>
                 </select>
               </div>
             </div>
           </div>
 
           <!-- Description -->
-          <div class="bg-card-bg rounded-xl border border-border-light shadow-sm p-6">
-            <h3 class="text-lg font-semibold mb-4 font-[family-name:var(--font-heading)]">
-              Description
-            </h3>
+          <div class="bg-surface rounded-xl border border-border-light shadow-sm p-6">
+            <h3 class="text-lg font-semibold mb-4">{{ 'PRODUCTS.DESCRIPTION' | translate }}</h3>
             <div class="space-y-4">
               <div>
-                <label class="block text-sm font-medium text-text-secondary mb-1.5"
-                  >Description (FR)</label
-                >
+                <label class="block text-sm font-medium text-text-secondary mb-1.5">{{
+                  'PRODUCTS.DESCRIPTION_FR' | translate
+                }}</label>
                 <textarea
                   formControlName="descriptionFr"
                   rows="4"
@@ -115,9 +118,9 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
                 ></textarea>
               </div>
               <div>
-                <label class="block text-sm font-medium text-text-secondary mb-1.5"
-                  >Description (EN)</label
-                >
+                <label class="block text-sm font-medium text-text-secondary mb-1.5">{{
+                  'PRODUCTS.DESCRIPTION_EN' | translate
+                }}</label>
                 <textarea
                   formControlName="descriptionEn"
                   rows="4"
@@ -128,16 +131,14 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
           </div>
 
           <!-- Pricing -->
-          <div class="bg-card-bg rounded-xl border border-border-light shadow-sm p-6">
-            <h3 class="text-lg font-semibold mb-4 font-[family-name:var(--font-heading)]">
-              Pricing
-            </h3>
+          <div class="bg-surface rounded-xl border border-border-light shadow-sm p-6">
+            <h3 class="text-lg font-semibold mb-4">{{ 'PRODUCTS.PRICING' | translate }}</h3>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
               @if (form.get('productType')?.value === 'SAAS') {
                 <div>
-                  <label class="block text-sm font-medium text-text-secondary mb-1.5"
-                    >Monthly Price (EUR)</label
-                  >
+                  <label class="block text-sm font-medium text-text-secondary mb-1.5">{{
+                    'PRODUCTS.MONTHLY_PRICE' | translate
+                  }}</label>
                   <input
                     type="number"
                     step="0.01"
@@ -146,9 +147,9 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
                   />
                 </div>
                 <div>
-                  <label class="block text-sm font-medium text-text-secondary mb-1.5"
-                    >Yearly Price (EUR)</label
-                  >
+                  <label class="block text-sm font-medium text-text-secondary mb-1.5">{{
+                    'PRODUCTS.YEARLY_PRICE' | translate
+                  }}</label>
                   <input
                     type="number"
                     step="0.01"
@@ -158,9 +159,9 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
                 </div>
               } @else {
                 <div>
-                  <label class="block text-sm font-medium text-text-secondary mb-1.5"
-                    >Unit Price (EUR)</label
-                  >
+                  <label class="block text-sm font-medium text-text-secondary mb-1.5">{{
+                    'PRODUCTS.UNIT_PRICE_EUR' | translate
+                  }}</label>
                   <input
                     type="number"
                     step="0.01"
@@ -173,10 +174,8 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
           </div>
 
           <!-- Options -->
-          <div class="bg-card-bg rounded-xl border border-border-light shadow-sm p-6">
-            <h3 class="text-lg font-semibold mb-4 font-[family-name:var(--font-heading)]">
-              Options
-            </h3>
+          <div class="bg-surface rounded-xl border border-border-light shadow-sm p-6">
+            <h3 class="text-lg font-semibold mb-4">{{ 'PRODUCTS.OPTIONS' | translate }}</h3>
             <div class="flex flex-wrap gap-6">
               <label class="flex items-center gap-2 text-sm">
                 <input
@@ -184,7 +183,7 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
                   formControlName="isAvailable"
                   class="rounded border-border text-primary focus:ring-primary"
                 />
-                Available
+                {{ 'PRODUCTS.AVAILABLE' | translate }}
               </label>
               <label class="flex items-center gap-2 text-sm">
                 <input
@@ -192,15 +191,15 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
                   formControlName="isFeatured"
                   class="rounded border-border text-primary focus:ring-primary"
                 />
-                Featured
+                {{ 'PRODUCTS.FEATURED' | translate }}
               </label>
             </div>
             @if (form.get('productType')?.value === 'PHYSICAL') {
               <div class="grid grid-cols-2 gap-4 mt-4">
                 <div>
-                  <label class="block text-sm font-medium text-text-secondary mb-1.5"
-                    >Stock Quantity</label
-                  >
+                  <label class="block text-sm font-medium text-text-secondary mb-1.5">{{
+                    'PRODUCTS.STOCK_QUANTITY' | translate
+                  }}</label>
                   <input
                     type="number"
                     formControlName="stockQuantity"
@@ -208,9 +207,9 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
                   />
                 </div>
                 <div>
-                  <label class="block text-sm font-medium text-text-secondary mb-1.5"
-                    >Stock Alert Threshold</label
-                  >
+                  <label class="block text-sm font-medium text-text-secondary mb-1.5">{{
+                    'PRODUCTS.STOCK_ALERT' | translate
+                  }}</label>
                   <input
                     type="number"
                     formControlName="stockAlertThreshold"
@@ -224,16 +223,22 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
           <!-- Actions -->
           <div class="flex justify-end gap-3">
             <a
-              routerLink="/products"
+              [routerLink]="basePath"
               class="px-4 py-2.5 border border-border text-text-secondary text-sm font-medium rounded-lg hover:bg-gray-50"
-              >Cancel</a
+              >{{ 'PRODUCTS.CANCEL' | translate }}</a
             >
             <button
               type="submit"
               [disabled]="saving()"
-              class="px-6 py-2.5 bg-primary text-white text-sm font-medium rounded-lg hover:bg-primary-dark disabled:opacity-60"
+              class="px-6 py-2.5 bg-primary text-white text-sm font-medium rounded-lg hover:bg-primary-hover disabled:opacity-60"
             >
-              {{ saving() ? 'Saving...' : isEdit() ? 'Update Product' : 'Create Product' }}
+              {{
+                saving()
+                  ? ('PRODUCTS.SAVING' | translate)
+                  : isEdit()
+                    ? ('PRODUCTS.UPDATE' | translate)
+                    : ('PRODUCTS.CREATE' | translate)
+              }}
             </button>
           </div>
         </form>
@@ -247,12 +252,15 @@ export class ProductFormComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly api = inject(ApiService);
   private readonly notifications = inject(NotificationService);
+  private readonly translate = inject(TranslateService);
 
   isEdit = signal(false);
   loadingProduct = signal(false);
   saving = signal(false);
   categories = signal<Category[]>([]);
   private productId = '';
+  basePath = '/products';
+  newTitleKey = 'PRODUCTS.NEW_PRODUCT';
 
   form = this.fb.group({
     nameFr: ['', Validators.required],
@@ -273,6 +281,9 @@ export class ProductFormComponent implements OnInit {
   });
 
   ngOnInit() {
+    const data = this.route.snapshot.data;
+    if (data['basePath']) this.basePath = data['basePath'];
+    if (data['newTitleKey']) this.newTitleKey = data['newTitleKey'];
     this.loadCategories();
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
@@ -283,8 +294,12 @@ export class ProductFormComponent implements OnInit {
   }
 
   loadCategories() {
-    this.api.getList<Category>('admin/catalog/categories').subscribe({
-      next: (cats) => this.categories.set(cats),
+    this.api.get<any>('admin/catalog/categories').subscribe({
+      next: (res) => {
+        // Handle both array and wrapped formats
+        const cats = Array.isArray(res) ? res : res?.data || res || [];
+        this.categories.set(cats);
+      },
     });
   }
 
@@ -312,8 +327,8 @@ export class ProductFormComponent implements OnInit {
         this.loadingProduct.set(false);
       },
       error: () => {
-        this.notifications.error('Product not found');
-        this.router.navigate(['/products']);
+        this.notifications.error(this.translate.instant('PRODUCTS.NOT_FOUND'));
+        this.router.navigate([this.basePath]);
       },
     });
   }
@@ -332,12 +347,18 @@ export class ProductFormComponent implements OnInit {
 
     request.subscribe({
       next: (product) => {
-        this.notifications.success(this.isEdit() ? 'Product updated' : 'Product created');
-        this.router.navigate(['/products', product.id || this.productId]);
+        this.notifications.success(
+          this.isEdit()
+            ? this.translate.instant('PRODUCTS.UPDATED')
+            : this.translate.instant('PRODUCTS.CREATED'),
+        );
+        this.router.navigate([this.basePath, product.id || this.productId]);
       },
       error: (err) => {
         this.saving.set(false);
-        this.notifications.error(err.error?.message || 'Failed to save product');
+        this.notifications.error(
+          err.error?.message || this.translate.instant('PRODUCTS.SAVE_ERROR'),
+        );
       },
     });
   }
