@@ -9,36 +9,45 @@ import {
 } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AdminAuthService } from '../../../core/auth/services/admin-auth.service';
-import { NotificationService } from '../../../core/services/notification.service';
 
 @Component({
   selector: 'app-verify-2fa',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, TranslateModule],
   template: `
-    <div class="min-h-screen bg-page-bg flex items-center justify-center px-4">
-      <div class="w-full max-w-md">
-        <div class="text-center mb-8">
-          <h1 class="text-3xl font-bold text-primary font-[family-name:var(--font-heading)]">
-            CYNA
+    <div class="min-h-screen bg-background">
+      <!-- Logo top-left -->
+      <div class="px-6 py-5">
+        <img
+          src="assets/cyna-logo-baseline-dark.png"
+          alt="CYNA"
+          class="h-10 w-auto object-contain"
+        />
+      </div>
+
+      <!-- Content centered -->
+      <div class="flex flex-col items-center gap-[52px] p-8 pt-12 mx-auto max-w-md">
+        <!-- Header -->
+        <div class="flex flex-col items-center gap-1 text-black">
+          <h1 class="!text-[32px] !font-bold !leading-normal !m-0">
+            {{ 'AUTH.VERIFICATION' | translate }}
           </h1>
-          <p class="text-text-secondary mt-2">Backoffice Administration</p>
+          <p class="text-base font-normal text-text-secondary">
+            {{ 'AUTH.ENTER_CODE' | translate }}
+          </p>
         </div>
-        <div class="bg-card-bg rounded-2xl shadow-sm border border-border-light p-8">
-          <h2
-            class="text-xl font-semibold text-text-primary mb-2 font-[family-name:var(--font-heading)]"
-          >
-            Two-factor authentication
-          </h2>
-          <p class="text-sm text-text-secondary mb-6">Enter the 6-digit code sent to your email</p>
-          <div class="flex justify-center gap-3 mb-6">
+
+        <!-- OTP Input -->
+        <div class="flex w-full flex-col items-center gap-6">
+          <div class="flex justify-center gap-3">
             @for (i of digits; track i) {
               <input
                 #digitInput
                 type="text"
                 maxlength="1"
-                class="w-12 h-14 text-center text-xl font-bold border border-border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
+                class="w-12 h-14 text-center text-xl font-bold border border-input-border rounded-xl bg-input-bg focus:outline-none focus:border-primary transition-colors"
                 [value]="code()[i]"
                 (input)="onDigitInput($event, i)"
                 (keydown)="onKeyDown($event, i)"
@@ -46,15 +55,22 @@ import { NotificationService } from '../../../core/services/notification.service
               />
             }
           </div>
+
+          <!-- Inline error message (red) -->
           @if (errorMessage()) {
-            <div class="mb-4 p-3 rounded-lg bg-danger-light text-danger text-sm text-center">
-              {{ errorMessage() }}
-            </div>
+            <p class="w-full text-center text-sm text-error">{{ errorMessage() }}</p>
           }
+
+          <!-- Inline success message (green) -->
+          @if (successMessage()) {
+            <p class="w-full text-center text-sm text-success">{{ successMessage() }}</p>
+          }
+
+          <!-- Verify Button -->
           <button
             (click)="verify()"
             [disabled]="loading() || code().join('').length < 6"
-            class="w-full py-2.5 px-4 bg-primary text-white font-medium rounded-lg hover:bg-primary-dark transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            class="flex w-full items-center justify-center gap-2 rounded-full px-6 py-3 text-[15px] leading-normal font-semibold bg-primary text-text-inverse hover:bg-primary-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             @if (loading()) {
               <svg class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
@@ -73,29 +89,31 @@ import { NotificationService } from '../../../core/services/notification.service
                 />
               </svg>
             }
-            Verify
+            {{ 'AUTH.VERIFY' | translate }}
           </button>
-          <div class="mt-4 text-center">
-            <button
-              (click)="resend()"
-              [disabled]="resendCooldown() > 0"
-              class="text-sm text-primary hover:text-primary-dark disabled:text-text-muted disabled:cursor-not-allowed"
-            >
-              @if (resendCooldown() > 0) {
-                Resend code ({{ resendCooldown() }}s)
-              } @else {
-                Resend code
-              }
-            </button>
-          </div>
-          <div class="mt-3 text-center">
+
+          <!-- Resend -->
+          <button
+            (click)="resend()"
+            [disabled]="resendCooldown() > 0"
+            class="text-xs font-normal text-primary disabled:text-text-muted disabled:cursor-not-allowed"
+          >
+            @if (resendCooldown() > 0) {
+              {{ 'AUTH.RESEND_CODE' | translate }} ({{ resendCooldown() }}s)
+            } @else {
+              {{ 'AUTH.RESEND_CODE' | translate }}
+            }
+          </button>
+
+          <!-- Back to login -->
+          <p class="text-xs text-black">
             <button
               (click)="backToLogin()"
-              class="text-sm text-text-secondary hover:text-text-primary"
+              class="font-bold text-primary bg-transparent border-none cursor-pointer"
             >
-              Back to login
+              {{ 'AUTH.BACK_TO_LOGIN' | translate }}
             </button>
-          </div>
+          </p>
         </div>
       </div>
     </div>
@@ -106,12 +124,13 @@ export class Verify2FAComponent implements AfterViewInit {
 
   private readonly authService = inject(AdminAuthService);
   private readonly router = inject(Router);
-  private readonly notifications = inject(NotificationService);
+  private readonly translate = inject(TranslateService);
 
   digits = [0, 1, 2, 3, 4, 5];
   code = signal<string[]>(['', '', '', '', '', '']);
   loading = signal(false);
   errorMessage = signal('');
+  successMessage = signal('');
   resendCooldown = signal(0);
 
   private cooldownInterval: any;
@@ -178,15 +197,15 @@ export class Verify2FAComponent implements AfterViewInit {
 
     this.loading.set(true);
     this.errorMessage.set('');
+    this.successMessage.set('');
 
     this.authService.verify2FA(codeStr).subscribe({
       next: () => {
-        this.notifications.success('Welcome to CYNA Backoffice');
         this.router.navigate(['/dashboard']);
       },
       error: (err) => {
         this.loading.set(false);
-        this.errorMessage.set(err.error?.message || 'Invalid verification code');
+        this.errorMessage.set(err.error?.message || this.translate.instant('AUTH.INVALID_CODE'));
         this.code.set(['', '', '', '', '', '']);
         setTimeout(() => this.digitInputs.first?.nativeElement.focus());
       },
@@ -194,13 +213,16 @@ export class Verify2FAComponent implements AfterViewInit {
   }
 
   resend() {
+    this.errorMessage.set('');
+    this.successMessage.set('');
+
     this.authService.resend2FA().subscribe({
       next: () => {
-        this.notifications.success('New code sent');
+        this.successMessage.set(this.translate.instant('AUTH.CODE_SENT'));
         this.startCooldown();
       },
       error: () => {
-        this.notifications.error('Failed to resend code');
+        this.errorMessage.set(this.translate.instant('AUTH.RESEND_FAILED'));
       },
     });
   }
