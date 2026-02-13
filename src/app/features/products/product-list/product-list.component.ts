@@ -23,20 +23,16 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
   ],
   template: `
     <div>
-      <div class="flex items-center justify-between mb-6">
-        <div>
-          <h1 class="text-2xl font-bold text-text-primary">{{ titleKey | translate }}</h1>
-          <p class="text-sm text-text-secondary mt-1">{{ subtitleKey | translate }}</p>
-        </div>
-        @if (auth.isSuperAdmin()) {
+      @if (auth.isSuperAdmin()) {
+        <div class="flex justify-end mb-6">
           <a
             [routerLink]="newProductLink"
             class="px-4 py-2.5 bg-primary text-white text-sm font-medium rounded-lg hover:bg-primary-hover transition-colors"
           >
             {{ newProductLabelKey | translate }}
           </a>
-        }
-      </div>
+        </div>
+      }
 
       <!-- Filters -->
       <div class="bg-surface rounded-xl border border-border-light shadow-sm p-4 mb-6">

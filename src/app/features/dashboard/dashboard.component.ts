@@ -37,16 +37,9 @@ interface DashboardViewModel {
     <div style="animation: fadeInUp 0.45s ease-out">
       <!-- Welcome header -->
       <div class="mb-8">
-        <h1 class="text-2xl font-bold text-text-primary !m-0">
+        <h2 class="text-lg font-semibold text-text-primary !m-0">
           {{ 'DASHBOARD.WELCOME_BACK' | translate: { name: adminFirstName() } }}
-        </h1>
-        <p class="text-sm text-text-secondary mt-1 !m-0">
-          @if (authService.isSuperAdmin()) {
-            {{ 'DASHBOARD.SUBTITLE' | translate }}
-          } @else {
-            {{ 'DASHBOARD.SALES_OVERVIEW' | translate }}
-          }
-        </p>
+        </h2>
       </div>
 
       @if (loading()) {

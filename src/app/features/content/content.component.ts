@@ -27,14 +27,6 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
   ],
   template: `
     <div>
-      <!-- Header -->
-      <div class="mb-6">
-        <h1 class="text-2xl font-bold text-text-primary">{{ 'CONTENT.TITLE' | translate }}</h1>
-        <p class="text-sm text-text-secondary mt-1">
-          {{ 'CONTENT.SUBTITLE' | translate }}
-        </p>
-      </div>
-
       <!-- Tab Bar -->
       <div class="flex border-b border-border-light mb-6">
         <button

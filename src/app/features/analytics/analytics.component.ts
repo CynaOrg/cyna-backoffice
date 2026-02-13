@@ -50,12 +50,8 @@ Chart.register(...registerables);
   imports: [KpiCardComponent, LoadingSpinnerComponent, StatusBadgeComponent, TranslateModule],
   template: `
     <div>
-      <!-- Header -->
-      <div class="flex items-center justify-between mb-6">
-        <div>
-          <h1 class="text-2xl font-bold text-text-primary">{{ 'ANALYTICS.TITLE' | translate }}</h1>
-          <p class="text-sm text-text-secondary mt-1">{{ 'ANALYTICS.SUBTITLE' | translate }}</p>
-        </div>
+      <!-- Period selector -->
+      <div class="flex justify-end mb-6">
         <select
           class="px-3 py-2 border border-border rounded-lg text-sm bg-white"
           [value]="selectedPeriod()"

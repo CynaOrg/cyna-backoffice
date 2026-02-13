@@ -21,11 +21,7 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
   template: `
     <div>
       <!-- Header -->
-      <div class="flex items-center justify-between mb-6">
-        <div>
-          <h1 class="text-2xl font-bold text-text-primary">{{ 'ADMINS.TITLE' | translate }}</h1>
-          <p class="text-sm text-text-secondary mt-1">{{ 'ADMINS.SUBTITLE' | translate }}</p>
-        </div>
+      <div class="flex justify-end mb-6">
         <button
           (click)="openCreateModal()"
           class="bg-primary text-white hover:bg-primary-hover rounded-lg px-4 py-2 text-sm font-medium"
