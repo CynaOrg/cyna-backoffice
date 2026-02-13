@@ -75,14 +75,14 @@ Chart.register(...registerables);
   template: `
     <div class="animate-fade-in-up">
       <!-- Period Selector -->
-      <div class="flex items-center justify-end mb-6">
+      <div class="flex items-center justify-end mb-4">
         <div
-          class="inline-flex items-center gap-0.5 rounded-lg bg-background p-1 border border-border-light"
+          class="inline-flex items-center gap-0.5 rounded-lg bg-background p-0.5 border border-border-light"
         >
           @for (opt of periodOptions; track opt.value) {
             <button
               (click)="onPeriodSelect(opt.value)"
-              class="px-3 py-1.5 text-sm font-medium rounded-md transition-all duration-200"
+              class="px-2.5 py-1 text-xs font-medium rounded-md transition-all duration-200"
               [class]="
                 selectedPeriod() === opt.value
                   ? 'bg-primary text-white shadow-sm'
@@ -99,7 +99,7 @@ Chart.register(...registerables);
         <app-loading-spinner />
       } @else {
         <!-- KPI Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
           <app-kpi-card
             [value]="formatCurrency(dashboard()?.kpis?.totalRevenue || 0)"
             [label]="'ANALYTICS.TOTAL_REVENUE' | translate"
@@ -127,15 +127,17 @@ Chart.register(...registerables);
         </div>
 
         <!-- Sales Overview Chart -->
-        <div class="rounded-xl border border-border-light bg-surface shadow-sm mb-6">
-          <div class="flex items-center justify-between px-6 py-4 border-b border-border-light">
-            <h3 class="text-base font-semibold text-text-primary !m-0">
+        <div class="rounded-xl border border-border-light bg-surface shadow-sm mb-4">
+          <div
+            class="flex items-center justify-between px-4 sm:px-5 py-3 sm:py-4 border-b border-border-light"
+          >
+            <h3 class="text-sm font-semibold text-text-primary !m-0">
               {{ 'ANALYTICS.SALES_OVERVIEW' | translate }}
             </h3>
-            <div class="inline-flex items-center gap-0.5 rounded-lg bg-background p-1">
+            <div class="inline-flex items-center gap-0.5 rounded-lg bg-background p-0.5">
               <button
                 (click)="onGroupByChange('day')"
-                class="px-3 py-1.5 text-sm font-medium rounded-md transition-all duration-200"
+                class="px-2.5 py-1 text-xs font-medium rounded-md transition-all duration-200"
                 [class]="
                   groupBy() === 'day'
                     ? 'bg-primary text-white shadow-sm'
@@ -146,7 +148,7 @@ Chart.register(...registerables);
               </button>
               <button
                 (click)="onGroupByChange('week')"
-                class="px-3 py-1.5 text-sm font-medium rounded-md transition-all duration-200"
+                class="px-2.5 py-1 text-xs font-medium rounded-md transition-all duration-200"
                 [class]="
                   groupBy() === 'week'
                     ? 'bg-primary text-white shadow-sm'
@@ -157,7 +159,7 @@ Chart.register(...registerables);
               </button>
               <button
                 (click)="onGroupByChange('month')"
-                class="px-3 py-1.5 text-sm font-medium rounded-md transition-all duration-200"
+                class="px-2.5 py-1 text-xs font-medium rounded-md transition-all duration-200"
                 [class]="
                   groupBy() === 'month'
                     ? 'bg-primary text-white shadow-sm'
@@ -168,41 +170,41 @@ Chart.register(...registerables);
               </button>
             </div>
           </div>
-          <div class="p-6">
+          <div class="p-4 sm:p-5">
             <canvas #salesChart height="100"></canvas>
           </div>
         </div>
 
         <!-- Revenue Breakdown: Category + Product Type -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
           <!-- Sales by Category -->
           <div class="rounded-xl border border-border-light bg-surface shadow-sm">
-            <div class="px-6 py-4 border-b border-border-light">
-              <h3 class="text-base font-semibold text-text-primary !m-0">
+            <div class="px-4 sm:px-5 py-3 sm:py-4 border-b border-border-light">
+              <h3 class="text-sm font-semibold text-text-primary !m-0">
                 {{ 'ANALYTICS.SALES_BY_CATEGORY' | translate }}
               </h3>
             </div>
-            <div class="p-6">
-              <div class="flex items-center gap-6">
-                <div class="w-44 h-44 flex-shrink-0">
+            <div class="p-4 sm:p-5">
+              <div class="flex items-center gap-5">
+                <div class="w-36 h-36 flex-shrink-0">
                   <canvas #categoryChart></canvas>
                 </div>
                 <div class="flex-1 min-w-0">
-                  <div class="space-y-3">
+                  <div class="space-y-2.5">
                     @for (cat of categoryData(); track cat.category) {
-                      <div class="flex items-center justify-between gap-3">
+                      <div class="flex items-center justify-between gap-2">
                         <div class="flex items-center gap-2 min-w-0">
                           <span
-                            class="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                            class="w-2 h-2 rounded-full flex-shrink-0"
                             [style.background-color]="chartColors[$index % chartColors.length]"
                           ></span>
-                          <span class="text-sm text-text-primary truncate">{{ cat.category }}</span>
+                          <span class="text-xs text-text-primary truncate">{{ cat.category }}</span>
                         </div>
-                        <div class="flex items-center gap-3 flex-shrink-0">
-                          <span class="text-sm font-medium text-text-primary tabular-nums">
+                        <div class="flex items-center gap-2 flex-shrink-0">
+                          <span class="text-xs font-medium text-text-primary tabular-nums">
                             {{ formatCurrency(cat.revenue) }}
                           </span>
-                          <span class="text-xs text-text-muted w-10 text-right tabular-nums">
+                          <span class="text-[10px] text-text-muted w-8 text-right tabular-nums">
                             {{ cat.percentage }}%
                           </span>
                         </div>
@@ -216,34 +218,34 @@ Chart.register(...registerables);
 
           <!-- Sales by Product Type -->
           <div class="rounded-xl border border-border-light bg-surface shadow-sm">
-            <div class="px-6 py-4 border-b border-border-light">
-              <h3 class="text-base font-semibold text-text-primary !m-0">
+            <div class="px-4 sm:px-5 py-3 sm:py-4 border-b border-border-light">
+              <h3 class="text-sm font-semibold text-text-primary !m-0">
                 {{ 'ANALYTICS.SALES_BY_TYPE' | translate }}
               </h3>
             </div>
-            <div class="p-6">
-              <div class="flex items-center gap-6">
-                <div class="w-44 h-44 flex-shrink-0">
+            <div class="p-4 sm:p-5">
+              <div class="flex items-center gap-5">
+                <div class="w-36 h-36 flex-shrink-0">
                   <canvas #productTypeChart></canvas>
                 </div>
                 <div class="flex-1 min-w-0">
-                  <div class="space-y-3">
+                  <div class="space-y-2.5">
                     @for (pt of productTypeData(); track pt.productType) {
-                      <div class="flex items-center justify-between gap-3">
+                      <div class="flex items-center justify-between gap-2">
                         <div class="flex items-center gap-2 min-w-0">
                           <span
-                            class="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                            class="w-2 h-2 rounded-full flex-shrink-0"
                             [style.background-color]="chartColors[$index % chartColors.length]"
                           ></span>
-                          <span class="text-sm text-text-primary truncate">{{
+                          <span class="text-xs text-text-primary truncate">{{
                             pt.productType
                           }}</span>
                         </div>
-                        <div class="flex items-center gap-3 flex-shrink-0">
-                          <span class="text-sm font-medium text-text-primary tabular-nums">
+                        <div class="flex items-center gap-2 flex-shrink-0">
+                          <span class="text-xs font-medium text-text-primary tabular-nums">
                             {{ formatCurrency(pt.revenue) }}
                           </span>
-                          <span class="text-xs text-text-muted w-10 text-right tabular-nums">
+                          <span class="text-[10px] text-text-muted w-8 text-right tabular-nums">
                             {{ pt.percentage }}%
                           </span>
                         </div>
@@ -257,25 +259,27 @@ Chart.register(...registerables);
         </div>
 
         <!-- MRR Evolution -->
-        <div class="rounded-xl border border-border-light bg-surface shadow-sm mb-6">
-          <div class="flex items-center justify-between px-6 py-4 border-b border-border-light">
-            <h3 class="text-base font-semibold text-text-primary !m-0">
+        <div class="rounded-xl border border-border-light bg-surface shadow-sm mb-4">
+          <div
+            class="flex items-center justify-between px-4 sm:px-5 py-3 sm:py-4 border-b border-border-light"
+          >
+            <h3 class="text-sm font-semibold text-text-primary !m-0">
               {{ 'ANALYTICS.MRR_EVOLUTION' | translate }}
             </h3>
-            <span class="text-sm text-primary font-medium">
+            <span class="text-xs text-text-muted">
               {{ 'ANALYTICS.MONTHLY_TREND' | translate }}
             </span>
           </div>
-          <div class="p-6">
+          <div class="p-4 sm:p-5">
             <canvas #mrrChart height="80"></canvas>
           </div>
         </div>
 
         <!-- Stock Status -->
         @if (stockItems().length > 0) {
-          <div class="rounded-xl border border-border-light bg-surface shadow-sm mb-6">
-            <div class="px-6 py-4 border-b border-border-light">
-              <h3 class="text-base font-semibold text-text-primary !m-0">
+          <div class="rounded-xl border border-border-light bg-surface shadow-sm mb-4">
+            <div class="px-4 sm:px-5 py-3 sm:py-4 border-b border-border-light">
+              <h3 class="text-sm font-semibold text-text-primary !m-0">
                 {{ 'ANALYTICS.STOCK_STATUS' | translate }}
               </h3>
             </div>
@@ -284,27 +288,27 @@ Chart.register(...registerables);
                 <thead>
                   <tr class="border-b border-border-light">
                     <th
-                      class="px-6 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-text-muted"
+                      class="px-4 sm:px-5 py-2.5 text-left text-[10px] font-semibold uppercase tracking-wider text-text-muted"
                     >
                       {{ 'ANALYTICS.PRODUCT_NAME' | translate }}
                     </th>
                     <th
-                      class="px-6 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-text-muted"
+                      class="px-4 sm:px-5 py-2.5 text-left text-[10px] font-semibold uppercase tracking-wider text-text-muted"
                     >
                       {{ 'ANALYTICS.SKU' | translate }}
                     </th>
                     <th
-                      class="px-6 py-3 text-right text-[11px] font-semibold uppercase tracking-wider text-text-muted"
+                      class="px-4 sm:px-5 py-2.5 text-right text-[10px] font-semibold uppercase tracking-wider text-text-muted"
                     >
                       {{ 'ANALYTICS.CURRENT_STOCK' | translate }}
                     </th>
                     <th
-                      class="px-6 py-3 text-right text-[11px] font-semibold uppercase tracking-wider text-text-muted"
+                      class="px-4 sm:px-5 py-2.5 text-right text-[10px] font-semibold uppercase tracking-wider text-text-muted"
                     >
                       {{ 'ANALYTICS.ALERT_THRESHOLD' | translate }}
                     </th>
                     <th
-                      class="px-6 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-text-muted"
+                      class="px-4 sm:px-5 py-2.5 text-left text-[10px] font-semibold uppercase tracking-wider text-text-muted"
                     >
                       {{ 'ANALYTICS.STATUS' | translate }}
                     </th>
@@ -313,21 +317,23 @@ Chart.register(...registerables);
                 <tbody class="divide-y divide-border-light">
                   @for (item of stockItems(); track item.productId) {
                     <tr class="hover:bg-background transition-colors">
-                      <td class="px-6 py-4 text-sm font-medium text-text-primary">
+                      <td class="px-4 sm:px-5 py-3 text-xs font-medium text-text-primary">
                         {{ item.productName }}
                       </td>
-                      <td class="px-6 py-4 text-sm text-text-secondary font-mono">
+                      <td class="px-4 sm:px-5 py-3 text-xs text-text-muted font-mono">
                         {{ item.sku }}
                       </td>
-                      <td class="px-6 py-4 text-sm text-text-primary text-right tabular-nums">
+                      <td
+                        class="px-4 sm:px-5 py-3 text-xs text-text-primary text-right tabular-nums"
+                      >
                         {{ item.currentStock }}
                       </td>
-                      <td class="px-6 py-4 text-sm text-text-secondary text-right tabular-nums">
+                      <td class="px-4 sm:px-5 py-3 text-xs text-text-muted text-right tabular-nums">
                         {{ item.alertThreshold }}
                       </td>
-                      <td class="px-6 py-4">
+                      <td class="px-4 sm:px-5 py-3">
                         <span
-                          class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                          class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium"
                           [class]="getStockStatusClass(item.status)"
                         >
                           {{ getStockStatusLabel(item.status) }}
@@ -343,31 +349,31 @@ Chart.register(...registerables);
 
         <!-- Export Section -->
         <div class="rounded-xl border border-border-light bg-surface shadow-sm">
-          <div class="px-6 py-4 border-b border-border-light">
-            <h3 class="text-base font-semibold text-text-primary !m-0">
+          <div class="px-4 sm:px-5 py-3 sm:py-4 border-b border-border-light">
+            <h3 class="text-sm font-semibold text-text-primary !m-0">
               {{ 'ANALYTICS.EXPORT_DATA' | translate }}
             </h3>
           </div>
-          <div class="p-6">
-            <div class="flex flex-wrap items-end gap-4">
-              <div class="flex flex-col gap-1.5">
-                <label class="text-xs font-medium text-text-secondary">
+          <div class="p-4 sm:p-5">
+            <div class="flex flex-wrap items-end gap-3">
+              <div class="flex flex-col gap-1">
+                <label class="text-[10px] font-medium text-text-muted uppercase tracking-wider">
                   {{ 'ANALYTICS.FROM' | translate }}
                 </label>
                 <input
                   type="date"
-                  class="px-3 py-2 border border-border rounded-lg text-sm bg-input-bg focus:border-border-focus focus:outline-none transition-colors"
+                  class="px-2.5 py-1.5 border border-border rounded-lg text-xs bg-input-bg focus:border-border-focus focus:outline-none transition-colors"
                   [value]="exportDateFrom()"
                   (change)="onExportDateFromChange($event)"
                 />
               </div>
-              <div class="flex flex-col gap-1.5">
-                <label class="text-xs font-medium text-text-secondary">
+              <div class="flex flex-col gap-1">
+                <label class="text-[10px] font-medium text-text-muted uppercase tracking-wider">
                   {{ 'ANALYTICS.TO' | translate }}
                 </label>
                 <input
                   type="date"
-                  class="px-3 py-2 border border-border rounded-lg text-sm bg-input-bg focus:border-border-focus focus:outline-none transition-colors"
+                  class="px-2.5 py-1.5 border border-border rounded-lg text-xs bg-input-bg focus:border-border-focus focus:outline-none transition-colors"
                   [value]="exportDateTo()"
                   (change)="onExportDateToChange($event)"
                 />
@@ -376,25 +382,25 @@ Chart.register(...registerables);
                 <button
                   (click)="exportData('sales')"
                   [disabled]="exporting()"
-                  class="inline-flex items-center gap-2 bg-primary text-white hover:bg-primary-hover rounded-lg px-4 py-2 text-sm font-medium transition-colors disabled:opacity-50"
+                  class="inline-flex items-center gap-1.5 bg-primary text-white hover:bg-primary-hover rounded-lg px-3 py-1.5 text-xs font-medium transition-colors disabled:opacity-50"
                 >
-                  <ng-icon name="phosphorDownloadSimple" size="16" />
+                  <ng-icon name="phosphorDownloadSimple" size="14" />
                   {{ 'ANALYTICS.EXPORT_SALES' | translate }}
                 </button>
                 <button
                   (click)="exportData('orders')"
                   [disabled]="exporting()"
-                  class="inline-flex items-center gap-2 border border-border bg-surface text-text-primary hover:bg-background rounded-lg px-4 py-2 text-sm font-medium transition-colors disabled:opacity-50"
+                  class="inline-flex items-center gap-1.5 border border-border bg-surface text-text-primary hover:bg-background rounded-lg px-3 py-1.5 text-xs font-medium transition-colors disabled:opacity-50"
                 >
-                  <ng-icon name="phosphorDownloadSimple" size="16" />
+                  <ng-icon name="phosphorDownloadSimple" size="14" />
                   {{ 'ANALYTICS.EXPORT_ORDERS' | translate }}
                 </button>
                 <button
                   (click)="exportData('subscriptions')"
                   [disabled]="exporting()"
-                  class="inline-flex items-center gap-2 border border-border bg-surface text-text-primary hover:bg-background rounded-lg px-4 py-2 text-sm font-medium transition-colors disabled:opacity-50"
+                  class="inline-flex items-center gap-1.5 border border-border bg-surface text-text-primary hover:bg-background rounded-lg px-3 py-1.5 text-xs font-medium transition-colors disabled:opacity-50"
                 >
-                  <ng-icon name="phosphorDownloadSimple" size="16" />
+                  <ng-icon name="phosphorDownloadSimple" size="14" />
                   {{ 'ANALYTICS.EXPORT_SUBSCRIPTIONS' | translate }}
                 </button>
               </div>
