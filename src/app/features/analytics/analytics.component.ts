@@ -707,75 +707,83 @@ export class AnalyticsComponent implements OnInit, AfterViewInit {
     const data = this.categoryData();
     if (!data.length || !this.categoryChartRef) return;
 
-    if (this.categoryChart) this.categoryChart.destroy();
+    if (this.categoryChart) {
+      this.categoryChart.destroy();
+      this.categoryChart = null;
+    }
 
-    this.categoryChart = new Chart(this.categoryChartRef.nativeElement, {
-      type: 'doughnut',
-      data: {
-        labels: data.map((d) => d.category),
-        datasets: [
-          {
-            data: data.map((d) => d.revenue),
-            backgroundColor: data.map((_, i) => this.chartColors[i % this.chartColors.length]),
-            borderWidth: 0,
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        cutout: '72%',
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            callbacks: {
-              label: (ctx) => {
-                const value = this.formatCurrency(ctx.parsed);
-                const pct = data[ctx.dataIndex]?.percentage ?? 0;
-                return `${ctx.label}: ${value} (${pct}%)`;
-              },
-            },
-          },
-        },
-      },
-    });
+    this.drawRadialRings(
+      this.categoryChartRef.nativeElement,
+      data.map((d, i) => ({
+        percentage: d.percentage,
+        color: this.chartColors[i % this.chartColors.length],
+      })),
+    );
   }
 
   renderProductTypeChart(): void {
     const data = this.productTypeData();
     if (!data.length || !this.productTypeChartRef) return;
 
-    if (this.productTypeChart) this.productTypeChart.destroy();
+    if (this.productTypeChart) {
+      this.productTypeChart.destroy();
+      this.productTypeChart = null;
+    }
 
-    this.productTypeChart = new Chart(this.productTypeChartRef.nativeElement, {
-      type: 'doughnut',
-      data: {
-        labels: data.map((d) => d.productType),
-        datasets: [
-          {
-            data: data.map((d) => d.revenue),
-            backgroundColor: data.map((_, i) => this.chartColors[i % this.chartColors.length]),
-            borderWidth: 0,
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        cutout: '72%',
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            callbacks: {
-              label: (ctx) => {
-                const value = this.formatCurrency(ctx.parsed);
-                const pct = data[ctx.dataIndex]?.percentage ?? 0;
-                return `${ctx.label}: ${value} (${pct}%)`;
-              },
-            },
-          },
-        },
-      },
+    this.drawRadialRings(
+      this.productTypeChartRef.nativeElement,
+      data.map((d, i) => ({
+        percentage: d.percentage,
+        color: this.chartColors[i % this.chartColors.length],
+      })),
+    );
+  }
+
+  private drawRadialRings(
+    canvas: HTMLCanvasElement,
+    items: { percentage: number; color: string }[],
+  ): void {
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.scale(dpr, dpr);
+
+    const size = Math.min(rect.width, rect.height);
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+    const padding = 6;
+    const maxRadius = size / 2 - padding;
+    const ringWidth = Math.max(8, Math.min(14, (maxRadius * 0.55) / items.length));
+    const ringGap = Math.max(4, Math.min(7, ringWidth * 0.5));
+    const startAngle = -Math.PI / 2;
+
+    items.forEach((item, index) => {
+      const radius = maxRadius - ringWidth / 2 - index * (ringWidth + ringGap);
+      if (radius <= ringWidth / 2) return;
+
+      // Background ring
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+      ctx.strokeStyle = '#f0f0f5';
+      ctx.lineWidth = ringWidth;
+      ctx.lineCap = 'round';
+      ctx.stroke();
+
+      // Foreground arc
+      if (item.percentage > 0) {
+        const sweep = (item.percentage / 100) * Math.PI * 2;
+        const endAngle = startAngle + Math.max(sweep, 0.1);
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+        ctx.strokeStyle = item.color;
+        ctx.lineWidth = ringWidth;
+        ctx.lineCap = 'round';
+        ctx.stroke();
+      }
     });
   }
 
