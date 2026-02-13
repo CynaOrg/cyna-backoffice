@@ -53,6 +53,20 @@ import { catchError } from 'rxjs/operators';
 
 Chart.register(...registerables);
 
+// Global Chart.js tooltip styling to match CYNA design
+Chart.defaults.plugins.tooltip.backgroundColor = '#ffffff';
+Chart.defaults.plugins.tooltip.titleColor = '#1a1a2e';
+Chart.defaults.plugins.tooltip.bodyColor = '#6b7280';
+Chart.defaults.plugins.tooltip.borderColor = '#e5e7eb';
+Chart.defaults.plugins.tooltip.borderWidth = 1;
+Chart.defaults.plugins.tooltip.cornerRadius = 10;
+Chart.defaults.plugins.tooltip.padding = 10;
+Chart.defaults.plugins.tooltip.boxPadding = 4;
+Chart.defaults.plugins.tooltip.titleFont = { size: 12, weight: 'bold' };
+Chart.defaults.plugins.tooltip.bodyFont = { size: 11, weight: 'normal' };
+Chart.defaults.plugins.tooltip.displayColors = true;
+Chart.defaults.plugins.tooltip.usePointStyle = true;
+
 @Component({
   selector: 'app-analytics',
   standalone: true,
@@ -443,13 +457,13 @@ export class AnalyticsComponent implements OnInit, AfterViewInit {
 
   readonly chartColors = [
     '#4f39f6',
-    '#10B981',
-    '#F59E0B',
-    '#EF4444',
-    '#8B5CF6',
-    '#EC4899',
-    '#06B6D4',
-    '#84CC16',
+    '#7c6bf8',
+    '#a78bfa',
+    '#c4b5fd',
+    '#6366f1',
+    '#818cf8',
+    '#ddd6fe',
+    '#e0e7ff',
   ];
 
   readonly periodOptions = [
