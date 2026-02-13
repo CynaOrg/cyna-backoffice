@@ -140,152 +140,135 @@ Chart.defaults.plugins.tooltip.usePointStyle = true;
           />
         </div>
 
-        <!-- Sales Overview Chart -->
-        <div class="rounded-xl border border-border-light bg-surface shadow-sm mb-4">
-          <div
-            class="flex items-center justify-between px-4 sm:px-5 py-3 sm:py-4 border-b border-border-light"
-          >
-            <h3 class="text-sm font-semibold text-text-primary !m-0">
-              {{ 'ANALYTICS.SALES_OVERVIEW' | translate }}
-            </h3>
-            <div class="inline-flex items-center gap-0.5 rounded-lg bg-background p-0.5">
-              <button
-                (click)="onGroupByChange('day')"
-                class="px-2.5 py-1 text-xs font-medium rounded-md transition-all duration-200"
-                [class]="
-                  groupBy() === 'day'
-                    ? 'bg-primary text-white shadow-sm'
-                    : 'text-text-secondary hover:text-text-primary hover:bg-surface'
-                "
-              >
-                {{ 'ANALYTICS.DAY' | translate }}
-              </button>
-              <button
-                (click)="onGroupByChange('week')"
-                class="px-2.5 py-1 text-xs font-medium rounded-md transition-all duration-200"
-                [class]="
-                  groupBy() === 'week'
-                    ? 'bg-primary text-white shadow-sm'
-                    : 'text-text-secondary hover:text-text-primary hover:bg-surface'
-                "
-              >
-                {{ 'ANALYTICS.WEEK' | translate }}
-              </button>
-              <button
-                (click)="onGroupByChange('month')"
-                class="px-2.5 py-1 text-xs font-medium rounded-md transition-all duration-200"
-                [class]="
-                  groupBy() === 'month'
-                    ? 'bg-primary text-white shadow-sm'
-                    : 'text-text-secondary hover:text-text-primary hover:bg-surface'
-                "
-              >
-                {{ 'ANALYTICS.MONTH' | translate }}
-              </button>
+        <!-- Sales Overview + Category Distribution -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+          <!-- Sales Bar Chart (2/3) -->
+          <div class="lg:col-span-2 rounded-xl border border-border-light bg-surface shadow-sm">
+            <div
+              class="flex items-center justify-between px-4 sm:px-5 py-3 sm:py-4 border-b border-border-light"
+            >
+              <h3 class="text-sm font-semibold text-text-primary !m-0">
+                {{ 'ANALYTICS.SALES_OVERVIEW' | translate }}
+              </h3>
+              <div class="inline-flex items-center gap-0.5 rounded-lg bg-background p-0.5">
+                <button
+                  (click)="onGroupByChange('day')"
+                  class="px-2.5 py-1 text-xs font-medium rounded-md transition-all duration-200"
+                  [class]="
+                    groupBy() === 'day'
+                      ? 'bg-primary text-white shadow-sm'
+                      : 'text-text-secondary hover:text-text-primary hover:bg-surface'
+                  "
+                >
+                  {{ 'ANALYTICS.DAY' | translate }}
+                </button>
+                <button
+                  (click)="onGroupByChange('week')"
+                  class="px-2.5 py-1 text-xs font-medium rounded-md transition-all duration-200"
+                  [class]="
+                    groupBy() === 'week'
+                      ? 'bg-primary text-white shadow-sm'
+                      : 'text-text-secondary hover:text-text-primary hover:bg-surface'
+                  "
+                >
+                  {{ 'ANALYTICS.WEEK' | translate }}
+                </button>
+                <button
+                  (click)="onGroupByChange('month')"
+                  class="px-2.5 py-1 text-xs font-medium rounded-md transition-all duration-200"
+                  [class]="
+                    groupBy() === 'month'
+                      ? 'bg-primary text-white shadow-sm'
+                      : 'text-text-secondary hover:text-text-primary hover:bg-surface'
+                  "
+                >
+                  {{ 'ANALYTICS.MONTH' | translate }}
+                </button>
+              </div>
+            </div>
+            <div class="p-4 sm:p-5">
+              <canvas #salesChart height="110"></canvas>
             </div>
           </div>
-          <div class="p-4 sm:p-5">
-            <canvas #salesChart height="100"></canvas>
-          </div>
-        </div>
 
-        <!-- Revenue Breakdown: Category + Product Type -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
-          <!-- Sales by Category -->
+          <!-- Category Doughnut (1/3) -->
           <div class="rounded-xl border border-border-light bg-surface shadow-sm">
             <div class="px-4 sm:px-5 py-3 sm:py-4 border-b border-border-light">
               <h3 class="text-sm font-semibold text-text-primary !m-0">
                 {{ 'ANALYTICS.SALES_BY_CATEGORY' | translate }}
               </h3>
             </div>
-            <div class="p-4 sm:p-5">
-              <div class="flex items-center gap-5">
-                <div class="w-36 h-36 flex-shrink-0">
-                  <canvas #categoryChart></canvas>
-                </div>
-                <div class="flex-1 min-w-0">
-                  <div class="space-y-2.5">
-                    @for (cat of categoryData(); track cat.category) {
-                      <div class="flex items-center justify-between gap-2">
-                        <div class="flex items-center gap-2 min-w-0">
-                          <span
-                            class="w-2 h-2 rounded-full flex-shrink-0"
-                            [style.background-color]="chartColors[$index % chartColors.length]"
-                          ></span>
-                          <span class="text-xs text-text-primary truncate">{{ cat.category }}</span>
-                        </div>
-                        <div class="flex items-center gap-2 flex-shrink-0">
-                          <span class="text-xs font-medium text-text-primary tabular-nums">
-                            {{ formatCurrency(cat.revenue) }}
-                          </span>
-                          <span class="text-[10px] text-text-muted w-8 text-right tabular-nums">
-                            {{ cat.percentage }}%
-                          </span>
-                        </div>
-                      </div>
-                    }
+            <div class="p-4 sm:p-5 flex flex-col items-center">
+              <div class="w-40 h-40">
+                <canvas #categoryChart></canvas>
+              </div>
+              <div class="w-full mt-4 space-y-2">
+                @for (cat of categoryData(); track cat.category) {
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2 min-w-0">
+                      <span
+                        class="w-2 h-2 rounded-full flex-shrink-0"
+                        [style.background-color]="chartColors[$index % chartColors.length]"
+                      ></span>
+                      <span class="text-xs text-text-primary truncate">{{ cat.category }}</span>
+                    </div>
+                    <span class="text-xs font-medium text-text-primary tabular-nums">
+                      {{ cat.percentage }}%
+                    </span>
                   </div>
-                </div>
+                }
               </div>
             </div>
           </div>
+        </div>
 
-          <!-- Sales by Product Type -->
+        <!-- MRR Evolution + Product Type Distribution -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+          <!-- MRR Line Chart (2/3) -->
+          <div class="lg:col-span-2 rounded-xl border border-border-light bg-surface shadow-sm">
+            <div
+              class="flex items-center justify-between px-4 sm:px-5 py-3 sm:py-4 border-b border-border-light"
+            >
+              <h3 class="text-sm font-semibold text-text-primary !m-0">
+                {{ 'ANALYTICS.MRR_EVOLUTION' | translate }}
+              </h3>
+              <span class="text-xs text-text-muted">
+                {{ 'ANALYTICS.MONTHLY_TREND' | translate }}
+              </span>
+            </div>
+            <div class="p-4 sm:p-5">
+              <canvas #mrrChart height="110"></canvas>
+            </div>
+          </div>
+
+          <!-- Product Type Doughnut (1/3) -->
           <div class="rounded-xl border border-border-light bg-surface shadow-sm">
             <div class="px-4 sm:px-5 py-3 sm:py-4 border-b border-border-light">
               <h3 class="text-sm font-semibold text-text-primary !m-0">
                 {{ 'ANALYTICS.SALES_BY_TYPE' | translate }}
               </h3>
             </div>
-            <div class="p-4 sm:p-5">
-              <div class="flex items-center gap-5">
-                <div class="w-36 h-36 flex-shrink-0">
-                  <canvas #productTypeChart></canvas>
-                </div>
-                <div class="flex-1 min-w-0">
-                  <div class="space-y-2.5">
-                    @for (pt of productTypeData(); track pt.productType) {
-                      <div class="flex items-center justify-between gap-2">
-                        <div class="flex items-center gap-2 min-w-0">
-                          <span
-                            class="w-2 h-2 rounded-full flex-shrink-0"
-                            [style.background-color]="chartColors[$index % chartColors.length]"
-                          ></span>
-                          <span class="text-xs text-text-primary truncate">{{
-                            pt.productType
-                          }}</span>
-                        </div>
-                        <div class="flex items-center gap-2 flex-shrink-0">
-                          <span class="text-xs font-medium text-text-primary tabular-nums">
-                            {{ formatCurrency(pt.revenue) }}
-                          </span>
-                          <span class="text-[10px] text-text-muted w-8 text-right tabular-nums">
-                            {{ pt.percentage }}%
-                          </span>
-                        </div>
-                      </div>
-                    }
+            <div class="p-4 sm:p-5 flex flex-col items-center">
+              <div class="w-40 h-40">
+                <canvas #productTypeChart></canvas>
+              </div>
+              <div class="w-full mt-4 space-y-2">
+                @for (pt of productTypeData(); track pt.productType) {
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2 min-w-0">
+                      <span
+                        class="w-2 h-2 rounded-full flex-shrink-0"
+                        [style.background-color]="chartColors[$index % chartColors.length]"
+                      ></span>
+                      <span class="text-xs text-text-primary truncate">{{ pt.productType }}</span>
+                    </div>
+                    <span class="text-xs font-medium text-text-primary tabular-nums">
+                      {{ pt.percentage }}%
+                    </span>
                   </div>
-                </div>
+                }
               </div>
             </div>
-          </div>
-        </div>
-
-        <!-- MRR Evolution -->
-        <div class="rounded-xl border border-border-light bg-surface shadow-sm mb-4">
-          <div
-            class="flex items-center justify-between px-4 sm:px-5 py-3 sm:py-4 border-b border-border-light"
-          >
-            <h3 class="text-sm font-semibold text-text-primary !m-0">
-              {{ 'ANALYTICS.MRR_EVOLUTION' | translate }}
-            </h3>
-            <span class="text-xs text-text-muted">
-              {{ 'ANALYTICS.MONTHLY_TREND' | translate }}
-            </span>
-          </div>
-          <div class="p-4 sm:p-5">
-            <canvas #mrrChart height="80"></canvas>
           </div>
         </div>
 
@@ -741,7 +724,7 @@ export class AnalyticsComponent implements OnInit, AfterViewInit {
       options: {
         responsive: true,
         maintainAspectRatio: true,
-        cutout: '65%',
+        cutout: '72%',
         plugins: {
           legend: { display: false },
           tooltip: {
@@ -765,7 +748,7 @@ export class AnalyticsComponent implements OnInit, AfterViewInit {
     if (this.productTypeChart) this.productTypeChart.destroy();
 
     this.productTypeChart = new Chart(this.productTypeChartRef.nativeElement, {
-      type: 'pie',
+      type: 'doughnut',
       data: {
         labels: data.map((d) => d.productType),
         datasets: [
@@ -779,6 +762,7 @@ export class AnalyticsComponent implements OnInit, AfterViewInit {
       options: {
         responsive: true,
         maintainAspectRatio: true,
+        cutout: '72%',
         plugins: {
           legend: { display: false },
           tooltip: {
