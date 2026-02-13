@@ -299,7 +299,8 @@
     "SALES_LOAD_FAILED": "Failed to load sales data",
     "EXPORT_SUCCESS": "{{type}} data exported successfully",
     "EXPORT_FAILED": "Failed to export {{type}} data",
-    "SELECT_DATE_RANGE": "Please select a date range for export"
+    "SELECT_DATE_RANGE": "Please select a date range for export",
+    "MONTHLY_TREND": "Monthly trend"
   },
   "CONTENT": {
     "TITLE": "Content Management",

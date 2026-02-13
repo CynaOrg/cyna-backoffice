@@ -23,6 +23,8 @@ import {
   MrrDataPoint,
   StockItem,
 } from '../../core/models/analytics.model';
+import { NgIconComponent, provideIcons } from '@ng-icons/core';
+import { phosphorDownloadSimple } from '@ng-icons/phosphor-icons/regular';
 
 interface AnalyticsKPIs {
   totalRevenue: number;
@@ -38,6 +40,7 @@ interface AnalyticsKPIs {
 interface AnalyticsViewModel {
   kpis: AnalyticsKPIs;
 }
+
 import { Chart, registerables } from 'chart.js';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
@@ -47,276 +50,276 @@ Chart.register(...registerables);
 @Component({
   selector: 'app-analytics',
   standalone: true,
-  imports: [KpiCardComponent, LoadingSpinnerComponent, StatusBadgeComponent, TranslateModule],
+  imports: [
+    KpiCardComponent,
+    LoadingSpinnerComponent,
+    StatusBadgeComponent,
+    TranslateModule,
+    NgIconComponent,
+  ],
+  viewProviders: [provideIcons({ phosphorDownloadSimple })],
   template: `
-    <div>
-      <!-- Period selector -->
-      <div class="flex justify-end mb-6">
-        <select
-          class="px-3 py-2 border border-border rounded-lg text-sm bg-white"
-          [value]="selectedPeriod()"
-          (change)="onPeriodChange($event)"
+    <div class="animate-fade-in-up">
+      <!-- Period Selector -->
+      <div class="flex items-center justify-end mb-6">
+        <div
+          class="inline-flex items-center gap-0.5 rounded-lg bg-background p-1 border border-border-light"
         >
-          <option value="today">{{ 'ANALYTICS.TODAY' | translate }}</option>
-          <option value="week">{{ 'ANALYTICS.THIS_WEEK' | translate }}</option>
-          <option value="month">{{ 'ANALYTICS.THIS_MONTH' | translate }}</option>
-          <option value="quarter">{{ 'ANALYTICS.THIS_QUARTER' | translate }}</option>
-          <option value="year">{{ 'ANALYTICS.THIS_YEAR' | translate }}</option>
-        </select>
+          @for (opt of periodOptions; track opt.value) {
+            <button
+              (click)="onPeriodSelect(opt.value)"
+              class="px-3 py-1.5 text-sm font-medium rounded-md transition-all duration-200"
+              [class]="
+                selectedPeriod() === opt.value
+                  ? 'bg-primary text-white shadow-sm'
+                  : 'text-text-secondary hover:text-text-primary hover:bg-surface'
+              "
+            >
+              {{ opt.labelKey | translate }}
+            </button>
+          }
+        </div>
       </div>
 
       @if (loading()) {
         <app-loading-spinner />
       } @else {
         <!-- KPI Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <app-kpi-card
             [value]="formatCurrency(dashboard()?.kpis?.totalRevenue || 0)"
             [label]="'ANALYTICS.TOTAL_REVENUE' | translate"
-            iconBgClass="bg-emerald-50"
-            iconClass="text-emerald-600"
-            iconPath="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            iconBgClass="bg-success-light"
+            iconClass="text-success"
+            iconPath="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
             [variation]="dashboard()?.kpis?.revenueVariation"
           />
           <app-kpi-card
             [value]="formatCurrency(dashboard()?.kpis?.mrr || 0)"
             [label]="'ANALYTICS.MRR' | translate"
-            iconBgClass="bg-blue-50"
-            iconClass="text-blue-600"
-            iconPath="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+            iconBgClass="bg-info-light"
+            iconClass="text-info"
+            iconPath="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941"
             [variation]="dashboard()?.kpis?.mrrVariation"
           />
           <app-kpi-card
             [value]="(dashboard()?.kpis?.totalOrders || 0).toString()"
             [label]="'ANALYTICS.TOTAL_ORDERS' | translate"
-            iconBgClass="bg-purple-50"
-            iconClass="text-purple-600"
-            iconPath="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+            iconBgClass="bg-primary-light"
+            iconClass="text-primary"
+            iconPath="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25z"
             [variation]="dashboard()?.kpis?.ordersVariation"
           />
           <app-kpi-card
             [value]="formatCurrency(dashboard()?.kpis?.avgCartValue || 0)"
             [label]="'ANALYTICS.AVG_CART' | translate"
-            iconBgClass="bg-amber-50"
-            iconClass="text-amber-600"
-            iconPath="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"
+            iconBgClass="bg-warning-light"
+            iconClass="text-warning"
+            iconPath="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z"
             [variation]="dashboard()?.kpis?.avgCartVariation"
           />
         </div>
 
-        <!-- Sales Chart -->
-        <div class="bg-surface rounded-xl border border-border-light shadow-sm p-6 mb-6">
-          <div class="flex items-center justify-between mb-4">
-            <h3 class="text-lg font-semibold">{{ 'ANALYTICS.SALES_OVERVIEW' | translate }}</h3>
-            <div class="flex items-center gap-1">
+        <!-- Sales Overview Chart -->
+        <div class="rounded-xl border border-border-light bg-surface shadow-sm mb-6">
+          <div class="flex items-center justify-between px-6 py-4 border-b border-border-light">
+            <h3 class="text-lg font-semibold text-text-primary !m-0">
+              {{ 'ANALYTICS.SALES_OVERVIEW' | translate }}
+            </h3>
+            <div class="inline-flex items-center gap-0.5 rounded-lg bg-background p-1">
               <button
                 (click)="onGroupByChange('day')"
-                class="px-3 py-1.5 text-sm rounded-lg transition-colors"
+                class="px-3 py-1.5 text-sm font-medium rounded-md transition-all duration-200"
                 [class]="
                   groupBy() === 'day'
-                    ? 'bg-primary text-white'
-                    : 'bg-gray-100 text-text-secondary hover:bg-gray-200'
+                    ? 'bg-primary text-white shadow-sm'
+                    : 'text-text-secondary hover:text-text-primary hover:bg-surface'
                 "
               >
                 {{ 'ANALYTICS.DAY' | translate }}
               </button>
               <button
                 (click)="onGroupByChange('week')"
-                class="px-3 py-1.5 text-sm rounded-lg transition-colors"
+                class="px-3 py-1.5 text-sm font-medium rounded-md transition-all duration-200"
                 [class]="
                   groupBy() === 'week'
-                    ? 'bg-primary text-white'
-                    : 'bg-gray-100 text-text-secondary hover:bg-gray-200'
+                    ? 'bg-primary text-white shadow-sm'
+                    : 'text-text-secondary hover:text-text-primary hover:bg-surface'
                 "
               >
                 {{ 'ANALYTICS.WEEK' | translate }}
               </button>
               <button
                 (click)="onGroupByChange('month')"
-                class="px-3 py-1.5 text-sm rounded-lg transition-colors"
+                class="px-3 py-1.5 text-sm font-medium rounded-md transition-all duration-200"
                 [class]="
                   groupBy() === 'month'
-                    ? 'bg-primary text-white'
-                    : 'bg-gray-100 text-text-secondary hover:bg-gray-200'
+                    ? 'bg-primary text-white shadow-sm'
+                    : 'text-text-secondary hover:text-text-primary hover:bg-surface'
                 "
               >
                 {{ 'ANALYTICS.MONTH' | translate }}
               </button>
             </div>
           </div>
-          <canvas #salesChart height="100"></canvas>
+          <div class="p-6">
+            <canvas #salesChart height="100"></canvas>
+          </div>
         </div>
 
-        <!-- Charts Row: Category + Product Type -->
+        <!-- Revenue Breakdown: Category + Product Type -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           <!-- Sales by Category -->
-          <div class="bg-surface rounded-xl border border-border-light shadow-sm p-6">
-            <h3 class="text-lg font-semibold mb-4">
-              {{ 'ANALYTICS.SALES_BY_CATEGORY' | translate }}
-            </h3>
-            <div class="flex items-center gap-6">
-              <div class="w-48 h-48 flex-shrink-0">
-                <canvas #categoryChart></canvas>
-              </div>
-              <div class="flex-1 min-w-0">
-                <table class="w-full">
-                  <thead>
-                    <tr>
-                      <th
-                        class="text-left text-xs font-semibold text-text-secondary uppercase tracking-wider pb-2"
-                      >
-                        {{ 'ANALYTICS.CATEGORY' | translate }}
-                      </th>
-                      <th
-                        class="text-right text-xs font-semibold text-text-secondary uppercase tracking-wider pb-2"
-                      >
-                        {{ 'ANALYTICS.REVENUE' | translate }}
-                      </th>
-                      <th
-                        class="text-right text-xs font-semibold text-text-secondary uppercase tracking-wider pb-2"
-                      >
-                        {{ 'ANALYTICS.PERCENT' | translate }}
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
+          <div class="rounded-xl border border-border-light bg-surface shadow-sm">
+            <div class="px-6 py-4 border-b border-border-light">
+              <h3 class="text-lg font-semibold text-text-primary !m-0">
+                {{ 'ANALYTICS.SALES_BY_CATEGORY' | translate }}
+              </h3>
+            </div>
+            <div class="p-6">
+              <div class="flex items-center gap-6">
+                <div class="w-44 h-44 flex-shrink-0">
+                  <canvas #categoryChart></canvas>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="space-y-3">
                     @for (cat of categoryData(); track cat.category) {
-                      <tr class="border-t border-border-light">
-                        <td class="py-2 text-sm text-text-primary">
-                          <div class="flex items-center gap-2">
-                            <span
-                              class="w-2.5 h-2.5 rounded-full flex-shrink-0"
-                              [style.background-color]="chartColors[$index % chartColors.length]"
-                            ></span>
-                            {{ cat.category }}
-                          </div>
-                        </td>
-                        <td class="py-2 text-sm text-text-primary text-right">
-                          {{ formatCurrency(cat.revenue) }}
-                        </td>
-                        <td class="py-2 text-sm text-text-secondary text-right">
-                          {{ cat.percentage }}%
-                        </td>
-                      </tr>
+                      <div class="flex items-center justify-between gap-3">
+                        <div class="flex items-center gap-2 min-w-0">
+                          <span
+                            class="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                            [style.background-color]="chartColors[$index % chartColors.length]"
+                          ></span>
+                          <span class="text-sm text-text-primary truncate">{{ cat.category }}</span>
+                        </div>
+                        <div class="flex items-center gap-3 flex-shrink-0">
+                          <span class="text-sm font-medium text-text-primary tabular-nums">
+                            {{ formatCurrency(cat.revenue) }}
+                          </span>
+                          <span class="text-xs text-text-muted w-10 text-right tabular-nums">
+                            {{ cat.percentage }}%
+                          </span>
+                        </div>
+                      </div>
                     }
-                  </tbody>
-                </table>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
           <!-- Sales by Product Type -->
-          <div class="bg-surface rounded-xl border border-border-light shadow-sm p-6">
-            <h3 class="text-lg font-semibold mb-4">{{ 'ANALYTICS.SALES_BY_TYPE' | translate }}</h3>
-            <div class="flex items-center gap-6">
-              <div class="w-48 h-48 flex-shrink-0">
-                <canvas #productTypeChart></canvas>
-              </div>
-              <div class="flex-1 min-w-0">
-                <table class="w-full">
-                  <thead>
-                    <tr>
-                      <th
-                        class="text-left text-xs font-semibold text-text-secondary uppercase tracking-wider pb-2"
-                      >
-                        {{ 'ANALYTICS.TYPE' | translate }}
-                      </th>
-                      <th
-                        class="text-right text-xs font-semibold text-text-secondary uppercase tracking-wider pb-2"
-                      >
-                        {{ 'ANALYTICS.REVENUE' | translate }}
-                      </th>
-                      <th
-                        class="text-right text-xs font-semibold text-text-secondary uppercase tracking-wider pb-2"
-                      >
-                        {{ 'ANALYTICS.PERCENT' | translate }}
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
+          <div class="rounded-xl border border-border-light bg-surface shadow-sm">
+            <div class="px-6 py-4 border-b border-border-light">
+              <h3 class="text-lg font-semibold text-text-primary !m-0">
+                {{ 'ANALYTICS.SALES_BY_TYPE' | translate }}
+              </h3>
+            </div>
+            <div class="p-6">
+              <div class="flex items-center gap-6">
+                <div class="w-44 h-44 flex-shrink-0">
+                  <canvas #productTypeChart></canvas>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="space-y-3">
                     @for (pt of productTypeData(); track pt.productType) {
-                      <tr class="border-t border-border-light">
-                        <td class="py-2 text-sm text-text-primary">
-                          <div class="flex items-center gap-2">
-                            <span
-                              class="w-2.5 h-2.5 rounded-full flex-shrink-0"
-                              [style.background-color]="chartColors[$index % chartColors.length]"
-                            ></span>
-                            {{ pt.productType }}
-                          </div>
-                        </td>
-                        <td class="py-2 text-sm text-text-primary text-right">
-                          {{ formatCurrency(pt.revenue) }}
-                        </td>
-                        <td class="py-2 text-sm text-text-secondary text-right">
-                          {{ pt.percentage }}%
-                        </td>
-                      </tr>
+                      <div class="flex items-center justify-between gap-3">
+                        <div class="flex items-center gap-2 min-w-0">
+                          <span
+                            class="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                            [style.background-color]="chartColors[$index % chartColors.length]"
+                          ></span>
+                          <span class="text-sm text-text-primary truncate">{{
+                            pt.productType
+                          }}</span>
+                        </div>
+                        <div class="flex items-center gap-3 flex-shrink-0">
+                          <span class="text-sm font-medium text-text-primary tabular-nums">
+                            {{ formatCurrency(pt.revenue) }}
+                          </span>
+                          <span class="text-xs text-text-muted w-10 text-right tabular-nums">
+                            {{ pt.percentage }}%
+                          </span>
+                        </div>
+                      </div>
                     }
-                  </tbody>
-                </table>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
         <!-- MRR Evolution -->
-        <div class="bg-surface rounded-xl border border-border-light shadow-sm p-6 mb-6">
-          <h3 class="text-lg font-semibold mb-4">{{ 'ANALYTICS.MRR_EVOLUTION' | translate }}</h3>
-          <canvas #mrrChart height="80"></canvas>
+        <div class="rounded-xl border border-border-light bg-surface shadow-sm mb-6">
+          <div class="flex items-center justify-between px-6 py-4 border-b border-border-light">
+            <h3 class="text-lg font-semibold text-text-primary !m-0">
+              {{ 'ANALYTICS.MRR_EVOLUTION' | translate }}
+            </h3>
+            <span class="text-sm text-primary font-medium">
+              {{ 'ANALYTICS.MONTHLY_TREND' | translate }}
+            </span>
+          </div>
+          <div class="p-6">
+            <canvas #mrrChart height="80"></canvas>
+          </div>
         </div>
 
         <!-- Stock Status -->
         @if (stockItems().length > 0) {
-          <div class="bg-surface rounded-xl border border-border-light shadow-sm p-6 mb-6">
-            <h3 class="text-lg font-semibold mb-4">{{ 'ANALYTICS.STOCK_STATUS' | translate }}</h3>
+          <div class="rounded-xl border border-border-light bg-surface shadow-sm mb-6">
+            <div class="px-6 py-4 border-b border-border-light">
+              <h3 class="text-lg font-semibold text-text-primary !m-0">
+                {{ 'ANALYTICS.STOCK_STATUS' | translate }}
+              </h3>
+            </div>
             <div class="overflow-x-auto">
               <table class="w-full">
                 <thead>
                   <tr class="border-b border-border-light">
                     <th
-                      class="text-left text-xs font-semibold text-text-secondary uppercase tracking-wider pb-3 pr-4"
+                      class="px-6 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-text-muted"
                     >
                       {{ 'ANALYTICS.PRODUCT_NAME' | translate }}
                     </th>
                     <th
-                      class="text-left text-xs font-semibold text-text-secondary uppercase tracking-wider pb-3 pr-4"
+                      class="px-6 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-text-muted"
                     >
                       {{ 'ANALYTICS.SKU' | translate }}
                     </th>
                     <th
-                      class="text-right text-xs font-semibold text-text-secondary uppercase tracking-wider pb-3 pr-4"
+                      class="px-6 py-3 text-right text-[11px] font-semibold uppercase tracking-wider text-text-muted"
                     >
                       {{ 'ANALYTICS.CURRENT_STOCK' | translate }}
                     </th>
                     <th
-                      class="text-right text-xs font-semibold text-text-secondary uppercase tracking-wider pb-3 pr-4"
+                      class="px-6 py-3 text-right text-[11px] font-semibold uppercase tracking-wider text-text-muted"
                     >
                       {{ 'ANALYTICS.ALERT_THRESHOLD' | translate }}
                     </th>
                     <th
-                      class="text-left text-xs font-semibold text-text-secondary uppercase tracking-wider pb-3"
+                      class="px-6 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-text-muted"
                     >
                       {{ 'ANALYTICS.STATUS' | translate }}
                     </th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody class="divide-y divide-border-light">
                   @for (item of stockItems(); track item.productId) {
-                    <tr class="border-b border-border-light last:border-b-0">
-                      <td class="py-3 pr-4 text-sm text-text-primary font-medium">
+                    <tr class="hover:bg-background transition-colors">
+                      <td class="px-6 py-4 text-sm font-medium text-text-primary">
                         {{ item.productName }}
                       </td>
-                      <td class="py-3 pr-4 text-sm text-text-secondary font-mono">
+                      <td class="px-6 py-4 text-sm text-text-secondary font-mono">
                         {{ item.sku }}
                       </td>
-                      <td class="py-3 pr-4 text-sm text-text-primary text-right">
+                      <td class="px-6 py-4 text-sm text-text-primary text-right tabular-nums">
                         {{ item.currentStock }}
                       </td>
-                      <td class="py-3 pr-4 text-sm text-text-secondary text-right">
+                      <td class="px-6 py-4 text-sm text-text-secondary text-right tabular-nums">
                         {{ item.alertThreshold }}
                       </td>
-                      <td class="py-3">
+                      <td class="px-6 py-4">
                         <span
                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
                           [class]="getStockStatusClass(item.status)"
@@ -333,52 +336,63 @@ Chart.register(...registerables);
         }
 
         <!-- Export Section -->
-        <div class="bg-surface rounded-xl border border-border-light shadow-sm p-6">
-          <h3 class="text-lg font-semibold mb-4">{{ 'ANALYTICS.EXPORT_DATA' | translate }}</h3>
-          <div class="flex flex-wrap items-end gap-4">
-            <div class="flex flex-col gap-1">
-              <label class="text-xs font-medium text-text-secondary">{{
-                'ANALYTICS.FROM' | translate
-              }}</label>
-              <input
-                type="date"
-                class="px-3 py-2 border border-border rounded-lg text-sm bg-white"
-                [value]="exportDateFrom()"
-                (change)="onExportDateFromChange($event)"
-              />
+        <div class="rounded-xl border border-border-light bg-surface shadow-sm">
+          <div class="px-6 py-4 border-b border-border-light">
+            <h3 class="text-lg font-semibold text-text-primary !m-0">
+              {{ 'ANALYTICS.EXPORT_DATA' | translate }}
+            </h3>
+          </div>
+          <div class="p-6">
+            <div class="flex flex-wrap items-end gap-4">
+              <div class="flex flex-col gap-1.5">
+                <label class="text-xs font-medium text-text-secondary">
+                  {{ 'ANALYTICS.FROM' | translate }}
+                </label>
+                <input
+                  type="date"
+                  class="px-3 py-2 border border-border rounded-lg text-sm bg-input-bg focus:border-border-focus focus:outline-none transition-colors"
+                  [value]="exportDateFrom()"
+                  (change)="onExportDateFromChange($event)"
+                />
+              </div>
+              <div class="flex flex-col gap-1.5">
+                <label class="text-xs font-medium text-text-secondary">
+                  {{ 'ANALYTICS.TO' | translate }}
+                </label>
+                <input
+                  type="date"
+                  class="px-3 py-2 border border-border rounded-lg text-sm bg-input-bg focus:border-border-focus focus:outline-none transition-colors"
+                  [value]="exportDateTo()"
+                  (change)="onExportDateToChange($event)"
+                />
+              </div>
+              <div class="flex items-center gap-2 ml-auto">
+                <button
+                  (click)="exportData('sales')"
+                  [disabled]="exporting()"
+                  class="inline-flex items-center gap-2 bg-primary text-white hover:bg-primary-hover rounded-lg px-4 py-2 text-sm font-medium transition-colors disabled:opacity-50"
+                >
+                  <ng-icon name="phosphorDownloadSimple" size="16" />
+                  {{ 'ANALYTICS.EXPORT_SALES' | translate }}
+                </button>
+                <button
+                  (click)="exportData('orders')"
+                  [disabled]="exporting()"
+                  class="inline-flex items-center gap-2 border border-border bg-surface text-text-primary hover:bg-background rounded-lg px-4 py-2 text-sm font-medium transition-colors disabled:opacity-50"
+                >
+                  <ng-icon name="phosphorDownloadSimple" size="16" />
+                  {{ 'ANALYTICS.EXPORT_ORDERS' | translate }}
+                </button>
+                <button
+                  (click)="exportData('subscriptions')"
+                  [disabled]="exporting()"
+                  class="inline-flex items-center gap-2 border border-border bg-surface text-text-primary hover:bg-background rounded-lg px-4 py-2 text-sm font-medium transition-colors disabled:opacity-50"
+                >
+                  <ng-icon name="phosphorDownloadSimple" size="16" />
+                  {{ 'ANALYTICS.EXPORT_SUBSCRIPTIONS' | translate }}
+                </button>
+              </div>
             </div>
-            <div class="flex flex-col gap-1">
-              <label class="text-xs font-medium text-text-secondary">{{
-                'ANALYTICS.TO' | translate
-              }}</label>
-              <input
-                type="date"
-                class="px-3 py-2 border border-border rounded-lg text-sm bg-white"
-                [value]="exportDateTo()"
-                (change)="onExportDateToChange($event)"
-              />
-            </div>
-            <button
-              (click)="exportData('sales')"
-              [disabled]="exporting()"
-              class="bg-primary text-white hover:bg-primary-hover rounded-lg px-4 py-2 text-sm font-medium transition-colors disabled:opacity-50"
-            >
-              {{ 'ANALYTICS.EXPORT_SALES' | translate }}
-            </button>
-            <button
-              (click)="exportData('orders')"
-              [disabled]="exporting()"
-              class="bg-primary text-white hover:bg-primary-hover rounded-lg px-4 py-2 text-sm font-medium transition-colors disabled:opacity-50"
-            >
-              {{ 'ANALYTICS.EXPORT_ORDERS' | translate }}
-            </button>
-            <button
-              (click)="exportData('subscriptions')"
-              [disabled]="exporting()"
-              class="bg-primary text-white hover:bg-primary-hover rounded-lg px-4 py-2 text-sm font-medium transition-colors disabled:opacity-50"
-            >
-              {{ 'ANALYTICS.EXPORT_SUBSCRIPTIONS' | translate }}
-            </button>
           </div>
         </div>
       }
@@ -426,11 +440,24 @@ export class AnalyticsComponent implements OnInit, AfterViewInit {
     '#84CC16',
   ];
 
+  readonly periodOptions = [
+    { value: 'today', labelKey: 'ANALYTICS.TODAY' },
+    { value: 'week', labelKey: 'ANALYTICS.THIS_WEEK' },
+    { value: 'month', labelKey: 'ANALYTICS.THIS_MONTH' },
+    { value: 'quarter', labelKey: 'ANALYTICS.THIS_QUARTER' },
+    { value: 'year', labelKey: 'ANALYTICS.THIS_YEAR' },
+  ];
+
   ngOnInit(): void {
     this.loadData();
   }
 
   ngAfterViewInit(): void {}
+
+  onPeriodSelect(value: string): void {
+    this.selectedPeriod.set(value);
+    this.loadData();
+  }
 
   onPeriodChange(event: Event): void {
     const value = (event.target as HTMLSelectElement).value;
@@ -460,7 +487,6 @@ export class AnalyticsComponent implements OnInit, AfterViewInit {
       stock: this.analyticsService.getStockStatus().pipe(catchError(() => of(null))),
     }).subscribe({
       next: (results) => {
-        // Map dashboard API data to view model
         const apiDashboard = results.dashboard as DashboardData | null;
         if (apiDashboard) {
           this.dashboard.set({
@@ -479,7 +505,6 @@ export class AnalyticsComponent implements OnInit, AfterViewInit {
         this.categoryData.set(results.category?.data || []);
         this.productTypeData.set(results.productType?.data || []);
         this.mrrHistory.set(results.mrr?.history || []);
-        // Stock response is { summary, products }
         const stockRes = results.stock as StockStatusResponse | null;
         this.stockItems.set(stockRes?.products || []);
         this.loading.set(false);
