@@ -139,7 +139,7 @@ interface NavSection {
       </div>
 
       <!-- Page content -->
-      <div class="p-8 pt-[72px]">
+      <div class="p-8 pt-[96px]">
         <router-outlet />
       </div>
     </main>
