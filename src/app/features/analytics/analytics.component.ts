@@ -18,10 +18,10 @@ import {
   DashboardKPIs,
   StockStatusResponse,
   SalesDataPoint,
-  SalesByCategoryData,
   SalesByProductTypeData,
   MrrDataPoint,
   StockItem,
+  TopProductData,
 } from '../../core/models/analytics.model';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
@@ -191,11 +191,11 @@ Chart.defaults.plugins.tooltip.usePointStyle = true;
             </div>
           </div>
 
-          <!-- Category Doughnut (1/3) -->
+          <!-- Top Products Doughnut (1/3) -->
           <div class="rounded-xl border border-border-light bg-surface shadow-sm">
             <div class="px-4 sm:px-5 py-3 sm:py-4 border-b border-border-light">
               <h3 class="text-sm font-semibold text-text-primary !m-0">
-                {{ 'ANALYTICS.SALES_BY_CATEGORY' | translate }}
+                {{ 'ANALYTICS.TOP_PRODUCTS' | translate }}
               </h3>
             </div>
             <div class="p-4 sm:p-5 flex flex-col items-center">
@@ -208,17 +208,19 @@ Chart.defaults.plugins.tooltip.usePointStyle = true;
                 ></canvas>
               </div>
               <div class="w-full mt-4 space-y-2">
-                @for (cat of categoryData(); track cat.category) {
+                @for (product of topProductsData(); track product.productName) {
                   <div class="flex items-center justify-between">
                     <div class="flex items-center gap-2 min-w-0">
                       <span
                         class="w-2 h-2 rounded-full flex-shrink-0"
                         [style.background-color]="chartColors[$index % chartColors.length]"
                       ></span>
-                      <span class="text-xs text-text-primary truncate">{{ cat.category }}</span>
+                      <span class="text-xs text-text-primary truncate">{{
+                        product.productName
+                      }}</span>
                     </div>
                     <span class="text-xs font-medium text-text-primary tabular-nums">
-                      {{ cat.percentage }}%
+                      {{ product.percentage }}%
                     </span>
                   </div>
                 }
@@ -434,7 +436,7 @@ export class AnalyticsComponent implements OnInit, AfterViewInit {
 
   dashboard = signal<AnalyticsViewModel | null>(null);
   salesData = signal<SalesDataPoint[]>([]);
-  categoryData = signal<SalesByCategoryData[]>([]);
+  topProductsData = signal<TopProductData[]>([]);
   productTypeData = signal<SalesByProductTypeData[]>([]);
   mrrHistory = signal<MrrDataPoint[]>([]);
   stockItems = signal<StockItem[]>([]);
@@ -465,92 +467,6 @@ export class AnalyticsComponent implements OnInit, AfterViewInit {
     { value: 'month', labelKey: 'ANALYTICS.THIS_MONTH' },
     { value: 'quarter', labelKey: 'ANALYTICS.THIS_QUARTER' },
     { value: 'year', labelKey: 'ANALYTICS.THIS_YEAR' },
-  ];
-
-  // Mock data for development preview
-  private readonly mockKpis: AnalyticsKPIs = {
-    totalRevenue: 112600,
-    revenueVariation: 12.5,
-    mrr: 13500,
-    mrrVariation: 11.6,
-    totalOrders: 315,
-    ordersVariation: 8.3,
-    avgCartValue: 357.46,
-    avgCartVariation: 4.2,
-  };
-
-  private readonly mockSalesData: SalesDataPoint[] = [
-    { period: 'Sep', revenue: 12400, orderCount: 45 },
-    { period: 'Oct', revenue: 18600, orderCount: 62 },
-    { period: 'Nov', revenue: 15200, orderCount: 51 },
-    { period: 'Dec', revenue: 22800, orderCount: 78 },
-    { period: 'Jan', revenue: 19500, orderCount: 67 },
-    { period: 'Feb', revenue: 24100, orderCount: 82 },
-  ];
-
-  private readonly mockCategoryData: SalesByCategoryData[] = [
-    { category: 'SOC', revenue: 45600, orderCount: 120, percentage: 38 },
-    { category: 'EDR / XDR', revenue: 32400, orderCount: 85, percentage: 27 },
-    { category: 'Firewall', revenue: 24000, orderCount: 63, percentage: 20 },
-    { category: 'SIEM', revenue: 18000, orderCount: 47, percentage: 15 },
-  ];
-
-  private readonly mockProductTypeData: SalesByProductTypeData[] = [
-    { productType: 'SaaS', revenue: 78000, orderCount: 210, percentage: 65 },
-    { productType: 'Physical', revenue: 30000, orderCount: 78, percentage: 25 },
-    { productType: 'License', revenue: 12000, orderCount: 27, percentage: 10 },
-  ];
-
-  private readonly mockMrrData: MrrDataPoint[] = [
-    { period: 'Sep', mrr: 8500, growth: 0 },
-    { period: 'Oct', mrr: 9200, growth: 8.2 },
-    { period: 'Nov', mrr: 9800, growth: 6.5 },
-    { period: 'Dec', mrr: 11200, growth: 14.3 },
-    { period: 'Jan', mrr: 12100, growth: 8.0 },
-    { period: 'Feb', mrr: 13500, growth: 11.6 },
-  ];
-
-  private readonly mockStockItems: StockItem[] = [
-    {
-      productId: '1',
-      productName: 'FortiGate 60F',
-      sku: 'FG-60F-BDL',
-      currentStock: 45,
-      alertThreshold: 10,
-      status: 'ok',
-    },
-    {
-      productId: '2',
-      productName: 'SentinelOne Agent',
-      sku: 'S1-AGT-100',
-      currentStock: 8,
-      alertThreshold: 15,
-      status: 'low',
-    },
-    {
-      productId: '3',
-      productName: 'CrowdStrike Falcon',
-      sku: 'CS-FLC-ENT',
-      currentStock: 2,
-      alertThreshold: 5,
-      status: 'critical',
-    },
-    {
-      productId: '4',
-      productName: 'Palo Alto PA-220',
-      sku: 'PA-220-BDL',
-      currentStock: 0,
-      alertThreshold: 5,
-      status: 'out_of_stock',
-    },
-    {
-      productId: '5',
-      productName: 'Cisco Meraki MX67',
-      sku: 'MX67-HW',
-      currentStock: 32,
-      alertThreshold: 10,
-      status: 'ok',
-    },
   ];
 
   ngOnInit(): void {
@@ -584,7 +500,7 @@ export class AnalyticsComponent implements OnInit, AfterViewInit {
       sales: this.analyticsService
         .getSales(period, this.groupBy())
         .pipe(catchError(() => of(null))),
-      category: this.analyticsService.getSalesByCategory(period).pipe(catchError(() => of(null))),
+      topProducts: this.analyticsService.getTopProducts(period).pipe(catchError(() => of(null))),
       productType: this.analyticsService
         .getSalesByProductType(period)
         .pipe(catchError(() => of(null))),
@@ -603,42 +519,25 @@ export class AnalyticsComponent implements OnInit, AfterViewInit {
             ordersVariation: apiDashboard.orders?.changePercent,
             avgCartValue: apiDashboard.averageOrderValue ?? 0,
           };
-          const allZero = kpis.totalRevenue === 0 && kpis.mrr === 0 && kpis.totalOrders === 0;
-          this.dashboard.set({ kpis: allZero ? this.mockKpis : kpis });
+          this.dashboard.set({ kpis });
         } else {
-          this.dashboard.set({ kpis: this.mockKpis });
+          this.dashboard.set(null);
         }
 
-        const sales = results.sales?.sales || [];
-        this.salesData.set(sales.length ? sales : this.mockSalesData);
-
-        const cats = results.category?.data || [];
-        this.categoryData.set(cats.length ? cats : this.mockCategoryData);
-
-        const types = results.productType?.data || [];
-        this.productTypeData.set(types.length ? types : this.mockProductTypeData);
-
-        const mrr = results.mrr?.history || [];
-        this.mrrHistory.set(mrr.length ? mrr : this.mockMrrData);
+        this.salesData.set(results.sales?.sales || []);
+        this.topProductsData.set(this.aggregateTopProducts(results.topProducts?.data || []));
+        this.productTypeData.set(results.productType?.data || []);
+        this.mrrHistory.set(results.mrr?.history || []);
 
         const stockRes = results.stock as StockStatusResponse | null;
-        const stock = stockRes?.products || [];
-        this.stockItems.set(stock.length ? stock : this.mockStockItems);
+        this.stockItems.set(stockRes?.products || []);
 
         this.loading.set(false);
         setTimeout(() => this.renderAllCharts(), 100);
       },
       error: () => {
-        // Use mock data on full failure
-        this.dashboard.set({ kpis: this.mockKpis });
-        this.salesData.set(this.mockSalesData);
-        this.categoryData.set(this.mockCategoryData);
-        this.productTypeData.set(this.mockProductTypeData);
-        this.mrrHistory.set(this.mockMrrData);
-        this.stockItems.set(this.mockStockItems);
         this.notifications.error(this.translate.instant('ANALYTICS.LOAD_FAILED'));
         this.loading.set(false);
-        setTimeout(() => this.renderAllCharts(), 100);
       },
     });
   }
@@ -647,15 +546,33 @@ export class AnalyticsComponent implements OnInit, AfterViewInit {
     const period = this.selectedPeriod();
     this.analyticsService.getSales(period, this.groupBy()).subscribe({
       next: (result) => {
-        const sales = result?.sales || [];
-        this.salesData.set(sales.length ? sales : this.mockSalesData);
+        this.salesData.set(result?.sales || []);
         setTimeout(() => this.renderSalesChart(), 100);
       },
       error: () => {
-        this.salesData.set(this.mockSalesData);
         setTimeout(() => this.renderSalesChart(), 100);
       },
     });
+  }
+
+  private aggregateTopProducts(products: TopProductData[]): TopProductData[] {
+    if (products.length <= 4) return products;
+
+    const top3 = products.slice(0, 3);
+    const rest = products.slice(3);
+    const otherRevenue = rest.reduce((sum, p) => sum + p.revenue, 0);
+    const otherOrders = rest.reduce((sum, p) => sum + p.orderCount, 0);
+    const otherPercentage = rest.reduce((sum, p) => sum + p.percentage, 0);
+
+    return [
+      ...top3,
+      {
+        productName: this.translate.instant('ANALYTICS.OTHER'),
+        revenue: otherRevenue,
+        orderCount: otherOrders,
+        percentage: otherPercentage,
+      },
+    ];
   }
 
   renderAllCharts(): void {
@@ -714,7 +631,7 @@ export class AnalyticsComponent implements OnInit, AfterViewInit {
   }
 
   renderCategoryChart(): void {
-    const data = this.categoryData();
+    const data = this.topProductsData();
     if (!data.length || !this.categoryChartRef) return;
 
     if (this.categoryChart) this.categoryChart.destroy();
@@ -722,7 +639,7 @@ export class AnalyticsComponent implements OnInit, AfterViewInit {
     this.categoryChart = new Chart(this.categoryChartRef.nativeElement, {
       type: 'doughnut',
       data: {
-        labels: data.map((d) => d.category),
+        labels: data.map((d) => d.productName),
         datasets: [
           {
             data: data.map((d) => d.revenue),

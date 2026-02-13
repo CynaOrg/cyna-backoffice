@@ -316,7 +316,9 @@
     "EXPORT_SUCCESS": "{{type}} data exported successfully",
     "EXPORT_FAILED": "Failed to export {{type}} data",
     "SELECT_DATE_RANGE": "Please select a date range for export",
-    "MONTHLY_TREND": "Monthly trend"
+    "MONTHLY_TREND": "Monthly trend",
+    "TOP_PRODUCTS": "Top SaaS Products",
+    "OTHER": "Other"
   },
   "CONTENT": {
     "TITLE": "Content Management",
