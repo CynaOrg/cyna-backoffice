@@ -20,11 +20,7 @@ import { AdminAuthService } from '../../../core/auth/services/admin-auth.service
     <div class="min-h-screen bg-background">
       <!-- Logo top-left -->
       <div class="px-6 py-5">
-        <img
-          src="assets/cyna-logo-baseline-dark.png"
-          alt="CYNA"
-          class="h-10 w-auto object-contain"
-        />
+        <img src="assets/cyna-backoffice.svg" alt="CYNA" class="h-10 w-auto object-contain" />
       </div>
 
       <!-- Content centered -->
