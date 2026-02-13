@@ -10,6 +10,7 @@ import {
   SalesByCategoryData,
   SalesByProductTypeData,
   MrrDataPoint,
+  TopProductData,
 } from '../models/analytics.model';
 
 @Injectable({ providedIn: 'root' })
@@ -44,6 +45,11 @@ export class AnalyticsService {
       `${this.basePath}/sales-by-product-type`,
       params,
     );
+  }
+
+  getTopProducts(period?: string): Observable<{ data: TopProductData[] }> {
+    const params = period ? { period } : undefined;
+    return this.api.get<{ data: TopProductData[] }>(`${this.basePath}/top-products`, params);
   }
 
   getAverageCart(period?: string): Observable<{ avgCart: number; history: SalesDataPoint[] }> {
