@@ -32,11 +32,7 @@ interface NavSection {
       <!-- Logo -->
       <div class="flex h-20 items-center px-6">
         <a routerLink="/dashboard" class="no-underline">
-          <img
-            src="assets/cyna-logo-baseline-dark.png"
-            alt="CYNA"
-            class="h-8 w-auto object-contain"
-          />
+          <img src="assets/cyna-backoffice.svg" alt="CYNA" class="h-8 w-auto object-contain" />
         </a>
       </div>
 
