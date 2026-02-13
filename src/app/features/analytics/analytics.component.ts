@@ -200,7 +200,12 @@ Chart.defaults.plugins.tooltip.usePointStyle = true;
             </div>
             <div class="p-4 sm:p-5 flex flex-col items-center">
               <div class="w-40 h-40">
-                <canvas #categoryChart></canvas>
+                <canvas
+                  #categoryChart
+                  class="block w-full h-full"
+                  width="160"
+                  height="160"
+                ></canvas>
               </div>
               <div class="w-full mt-4 space-y-2">
                 @for (cat of categoryData(); track cat.category) {
@@ -250,7 +255,12 @@ Chart.defaults.plugins.tooltip.usePointStyle = true;
             </div>
             <div class="p-4 sm:p-5 flex flex-col items-center">
               <div class="w-40 h-40">
-                <canvas #productTypeChart></canvas>
+                <canvas
+                  #productTypeChart
+                  class="block w-full h-full"
+                  width="160"
+                  height="160"
+                ></canvas>
               </div>
               <div class="w-full mt-4 space-y-2">
                 @for (pt of productTypeData(); track pt.productType) {
