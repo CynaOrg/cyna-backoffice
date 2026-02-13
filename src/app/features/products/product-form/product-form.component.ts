@@ -791,11 +791,19 @@ export class ProductFormComponent implements OnInit {
           ),
         )
         .subscribe({
-          next: () => {
+          next: (confirmedImage) => {
+            const p = this.product();
+            if (p && confirmedImage) {
+              this.product.set({
+                ...p,
+                images: [...p.images, confirmedImage],
+              });
+            }
             completed++;
             if (completed === validFiles.length) {
               this.uploadingImages.set(false);
               this.uploadProgress.set(null);
+              // Final reload to ensure full consistency with backend
               this.reloadProductImages();
             }
           },
