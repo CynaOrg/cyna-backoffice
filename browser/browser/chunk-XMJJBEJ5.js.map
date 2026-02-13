@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["src/app/core/services/notification.service.ts"],
-  "sourcesContent": ["import { Injectable, signal } from '@angular/core';\n\nexport interface Toast {\n  id: number;\n  message: string;\n  type: 'success' | 'error' | 'warning' | 'info';\n  duration: number;\n}\n\n@Injectable({ providedIn: 'root' })\nexport class NotificationService {\n  readonly toasts = signal<Toast[]>([]);\n\n  success(_message: string, _duration = 3000) {}\n  error(_message: string, _duration = 5000) {}\n  warning(_message: string, _duration = 4000) {}\n  info(_message: string, _duration = 3000) {}\n  dismiss(_id: number) {}\n}\n"],
-  "mappings": ";;;;;;;;AAUM,IAAO,sBAAP,MAAO,qBAAmB;EACrB,SAAS,OAAgB,CAAA,GAAE,GAAA,YAAA,CAAA,EAAA,WAAA,SAAA,CAAA,IAAA,CAAA,CAAA;EAEpC,QAAQ,UAAkB,YAAY,KAAI;EAAG;EAC7C,MAAM,UAAkB,YAAY,KAAI;EAAG;EAC3C,QAAQ,UAAkB,YAAY,KAAI;EAAG;EAC7C,KAAK,UAAkB,YAAY,KAAI;EAAG;EAC1C,QAAQ,KAAW;EAAG;;qCAPX,sBAAmB;EAAA;4EAAnB,sBAAmB,SAAnB,qBAAmB,WAAA,YADN,OAAM,CAAA;;;sEACnB,qBAAmB,CAAA;UAD/B;WAAW,EAAE,YAAY,OAAM,CAAE;;;",
-  "names": []
-}
