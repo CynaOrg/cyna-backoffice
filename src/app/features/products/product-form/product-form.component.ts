@@ -1,249 +1,556 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { ReactiveFormsModule, FormBuilder, Validators, FormArray, FormGroup } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, FormArray, FormGroup, Validators } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ApiService } from '../../../core/services/api.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { Product, Category } from '../../../core/models/product.model';
-import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 
 @Component({
   selector: 'app-product-form',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink, TranslateModule, LoadingSpinnerComponent],
+  imports: [ReactiveFormsModule, RouterLink, TranslateModule],
   template: `
-    <div>
-      <div class="flex items-center gap-3 mb-6">
-        <a [routerLink]="basePath" class="p-2 rounded-lg hover:bg-gray-100 text-text-muted">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M15 19l-7-7 7-7"
-            />
-          </svg>
-        </a>
-        <h1 class="text-2xl font-bold text-text-primary">
-          {{ isEdit() ? ('PRODUCTS.EDIT' | translate) : (newTitleKey | translate) }}
-        </h1>
+    @if (loadingProduct()) {
+      <!-- Skeleton loading -->
+      <div style="animation: fadeInUp 0.45s ease-out both">
+        <div class="flex items-center justify-between mb-6">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-full animate-pulse bg-gray-100"></div>
+            <div class="flex flex-col gap-2">
+              <div class="h-6 w-48 animate-pulse rounded bg-gray-100"></div>
+              <div class="h-4 w-64 animate-pulse rounded bg-gray-100"></div>
+            </div>
+          </div>
+          <div class="flex gap-2">
+            <div class="h-9 w-20 animate-pulse rounded-lg bg-gray-100"></div>
+            <div class="h-9 w-28 animate-pulse rounded-lg bg-gray-100"></div>
+          </div>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+          <div class="lg:col-span-2 space-y-5">
+            @for (i of [0, 1, 2]; track i) {
+              <div class="rounded-xl border border-border-light bg-surface p-6">
+                <div class="h-5 w-32 animate-pulse rounded bg-gray-100 mb-5"></div>
+                <div class="grid grid-cols-2 gap-4">
+                  <div class="h-10 animate-pulse rounded-lg bg-gray-100"></div>
+                  <div class="h-10 animate-pulse rounded-lg bg-gray-100"></div>
+                </div>
+              </div>
+            }
+          </div>
+          <div class="space-y-5">
+            <div class="rounded-xl border border-border-light bg-surface p-6">
+              <div class="h-5 w-28 animate-pulse rounded bg-gray-100 mb-4"></div>
+              <div class="space-y-3">
+                <div class="h-10 animate-pulse rounded-lg bg-gray-100"></div>
+                <div class="h-10 animate-pulse rounded-lg bg-gray-100"></div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-
-      @if (loadingProduct()) {
-        <app-loading-spinner />
-      } @else {
-        <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-6">
-          <!-- Basic Info -->
-          <div class="bg-surface rounded-xl border border-border-light shadow-sm p-6">
-            <h3 class="text-lg font-semibold mb-4">{{ 'PRODUCTS.BASIC_INFO' | translate }}</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label class="block text-sm font-medium text-text-secondary mb-1.5">{{
-                  'PRODUCTS.NAME_FR' | translate
-                }}</label>
-                <input
-                  formControlName="nameFr"
-                  class="w-full px-4 py-2.5 rounded-lg border border-border bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+    } @else {
+      <div style="animation: fadeInUp 0.45s ease-out both">
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-6">
+          <div class="flex items-center gap-3">
+            <a
+              [routerLink]="isEdit() ? [basePath, productId] : basePath"
+              class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-background transition-colors hover:bg-primary-light"
+              style="text-decoration: none; color: #0a0a0a; border: none"
+            >
+              <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="1.5"
+                  d="M15.75 19.5L8.25 12l7.5-7.5"
                 />
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-text-secondary mb-1.5">{{
-                  'PRODUCTS.NAME_EN' | translate
-                }}</label>
-                <input
-                  formControlName="nameEn"
-                  class="w-full px-4 py-2.5 rounded-lg border border-border bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                />
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-text-secondary mb-1.5">{{
-                  'PRODUCTS.SLUG' | translate
-                }}</label>
-                <input
-                  formControlName="slug"
-                  class="w-full px-4 py-2.5 rounded-lg border border-border bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                />
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-text-secondary mb-1.5">{{
-                  'PRODUCTS.SKU' | translate
-                }}</label>
-                <input
-                  formControlName="sku"
-                  class="w-full px-4 py-2.5 rounded-lg border border-border bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                />
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-text-secondary mb-1.5">{{
-                  'PRODUCTS.CATEGORY' | translate
-                }}</label>
-                <select
-                  formControlName="categoryId"
-                  class="w-full px-4 py-2.5 rounded-lg border border-border bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                >
-                  <option value="">{{ 'PRODUCTS.SELECT_CATEGORY' | translate }}</option>
-                  @for (cat of categories(); track cat.id) {
-                    <option [value]="cat.id">{{ cat.nameFr }}</option>
-                  }
-                </select>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-text-secondary mb-1.5">{{
-                  'PRODUCTS.PRODUCT_TYPE' | translate
-                }}</label>
-                <select
-                  formControlName="productType"
-                  class="w-full px-4 py-2.5 rounded-lg border border-border bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                >
-                  <option value="SAAS">{{ 'PRODUCTS.SAAS' | translate }}</option>
-                  <option value="PHYSICAL">{{ 'PRODUCTS.PHYSICAL' | translate }}</option>
-                  <option value="LICENSE">{{ 'PRODUCTS.LICENSE' | translate }}</option>
-                </select>
-              </div>
+              </svg>
+            </a>
+            <div class="min-w-0">
+              <h1 class="text-xl font-bold text-text-primary truncate !m-0">
+                {{ isEdit() ? ('PRODUCTS.EDIT' | translate) : (newTitleKey | translate) }}
+              </h1>
+              @if (isEdit()) {
+                <div class="flex items-center gap-1.5 mt-0.5">
+                  <span class="text-xs text-text-muted font-mono">{{
+                    form.get('sku')?.value
+                  }}</span>
+                  <span class="text-text-muted/30 text-xs">|</span>
+                  <span class="text-xs text-text-muted">{{ form.get('productType')?.value }}</span>
+                </div>
+              }
             </div>
           </div>
-
-          <!-- Description -->
-          <div class="bg-surface rounded-xl border border-border-light shadow-sm p-6">
-            <h3 class="text-lg font-semibold mb-4">{{ 'PRODUCTS.DESCRIPTION' | translate }}</h3>
-            <div class="space-y-4">
-              <div>
-                <label class="block text-sm font-medium text-text-secondary mb-1.5">{{
-                  'PRODUCTS.DESCRIPTION_FR' | translate
-                }}</label>
-                <textarea
-                  formControlName="descriptionFr"
-                  rows="4"
-                  class="w-full px-4 py-2.5 rounded-lg border border-border bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none"
-                ></textarea>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-text-secondary mb-1.5">{{
-                  'PRODUCTS.DESCRIPTION_EN' | translate
-                }}</label>
-                <textarea
-                  formControlName="descriptionEn"
-                  rows="4"
-                  class="w-full px-4 py-2.5 rounded-lg border border-border bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none"
-                ></textarea>
-              </div>
-            </div>
-          </div>
-
-          <!-- Pricing -->
-          <div class="bg-surface rounded-xl border border-border-light shadow-sm p-6">
-            <h3 class="text-lg font-semibold mb-4">{{ 'PRODUCTS.PRICING' | translate }}</h3>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-              @if (form.get('productType')?.value === 'SAAS') {
-                <div>
-                  <label class="block text-sm font-medium text-text-secondary mb-1.5">{{
-                    'PRODUCTS.MONTHLY_PRICE' | translate
-                  }}</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    formControlName="priceMonthly"
-                    class="w-full px-4 py-2.5 rounded-lg border border-border bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+          <div class="flex items-center gap-2">
+            <a
+              [routerLink]="isEdit() ? [basePath, productId] : basePath"
+              class="inline-flex items-center px-4 py-2 border border-border-light text-text-muted text-sm font-medium rounded-lg hover:bg-background transition-colors"
+              style="text-decoration: none"
+            >
+              {{ 'PRODUCTS.CANCEL' | translate }}
+            </a>
+            <button
+              (click)="onSubmit()"
+              [disabled]="saving()"
+              class="inline-flex items-center gap-1.5 px-4 py-2 bg-primary text-white text-sm font-medium rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-60 border-0 cursor-pointer"
+            >
+              @if (saving()) {
+                <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                  <circle
+                    class="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    stroke-width="4"
                   />
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-text-secondary mb-1.5">{{
-                    'PRODUCTS.YEARLY_PRICE' | translate
-                  }}</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    formControlName="priceYearly"
-                    class="w-full px-4 py-2.5 rounded-lg border border-border bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                  <path
+                    class="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
                   />
-                </div>
+                </svg>
+                {{ 'PRODUCTS.SAVING' | translate }}
               } @else {
-                <div>
-                  <label class="block text-sm font-medium text-text-secondary mb-1.5">{{
-                    'PRODUCTS.UNIT_PRICE_EUR' | translate
-                  }}</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    formControlName="priceUnit"
-                    class="w-full px-4 py-2.5 rounded-lg border border-border bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="1.5"
+                    d="M4.5 12.75l6 6 9-13.5"
                   />
+                </svg>
+                {{ isEdit() ? ('PRODUCTS.UPDATE' | translate) : ('PRODUCTS.CREATE' | translate) }}
+              }
+            </button>
+          </div>
+        </div>
+
+        <!-- Content -->
+        <form
+          [formGroup]="form"
+          (ngSubmit)="onSubmit()"
+          class="space-y-5"
+          style="animation: fadeInUp 0.45s ease-out 0.08s both"
+        >
+          <!-- Main 2-column layout -->
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+            <!-- Left column: Basic Info + Description -->
+            <div class="lg:col-span-2 flex flex-col gap-5">
+              <!-- Basic Info -->
+              <div
+                class="rounded-xl border border-border-light bg-surface shadow-sm overflow-hidden"
+              >
+                <div class="px-6 py-4 border-b border-border-light">
+                  <h3 class="text-sm font-semibold text-text-primary !m-0">
+                    {{ 'PRODUCTS.BASIC_INFO' | translate }}
+                  </h3>
+                </div>
+                <div class="px-6 py-5">
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-x-5 gap-y-4">
+                    <div>
+                      <label class="block text-xs font-medium text-text-muted mb-1.5">{{
+                        'PRODUCTS.NAME_FR' | translate
+                      }}</label>
+                      <input
+                        formControlName="nameFr"
+                        class="w-full px-3 py-2 rounded-lg border border-border-light bg-white text-sm text-text-primary placeholder:text-text-muted/40 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
+                      />
+                    </div>
+                    <div>
+                      <label class="block text-xs font-medium text-text-muted mb-1.5">{{
+                        'PRODUCTS.NAME_EN' | translate
+                      }}</label>
+                      <input
+                        formControlName="nameEn"
+                        class="w-full px-3 py-2 rounded-lg border border-border-light bg-white text-sm text-text-primary placeholder:text-text-muted/40 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
+                      />
+                    </div>
+                    <div>
+                      <label class="block text-xs font-medium text-text-muted mb-1.5">{{
+                        'PRODUCTS.SLUG' | translate
+                      }}</label>
+                      <input
+                        formControlName="slug"
+                        class="w-full px-3 py-2 rounded-lg border border-border-light bg-white text-sm text-text-primary font-mono placeholder:text-text-muted/40 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
+                      />
+                    </div>
+                    <div>
+                      <label class="block text-xs font-medium text-text-muted mb-1.5">{{
+                        'PRODUCTS.SKU' | translate
+                      }}</label>
+                      <input
+                        formControlName="sku"
+                        class="w-full px-3 py-2 rounded-lg border border-border-light bg-white text-sm text-text-primary font-mono placeholder:text-text-muted/40 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
+                      />
+                    </div>
+                    <div>
+                      <label class="block text-xs font-medium text-text-muted mb-1.5">{{
+                        'PRODUCTS.CATEGORY' | translate
+                      }}</label>
+                      <select
+                        formControlName="categoryId"
+                        class="w-full px-3 py-2 rounded-lg border border-border-light bg-white text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
+                      >
+                        <option value="">{{ 'PRODUCTS.SELECT_CATEGORY' | translate }}</option>
+                        @for (cat of categories(); track cat.id) {
+                          <option [value]="cat.id">{{ cat.nameFr }}</option>
+                        }
+                      </select>
+                    </div>
+                    <div>
+                      <label class="block text-xs font-medium text-text-muted mb-1.5">{{
+                        'PRODUCTS.PRODUCT_TYPE' | translate
+                      }}</label>
+                      <select
+                        formControlName="productType"
+                        class="w-full px-3 py-2 rounded-lg border border-border-light bg-white text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
+                      >
+                        <option value="SAAS">{{ 'PRODUCTS.SAAS' | translate }}</option>
+                        <option value="PHYSICAL">{{ 'PRODUCTS.PHYSICAL' | translate }}</option>
+                        <option value="LICENSE">{{ 'PRODUCTS.LICENSE' | translate }}</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Description -->
+              <div
+                class="flex-1 rounded-xl border border-border-light bg-surface shadow-sm overflow-hidden flex flex-col"
+              >
+                <div class="px-6 py-4 border-b border-border-light">
+                  <h3 class="text-sm font-semibold text-text-primary !m-0">
+                    {{ 'PRODUCTS.DESCRIPTION' | translate }}
+                  </h3>
+                </div>
+                <div
+                  class="flex-1 grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-border-light"
+                >
+                  <div class="px-6 py-5">
+                    <div class="flex items-center gap-2 mb-3">
+                      <span
+                        class="inline-flex items-center rounded bg-background border border-border-light px-2 py-0.5 text-[10px] font-semibold text-text-muted uppercase tracking-wider"
+                        >FR</span
+                      >
+                    </div>
+                    <div class="space-y-3">
+                      <div>
+                        <label class="block text-xs font-medium text-text-muted mb-1.5">{{
+                          'PRODUCTS.DESCRIPTION_FR' | translate
+                        }}</label>
+                        <textarea
+                          formControlName="descriptionFr"
+                          rows="3"
+                          class="w-full px-3 py-2 rounded-lg border border-border-light bg-white text-sm text-text-primary placeholder:text-text-muted/40 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors resize-none leading-relaxed"
+                        ></textarea>
+                      </div>
+                      <div>
+                        <label class="block text-xs font-medium text-text-muted mb-1.5">{{
+                          'PRODUCTS.SHORT_DESC_FR' | translate
+                        }}</label>
+                        <input
+                          formControlName="shortDescriptionFr"
+                          class="w-full px-3 py-2 rounded-lg border border-border-light bg-white text-sm text-text-primary placeholder:text-text-muted/40 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div class="px-6 py-5">
+                    <div class="flex items-center gap-2 mb-3">
+                      <span
+                        class="inline-flex items-center rounded bg-background border border-border-light px-2 py-0.5 text-[10px] font-semibold text-text-muted uppercase tracking-wider"
+                        >EN</span
+                      >
+                    </div>
+                    <div class="space-y-3">
+                      <div>
+                        <label class="block text-xs font-medium text-text-muted mb-1.5">{{
+                          'PRODUCTS.DESCRIPTION_EN' | translate
+                        }}</label>
+                        <textarea
+                          formControlName="descriptionEn"
+                          rows="3"
+                          class="w-full px-3 py-2 rounded-lg border border-border-light bg-white text-sm text-text-primary placeholder:text-text-muted/40 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors resize-none leading-relaxed"
+                        ></textarea>
+                      </div>
+                      <div>
+                        <label class="block text-xs font-medium text-text-muted mb-1.5">{{
+                          'PRODUCTS.SHORT_DESC_EN' | translate
+                        }}</label>
+                        <input
+                          formControlName="shortDescriptionEn"
+                          class="w-full px-3 py-2 rounded-lg border border-border-light bg-white text-sm text-text-primary placeholder:text-text-muted/40 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right column: Options + Pricing + Stock -->
+            <div class="flex flex-col gap-5">
+              <!-- Options -->
+              <div
+                class="rounded-xl border border-border-light bg-surface shadow-sm overflow-hidden"
+              >
+                <div class="px-6 py-4 border-b border-border-light">
+                  <h3 class="text-sm font-semibold text-text-primary !m-0">
+                    {{ 'PRODUCTS.OPTIONS' | translate }}
+                  </h3>
+                </div>
+                <div class="divide-y divide-border-light">
+                  <label class="flex items-center justify-between px-6 py-3.5 cursor-pointer">
+                    <span class="text-xs text-text-muted">{{
+                      'PRODUCTS.AVAILABLE' | translate
+                    }}</span>
+                    <div class="relative">
+                      <input type="checkbox" formControlName="isAvailable" class="sr-only peer" />
+                      <div
+                        class="w-9 h-5 bg-border-light rounded-full peer-checked:bg-primary transition-colors"
+                      ></div>
+                      <div
+                        class="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-transform peer-checked:translate-x-4"
+                      ></div>
+                    </div>
+                  </label>
+                  <label class="flex items-center justify-between px-6 py-3.5 cursor-pointer">
+                    <span class="text-xs text-text-muted">{{
+                      'PRODUCTS.FEATURED' | translate
+                    }}</span>
+                    <div class="relative">
+                      <input type="checkbox" formControlName="isFeatured" class="sr-only peer" />
+                      <div
+                        class="w-9 h-5 bg-border-light rounded-full peer-checked:bg-primary transition-colors"
+                      ></div>
+                      <div
+                        class="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-transform peer-checked:translate-x-4"
+                      ></div>
+                    </div>
+                  </label>
+                  <div class="px-6 py-3.5">
+                    <label class="block text-xs text-text-muted mb-1.5">{{
+                      'PRODUCTS.DISPLAY_ORDER' | translate
+                    }}</label>
+                    <input
+                      type="number"
+                      formControlName="displayOrder"
+                      class="w-full px-3 py-2 rounded-lg border border-border-light bg-white text-sm text-text-primary font-mono focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <!-- Pricing -->
+              <div
+                class="rounded-xl border border-border-light bg-surface shadow-sm overflow-hidden"
+              >
+                <div class="px-6 py-4 border-b border-border-light">
+                  <h3 class="text-sm font-semibold text-text-primary !m-0">
+                    {{ 'PRODUCTS.PRICING' | translate }}
+                  </h3>
+                </div>
+                <div class="px-6 py-5">
+                  @if (form.get('productType')?.value === 'SAAS') {
+                    <div class="space-y-4">
+                      <div>
+                        <label class="block text-xs font-medium text-text-muted mb-1.5">{{
+                          'PRODUCTS.MONTHLY_PRICE' | translate
+                        }}</label>
+                        <div class="relative">
+                          <span
+                            class="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-text-muted"
+                            >EUR</span
+                          >
+                          <input
+                            type="number"
+                            step="0.01"
+                            formControlName="priceMonthly"
+                            class="w-full pl-11 pr-3 py-2 rounded-lg border border-border-light bg-white text-sm text-text-primary font-mono focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label class="block text-xs font-medium text-text-muted mb-1.5">{{
+                          'PRODUCTS.YEARLY_PRICE' | translate
+                        }}</label>
+                        <div class="relative">
+                          <span
+                            class="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-text-muted"
+                            >EUR</span
+                          >
+                          <input
+                            type="number"
+                            step="0.01"
+                            formControlName="priceYearly"
+                            class="w-full pl-11 pr-3 py-2 rounded-lg border border-border-light bg-white text-sm text-text-primary font-mono focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  } @else {
+                    <div>
+                      <label class="block text-xs font-medium text-text-muted mb-1.5">{{
+                        'PRODUCTS.UNIT_PRICE_EUR' | translate
+                      }}</label>
+                      <div class="relative">
+                        <span
+                          class="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-text-muted"
+                          >EUR</span
+                        >
+                        <input
+                          type="number"
+                          step="0.01"
+                          formControlName="priceUnit"
+                          class="w-full pl-11 pr-3 py-2 rounded-lg border border-border-light bg-white text-sm text-text-primary font-mono focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
+                        />
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+
+              <!-- Stock (physical only) -->
+              @if (form.get('productType')?.value === 'PHYSICAL') {
+                <div
+                  class="rounded-xl border border-border-light bg-surface shadow-sm overflow-hidden"
+                >
+                  <div class="px-6 py-4 border-b border-border-light">
+                    <h3 class="text-sm font-semibold text-text-primary !m-0">
+                      {{ 'PRODUCTS.STOCK' | translate }}
+                    </h3>
+                  </div>
+                  <div class="px-6 py-5 space-y-4">
+                    <div>
+                      <label class="block text-xs font-medium text-text-muted mb-1.5">{{
+                        'PRODUCTS.STOCK_QUANTITY' | translate
+                      }}</label>
+                      <input
+                        type="number"
+                        formControlName="stockQuantity"
+                        class="w-full px-3 py-2 rounded-lg border border-border-light bg-white text-sm text-text-primary font-mono focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
+                      />
+                    </div>
+                    <div>
+                      <label class="block text-xs font-medium text-text-muted mb-1.5">{{
+                        'PRODUCTS.STOCK_ALERT' | translate
+                      }}</label>
+                      <input
+                        type="number"
+                        formControlName="stockAlertThreshold"
+                        class="w-full px-3 py-2 rounded-lg border border-border-light bg-white text-sm text-text-primary font-mono focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
+                      />
+                    </div>
+                  </div>
                 </div>
               }
             </div>
           </div>
 
-          <!-- Options -->
-          <div class="bg-surface rounded-xl border border-border-light shadow-sm p-6">
-            <h3 class="text-lg font-semibold mb-4">{{ 'PRODUCTS.OPTIONS' | translate }}</h3>
-            <div class="flex flex-wrap gap-6">
-              <label class="flex items-center gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  formControlName="isAvailable"
-                  class="rounded border-border text-primary focus:ring-primary"
-                />
-                {{ 'PRODUCTS.AVAILABLE' | translate }}
-              </label>
-              <label class="flex items-center gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  formControlName="isFeatured"
-                  class="rounded border-border text-primary focus:ring-primary"
-                />
-                {{ 'PRODUCTS.FEATURED' | translate }}
-              </label>
+          <!-- Row 3: Characteristics (full-width) -->
+          <div class="rounded-xl border border-border-light bg-surface shadow-sm overflow-hidden">
+            <div class="px-6 py-4 border-b border-border-light flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <h3 class="text-sm font-semibold text-text-primary !m-0">
+                  {{ 'PRODUCTS.CHARACTERISTICS' | translate }}
+                </h3>
+                @if (characteristics.length > 0) {
+                  <span class="text-[11px] text-text-muted"
+                    >{{ characteristics.length }}
+                    {{ characteristics.length > 1 ? 'items' : 'item' }}</span
+                  >
+                }
+              </div>
+              <button
+                type="button"
+                (click)="addCharacteristic()"
+                class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-primary hover:bg-primary-light rounded-md transition-colors bg-transparent border-0 cursor-pointer"
+              >
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 4.5v15m7.5-7.5h-15"
+                  />
+                </svg>
+                {{ 'PRODUCTS.ADD_CHAR' | translate }}
+              </button>
             </div>
-            @if (form.get('productType')?.value === 'PHYSICAL') {
-              <div class="grid grid-cols-2 gap-4 mt-4">
-                <div>
-                  <label class="block text-sm font-medium text-text-secondary mb-1.5">{{
-                    'PRODUCTS.STOCK_QUANTITY' | translate
-                  }}</label>
-                  <input
-                    type="number"
-                    formControlName="stockQuantity"
-                    class="w-full px-4 py-2.5 rounded-lg border border-border bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                  />
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-text-secondary mb-1.5">{{
-                    'PRODUCTS.STOCK_ALERT' | translate
-                  }}</label>
-                  <input
-                    type="number"
-                    formControlName="stockAlertThreshold"
-                    class="w-full px-4 py-2.5 rounded-lg border border-border bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                  />
-                </div>
+            @if (characteristics.length === 0) {
+              <div class="flex flex-col items-center justify-center gap-2 py-8">
+                <span class="text-xs text-text-muted">{{ 'PRODUCTS.NO_CHARS' | translate }}</span>
+              </div>
+            } @else {
+              <div class="divide-y divide-border-light">
+                @for (char of characteristics.controls; track $index; let i = $index) {
+                  <div class="px-6 py-4" [formGroup]="asFormGroup(char)">
+                    <div class="flex items-start gap-3">
+                      <div class="flex-1 grid grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-3">
+                        <div>
+                          <label class="block text-xs font-medium text-text-muted mb-1"
+                            >{{ 'PRODUCTS.CHAR_KEY' | translate }} (FR)</label
+                          >
+                          <input
+                            formControlName="keyFr"
+                            class="w-full px-3 py-1.5 rounded-lg border border-border-light bg-white text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
+                          />
+                        </div>
+                        <div>
+                          <label class="block text-xs font-medium text-text-muted mb-1"
+                            >{{ 'PRODUCTS.CHAR_KEY' | translate }} (EN)</label
+                          >
+                          <input
+                            formControlName="keyEn"
+                            class="w-full px-3 py-1.5 rounded-lg border border-border-light bg-white text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
+                          />
+                        </div>
+                        <div>
+                          <label class="block text-xs font-medium text-text-muted mb-1"
+                            >{{ 'PRODUCTS.CHAR_VALUE' | translate }} (FR)</label
+                          >
+                          <input
+                            formControlName="valueFr"
+                            class="w-full px-3 py-1.5 rounded-lg border border-border-light bg-white text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
+                          />
+                        </div>
+                        <div>
+                          <label class="block text-xs font-medium text-text-muted mb-1"
+                            >{{ 'PRODUCTS.CHAR_VALUE' | translate }} (EN)</label
+                          >
+                          <input
+                            formControlName="valueEn"
+                            class="w-full px-3 py-1.5 rounded-lg border border-border-light bg-white text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
+                          />
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        (click)="removeCharacteristic(i)"
+                        class="mt-5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-text-muted hover:text-error hover:bg-error-light transition-colors bg-transparent border-0 cursor-pointer"
+                      >
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="1.5"
+                            d="M6 18L18 6M6 6l12 12"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                }
               </div>
             }
           </div>
-
-          <!-- Actions -->
-          <div class="flex justify-end gap-3">
-            <a
-              [routerLink]="basePath"
-              class="px-4 py-2.5 border border-border text-text-secondary text-sm font-medium rounded-lg hover:bg-gray-50"
-              >{{ 'PRODUCTS.CANCEL' | translate }}</a
-            >
-            <button
-              type="submit"
-              [disabled]="saving()"
-              class="px-6 py-2.5 bg-primary text-white text-sm font-medium rounded-lg hover:bg-primary-hover disabled:opacity-60"
-            >
-              {{
-                saving()
-                  ? ('PRODUCTS.SAVING' | translate)
-                  : isEdit()
-                    ? ('PRODUCTS.UPDATE' | translate)
-                    : ('PRODUCTS.CREATE' | translate)
-              }}
-            </button>
-          </div>
         </form>
-      }
-    </div>
+      </div>
+    }
   `,
 })
 export class ProductFormComponent implements OnInit {
@@ -258,7 +565,7 @@ export class ProductFormComponent implements OnInit {
   loadingProduct = signal(false);
   saving = signal(false);
   categories = signal<Category[]>([]);
-  private productId = '';
+  productId = '';
   basePath = '/products';
   newTitleKey = 'PRODUCTS.NEW_PRODUCT';
 
@@ -271,14 +578,41 @@ export class ProductFormComponent implements OnInit {
     productType: ['SAAS', Validators.required],
     descriptionFr: ['', Validators.required],
     descriptionEn: ['', Validators.required],
+    shortDescriptionFr: [''],
+    shortDescriptionEn: [''],
     priceMonthly: [null as number | null],
     priceYearly: [null as number | null],
     priceUnit: [null as number | null],
     isAvailable: [true],
     isFeatured: [false],
+    displayOrder: [0],
     stockQuantity: [null as number | null],
     stockAlertThreshold: [10],
+    characteristics: this.fb.array<FormGroup>([]),
   });
+
+  get characteristics(): FormArray<FormGroup> {
+    return this.form.get('characteristics') as FormArray<FormGroup>;
+  }
+
+  asFormGroup(control: any): FormGroup {
+    return control as FormGroup;
+  }
+
+  addCharacteristic() {
+    this.characteristics.push(
+      this.fb.group({
+        keyFr: [''],
+        keyEn: [''],
+        valueFr: [''],
+        valueEn: [''],
+      }),
+    );
+  }
+
+  removeCharacteristic(index: number) {
+    this.characteristics.removeAt(index);
+  }
 
   ngOnInit() {
     const data = this.route.snapshot.data;
@@ -296,7 +630,6 @@ export class ProductFormComponent implements OnInit {
   loadCategories() {
     this.api.get<any>('admin/catalog/categories').subscribe({
       next: (res) => {
-        // Handle both array and wrapped formats
         const cats = Array.isArray(res) ? res : res?.data || res || [];
         this.categories.set(cats);
       },
@@ -313,17 +646,34 @@ export class ProductFormComponent implements OnInit {
           slug: p.slug,
           sku: p.sku,
           categoryId: p.categoryId,
-          productType: p.productType,
+          productType: p.productType?.toUpperCase() as any,
           descriptionFr: p.descriptionFr,
           descriptionEn: p.descriptionEn,
+          shortDescriptionFr: p.shortDescriptionFr ?? '',
+          shortDescriptionEn: p.shortDescriptionEn ?? '',
           priceMonthly: p.priceMonthly ?? null,
           priceYearly: p.priceYearly ?? null,
           priceUnit: p.priceUnit ?? null,
           isAvailable: p.isAvailable,
           isFeatured: p.isFeatured,
+          displayOrder: p.displayOrder ?? 0,
           stockQuantity: p.stockQuantity ?? null,
           stockAlertThreshold: p.stockAlertThreshold,
         });
+        // Load characteristics into FormArray
+        this.characteristics.clear();
+        if (p.characteristics?.length) {
+          for (const char of p.characteristics) {
+            this.characteristics.push(
+              this.fb.group({
+                keyFr: [char.keyFr || ''],
+                keyEn: [char.keyEn || ''],
+                valueFr: [char.valueFr || ''],
+                valueEn: [char.valueEn || ''],
+              }),
+            );
+          }
+        }
         this.loadingProduct.set(false);
       },
       error: () => {

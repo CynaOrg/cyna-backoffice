@@ -40,7 +40,8 @@ export interface ProductImage {
 
 export interface ProductCharacteristic {
   id: string;
-  key: string;
+  keyFr: string;
+  keyEn: string;
   valueFr: string;
   valueEn: string;
 }
