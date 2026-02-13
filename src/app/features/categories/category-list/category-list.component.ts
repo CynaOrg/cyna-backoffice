@@ -21,20 +21,16 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
   ],
   template: `
     <div>
-      <div class="flex items-center justify-between mb-6">
-        <div>
-          <h1 class="text-2xl font-bold text-text-primary">{{ 'CATEGORIES.TITLE' | translate }}</h1>
-          <p class="text-sm text-text-secondary mt-1">{{ 'CATEGORIES.SUBTITLE' | translate }}</p>
-        </div>
-        @if (auth.isSuperAdmin()) {
+      @if (auth.isSuperAdmin()) {
+        <div class="flex justify-end mb-6">
           <button
             (click)="openForm()"
             class="px-4 py-2.5 bg-primary text-white text-sm font-medium rounded-lg hover:bg-primary-hover"
           >
             {{ 'CATEGORIES.NEW_CATEGORY' | translate }}
           </button>
-        }
-      </div>
+        </div>
+      }
 
       @if (loading()) {
         <app-loading-spinner />

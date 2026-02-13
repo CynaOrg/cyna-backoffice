@@ -128,8 +128,11 @@ interface NavSection {
             <h1 class="m-0 truncate text-xl font-bold text-text-primary">
               {{ pageTitleKey() | translate }}
             </h1>
+            @if (pageSubtitleKey(); as sub) {
+              <p class="m-0 text-sm text-text-secondary truncate">{{ sub | translate }}</p>
+            }
           </div>
-          <span class="text-sm text-text-secondary">
+          <span class="text-sm text-text-secondary whitespace-nowrap ml-4">
             {{ auth.admin()?.firstName }} {{ auth.admin()?.lastName }}
           </span>
         </div>
@@ -169,6 +172,26 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
       if (path.startsWith(key)) return value;
     }
     return 'PAGES.DASHBOARD';
+  });
+
+  pageSubtitleKey = computed(() => {
+    const path = this.currentUrl();
+    const subtitleKeys: Record<string, string> = {
+      '/dashboard': 'DASHBOARD.SUBTITLE',
+      '/products': 'PRODUCTS.SUBTITLE',
+      '/services': 'SERVICES.SUBTITLE',
+      '/licences': 'LICENCES.SUBTITLE',
+      '/orders': 'ORDERS.SUBTITLE',
+      '/subscriptions': 'SUBSCRIPTIONS.SUBTITLE',
+      '/customers': 'CUSTOMERS.SUBTITLE',
+      '/analytics': 'ANALYTICS.SUBTITLE',
+      '/content': 'CONTENT.SUBTITLE',
+      '/admins': 'ADMINS.SUBTITLE',
+    };
+    for (const [key, value] of Object.entries(subtitleKeys)) {
+      if (path.startsWith(key)) return value;
+    }
+    return '';
   });
 
   ngOnInit() {

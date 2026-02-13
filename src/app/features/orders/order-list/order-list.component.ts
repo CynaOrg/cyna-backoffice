@@ -22,11 +22,6 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
   ],
   template: `
     <div>
-      <div class="mb-6">
-        <h1 class="text-2xl font-bold text-text-primary">{{ 'ORDERS.TITLE' | translate }}</h1>
-        <p class="text-sm text-text-secondary mt-1">{{ 'ORDERS.SUBTITLE' | translate }}</p>
-      </div>
-
       <div class="bg-surface rounded-xl border border-border-light shadow-sm p-4 mb-6">
         <div class="flex flex-wrap gap-4 items-center">
           <input
