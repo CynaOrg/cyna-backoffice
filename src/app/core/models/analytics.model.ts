@@ -87,6 +87,13 @@ export interface StockItem {
   status: 'ok' | 'low' | 'critical' | 'out_of_stock';
 }
 
+export interface TopProductData {
+  productName: string;
+  revenue: number;
+  orderCount: number;
+  percentage: number;
+}
+
 export interface ExportParams {
   dateFrom: string;
   dateTo: string;
