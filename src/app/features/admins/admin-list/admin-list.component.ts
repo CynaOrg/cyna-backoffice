@@ -1,33 +1,150 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
-import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { Component, inject, signal, computed, OnInit } from '@angular/core';
+import { ReactiveFormsModule, FormsModule, FormBuilder, Validators } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { NgIconComponent, provideIcons } from '@ng-icons/core';
+import {
+  phosphorMagnifyingGlass,
+  phosphorFunnelSimple,
+  phosphorArrowsClockwise,
+  phosphorPencilSimple,
+  phosphorTrash,
+  phosphorShieldCheck,
+  phosphorToggleLeft,
+  phosphorToggleRight,
+} from '@ng-icons/phosphor-icons/regular';
 import { AdminManagementService } from '../../../core/services/admin-management.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { Admin, CreateAdminDto, UpdateAdminDto } from '../../../core/models/admin.model';
 import { StatusBadgeComponent } from '../../../shared/components/status-badge/status-badge.component';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/confirm-modal.component';
+import { KpiCardComponent } from '../../../shared/components/kpi-card/kpi-card.component';
 
 @Component({
   selector: 'app-admin-list',
   standalone: true,
   imports: [
     ReactiveFormsModule,
+    FormsModule,
     TranslateModule,
+    NgIconComponent,
     StatusBadgeComponent,
     LoadingSpinnerComponent,
     ConfirmModalComponent,
+    KpiCardComponent,
+  ],
+  viewProviders: [
+    provideIcons({
+      phosphorMagnifyingGlass,
+      phosphorFunnelSimple,
+      phosphorArrowsClockwise,
+      phosphorPencilSimple,
+      phosphorTrash,
+      phosphorShieldCheck,
+      phosphorToggleLeft,
+      phosphorToggleRight,
+    }),
   ],
   template: `
     <div>
-      <!-- Header -->
-      <div class="flex justify-end mb-6">
-        <button
-          (click)="openCreateModal()"
-          class="bg-primary text-white hover:bg-primary-hover rounded-lg px-4 py-2 text-sm font-medium"
-        >
-          {{ 'ADMINS.NEW_ADMIN' | translate }}
-        </button>
+      <!-- KPI Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <app-kpi-card
+          [value]="totalAdmins()"
+          [label]="'ADMINS.KPI_TOTAL' | translate"
+          [iconPath]="'M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 7a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75'"
+          iconBgClass="bg-primary-light"
+          iconClass="text-primary"
+        />
+        <app-kpi-card
+          [value]="superAdminCount()"
+          [label]="'ADMINS.KPI_SUPER_ADMIN' | translate"
+          [iconPath]="'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z'"
+          iconBgClass="bg-warning-light"
+          iconClass="text-warning"
+        />
+        <app-kpi-card
+          [value]="commercialCount()"
+          [label]="'ADMINS.KPI_COMMERCIAL' | translate"
+          [iconPath]="'M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2M3 8a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V8z'"
+          iconBgClass="bg-info-light"
+          iconClass="text-info"
+        />
+        <app-kpi-card
+          [value]="activeAdminCount()"
+          [label]="'ADMINS.KPI_ACTIVE' | translate"
+          [iconPath]="'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z'"
+          iconBgClass="bg-success-light"
+          iconClass="text-success"
+        />
+      </div>
+
+      <!-- Search + Filter + Actions Bar -->
+      <div class="bg-surface rounded-xl border border-border-light shadow-sm p-4 mb-6">
+        <div class="flex items-center justify-between gap-4">
+          <div class="relative">
+            <ng-icon
+              name="phosphorMagnifyingGlass"
+              size="18"
+              class="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted"
+            />
+            <input
+              type="text"
+              [placeholder]="'ADMINS.SEARCH_PLACEHOLDER' | translate"
+              [ngModel]="searchTerm()"
+              (ngModelChange)="searchTerm.set($event)"
+              class="pl-10 pr-4 py-2 rounded-lg border border-border bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary w-72"
+            />
+          </div>
+          <div class="flex items-center gap-2">
+            <button
+              (click)="toggleFilter()"
+              class="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg border transition-colors"
+              [class]="
+                showFilter()
+                  ? 'bg-primary-light text-primary border-primary'
+                  : 'text-text-secondary border-border hover:bg-gray-50'
+              "
+            >
+              <ng-icon name="phosphorFunnelSimple" size="18" />
+              {{ 'ADMINS.FILTER' | translate }}
+            </button>
+            <button
+              (click)="refresh()"
+              class="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-text-secondary border border-border rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              <ng-icon name="phosphorArrowsClockwise" size="18" />
+              {{ 'ADMINS.REFRESH' | translate }}
+            </button>
+            <button
+              (click)="openCreateModal()"
+              class="bg-primary text-white hover:bg-primary-hover rounded-lg px-4 py-2 text-sm font-medium transition-colors"
+            >
+              {{ 'ADMINS.NEW_ADMIN' | translate }}
+            </button>
+          </div>
+        </div>
+
+        @if (showFilter()) {
+          <div class="mt-4 pt-4 border-t border-border-light flex items-center gap-3">
+            <span class="text-sm text-text-secondary font-medium"
+              >{{ 'ADMINS.ROLE' | translate }}:</span
+            >
+            @for (opt of roleOptions; track opt.value) {
+              <button
+                (click)="filterByRole(opt.value)"
+                class="px-3 py-1 text-xs font-medium rounded-full border transition-colors"
+                [class]="
+                  roleFilter() === opt.value
+                    ? opt.activeClass
+                    : 'border-border text-text-secondary hover:bg-gray-50'
+                "
+              >
+                {{ opt.label | translate }}
+              </button>
+            }
+          </div>
+        }
       </div>
 
       <!-- Loading -->
@@ -73,12 +190,25 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
                 </tr>
               </thead>
               <tbody class="divide-y divide-border-light">
-                @for (admin of admins(); track admin.id) {
-                  <tr class="hover:bg-gray-50/50 border-b border-border-light">
+                @for (admin of filteredAdmins(); track admin.id) {
+                  <tr class="hover:bg-gray-50/50 transition-colors">
                     <td class="px-6 py-4">
-                      <span class="text-sm font-medium text-text-primary">
-                        {{ admin.firstName }} {{ admin.lastName }}
-                      </span>
+                      <div class="flex items-center gap-3">
+                        <div
+                          class="w-9 h-9 rounded-full flex items-center justify-center text-xs font-semibold text-white shrink-0"
+                          [style.background-color]="
+                            getAvatarColor(admin.firstName + admin.lastName)
+                          "
+                        >
+                          {{ getInitials(admin.firstName, admin.lastName) }}
+                        </div>
+                        <div>
+                          <span class="text-sm font-medium text-text-primary">
+                            {{ admin.firstName }} {{ admin.lastName }}
+                          </span>
+                          <div class="text-xs text-text-muted">ID: {{ getShortId(admin.id) }}</div>
+                        </div>
+                      </div>
                     </td>
                     <td class="px-6 py-4 text-sm text-text-secondary">
                       {{ admin.email }}
@@ -116,34 +246,40 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
                           : ('ADMINS.NEVER' | translate)
                       }}
                     </td>
-                    <td class="px-6 py-4 text-right">
-                      <div class="flex items-center justify-end gap-2">
+                    <td class="px-6 py-4">
+                      <div class="flex items-center justify-end gap-1">
                         <button
                           (click)="toggleActive(admin)"
-                          class="text-xs font-medium px-2.5 py-1 rounded-lg"
+                          class="p-2 rounded-lg transition-colors"
                           [class]="
                             admin.isActive
-                              ? 'bg-red-50 text-red-600 hover:bg-red-100'
-                              : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'
+                              ? 'text-success hover:text-red-500 hover:bg-red-50'
+                              : 'text-text-muted hover:text-success hover:bg-success-light'
                           "
-                        >
-                          {{
+                          [title]="
                             admin.isActive
                               ? ('ADMINS.DEACTIVATE' | translate)
                               : ('ADMINS.ACTIVATE' | translate)
-                          }}
+                          "
+                        >
+                          <ng-icon
+                            [name]="admin.isActive ? 'phosphorToggleRight' : 'phosphorToggleLeft'"
+                            size="20"
+                          />
                         </button>
                         <button
                           (click)="openEditModal(admin)"
-                          class="text-sm text-primary hover:text-primary-hover"
+                          class="p-2 rounded-lg text-text-muted hover:text-primary hover:bg-primary-light transition-colors"
+                          [title]="'ADMINS.EDIT' | translate"
                         >
-                          {{ 'ADMINS.EDIT' | translate }}
+                          <ng-icon name="phosphorPencilSimple" size="18" />
                         </button>
                         <button
                           (click)="confirmDelete(admin)"
-                          class="text-sm text-error hover:text-red-700"
+                          class="p-2 rounded-lg text-text-muted hover:text-error hover:bg-error-light transition-colors"
+                          [title]="'ADMINS.DELETE' | translate"
                         >
-                          {{ 'ADMINS.DELETE' | translate }}
+                          <ng-icon name="phosphorTrash" size="18" />
                         </button>
                       </div>
                     </td>
@@ -384,6 +520,59 @@ export class AdminListComponent implements OnInit {
   showDeleteModal = signal(false);
   editingAdmin = signal<Admin | null>(null);
   adminToDelete = signal<Admin | null>(null);
+  showFilter = signal(false);
+  searchTerm = signal('');
+  roleFilter = signal('');
+
+  totalAdmins = computed(() => this.admins().length);
+  superAdminCount = computed(() => this.admins().filter((a) => a.role === 'super_admin').length);
+  commercialCount = computed(() => this.admins().filter((a) => a.role === 'commercial').length);
+  activeAdminCount = computed(() => this.admins().filter((a) => a.isActive).length);
+
+  filteredAdmins = computed(() => {
+    let list = this.admins();
+    const term = this.searchTerm().toLowerCase();
+    if (term) {
+      list = list.filter(
+        (a) =>
+          a.firstName.toLowerCase().includes(term) ||
+          a.lastName.toLowerCase().includes(term) ||
+          a.email.toLowerCase().includes(term),
+      );
+    }
+    const role = this.roleFilter();
+    if (role) {
+      list = list.filter((a) => a.role === role);
+    }
+    return list;
+  });
+
+  readonly roleOptions = [
+    { value: '', label: 'ADMINS.ALL', activeClass: 'bg-primary text-white border-primary' },
+    {
+      value: 'super_admin',
+      label: 'ADMINS.SUPER_ADMIN',
+      activeClass: 'bg-warning text-white border-warning',
+    },
+    {
+      value: 'commercial',
+      label: 'ADMINS.COMMERCIAL',
+      activeClass: 'bg-info text-white border-info',
+    },
+  ];
+
+  private readonly avatarColors = [
+    '#6366f1',
+    '#8b5cf6',
+    '#ec4899',
+    '#f43f5e',
+    '#f97316',
+    '#eab308',
+    '#22c55e',
+    '#14b8a6',
+    '#06b6d4',
+    '#3b82f6',
+  ];
 
   createForm = this.fb.nonNullable.group({
     email: ['', [Validators.required, Validators.email]],
@@ -415,6 +604,34 @@ export class AdminListComponent implements OnInit {
         this.loading.set(false);
       },
     });
+  }
+
+  toggleFilter() {
+    this.showFilter.update((v) => !v);
+  }
+
+  filterByRole(role: string) {
+    this.roleFilter.set(role);
+  }
+
+  refresh() {
+    this.loadAdmins();
+  }
+
+  getInitials(firstName: string, lastName: string): string {
+    return (firstName?.charAt(0) || '') + (lastName?.charAt(0) || '');
+  }
+
+  getShortId(id: string): string {
+    return id?.substring(0, 8) || '';
+  }
+
+  getAvatarColor(name: string): string {
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) {
+      hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    return this.avatarColors[Math.abs(hash) % this.avatarColors.length];
   }
 
   openCreateModal() {
