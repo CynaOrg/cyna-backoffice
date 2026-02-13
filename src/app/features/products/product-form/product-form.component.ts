@@ -8,11 +8,18 @@ import { NotificationService } from '../../../core/services/notification.service
 import { ImageService } from '../../../core/services/image.service';
 import { Product, ProductImage, Category } from '../../../core/models/product.model';
 import { ImageUploadComponent } from '../../../shared/components/image-upload/image-upload.component';
+import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/confirm-modal.component';
 
 @Component({
   selector: 'app-product-form',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink, TranslateModule, ImageUploadComponent],
+  imports: [
+    ReactiveFormsModule,
+    RouterLink,
+    TranslateModule,
+    ImageUploadComponent,
+    ConfirmModalComponent,
+  ],
   template: `
     @if (loadingProduct()) {
       <!-- Skeleton loading -->
@@ -576,6 +583,17 @@ import { ImageUploadComponent } from '../../../shared/components/image-upload/im
         </form>
       </div>
     }
+
+    <app-confirm-modal
+      [open]="showDeleteImageModal()"
+      title="Supprimer l'image"
+      message="Cette image sera definitivement supprimee. Cette action est irreversible."
+      confirmLabel="Supprimer"
+      cancelLabel="Annuler"
+      variant="danger"
+      (confirm)="confirmDeleteImage()"
+      (cancel)="showDeleteImageModal.set(false)"
+    />
   `,
 })
 export class ProductFormComponent implements OnInit {
@@ -594,6 +612,8 @@ export class ProductFormComponent implements OnInit {
   product = signal<Product | null>(null);
   uploadingImages = signal(false);
   uploadProgress = signal<number | null>(null);
+  showDeleteImageModal = signal(false);
+  deletingImageId = signal<string | null>(null);
   productId = '';
   basePath = '/products';
   newTitleKey = 'PRODUCTS.NEW_PRODUCT';
@@ -821,7 +841,16 @@ export class ProductFormComponent implements OnInit {
   }
 
   onImageDeleted(imageId: string) {
-    if (!confirm('Supprimer cette image ?')) return;
+    this.deletingImageId.set(imageId);
+    this.showDeleteImageModal.set(true);
+  }
+
+  confirmDeleteImage() {
+    const imageId = this.deletingImageId();
+    this.showDeleteImageModal.set(false);
+    this.deletingImageId.set(null);
+    if (!imageId) return;
+
     this.imageService.deleteImage(this.productId, imageId).subscribe({
       next: () => {
         const p = this.product();
