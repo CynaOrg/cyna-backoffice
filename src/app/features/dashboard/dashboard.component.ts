@@ -34,7 +34,7 @@ interface DashboardViewModel {
     TranslateModule,
   ],
   template: `
-    <div style="animation: fadeInUp 0.45s ease-out">
+    <div class="animate-fade-in-up">
       <!-- Welcome header -->
       <div class="mb-8">
         <h2 class="text-lg font-semibold text-text-primary !m-0">

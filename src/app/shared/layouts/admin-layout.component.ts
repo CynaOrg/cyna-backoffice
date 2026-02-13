@@ -46,7 +46,8 @@ interface NavSection {
           [routerLinkActiveOptions]="{ exact: true }"
           class="mb-6 flex items-center gap-3 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors no-underline"
           [class.bg-primary]="rlaDash.isActive"
-          [style.color]="rlaDash.isActive ? '#ffffff' : '#0a0a0a'"
+          [class.text-text-inverse]="rlaDash.isActive"
+          [class.text-text-primary]="!rlaDash.isActive"
         >
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
@@ -75,7 +76,8 @@ interface NavSection {
                 [routerLinkActiveOptions]="{ exact: item.exact || false }"
                 class="flex items-center gap-3 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors no-underline"
                 [class.bg-primary-light]="rla.isActive"
-                [style.color]="rla.isActive ? '#4f39f6' : '#585858'"
+                [class.text-primary]="rla.isActive"
+                [class.text-text-secondary]="!rla.isActive"
               >
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
@@ -100,7 +102,8 @@ interface NavSection {
           #rlaAccount="routerLinkActive"
           class="flex items-center gap-3 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors no-underline"
           [class.bg-primary-light]="rlaAccount.isActive"
-          [style.color]="rlaAccount.isActive ? '#4f39f6' : '#585858'"
+          [class.text-primary]="rlaAccount.isActive"
+          [class.text-text-secondary]="!rlaAccount.isActive"
         >
           <ng-icon name="phosphorUser" size="20" />
           {{ 'SIDEBAR.ACCOUNT' | translate }}

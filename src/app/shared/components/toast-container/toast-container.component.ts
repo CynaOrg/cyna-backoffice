@@ -29,23 +29,7 @@ import { NotificationService, Toast } from '../../../core/services/notification.
       }
     </div>
   `,
-  styles: [
-    `
-      @keyframes slide-in {
-        from {
-          transform: translateX(100%);
-          opacity: 0;
-        }
-        to {
-          transform: translateX(0);
-          opacity: 1;
-        }
-      }
-      .animate-slide-in {
-        animation: slide-in 0.3s ease-out;
-      }
-    `,
-  ],
+  styles: [],
 })
 export class ToastContainerComponent {
   readonly notifications = inject(NotificationService);
