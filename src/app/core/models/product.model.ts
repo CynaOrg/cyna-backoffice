@@ -36,6 +36,9 @@ export interface ProductImage {
   altTextEn?: string;
   isPrimary: boolean;
   displayOrder: number;
+  storageKey?: string;
+  fileSize?: number;
+  mimeType?: string;
 }
 
 export interface ProductCharacteristic {

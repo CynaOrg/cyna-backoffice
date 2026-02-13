@@ -2,14 +2,24 @@ import { Component, inject, signal, OnInit } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, FormArray, FormGroup, Validators } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { switchMap } from 'rxjs';
 import { ApiService } from '../../../core/services/api.service';
 import { NotificationService } from '../../../core/services/notification.service';
-import { Product, Category } from '../../../core/models/product.model';
+import { ImageService } from '../../../core/services/image.service';
+import { Product, ProductImage, Category } from '../../../core/models/product.model';
+import { ImageUploadComponent } from '../../../shared/components/image-upload/image-upload.component';
+import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/confirm-modal.component';
 
 @Component({
   selector: 'app-product-form',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink, TranslateModule],
+  imports: [
+    ReactiveFormsModule,
+    RouterLink,
+    TranslateModule,
+    ImageUploadComponent,
+    ConfirmModalComponent,
+  ],
   template: `
     @if (loadingProduct()) {
       <!-- Skeleton loading -->
@@ -548,9 +558,42 @@ import { Product, Category } from '../../../core/models/product.model';
               </div>
             }
           </div>
+
+          <!-- Images (only in edit mode) -->
+          @if (isEdit()) {
+            <div class="rounded-xl border border-border-light bg-surface shadow-sm overflow-hidden">
+              <div class="px-6 py-4 border-b border-border-light">
+                <h3 class="text-sm font-semibold text-text-primary !m-0">Images</h3>
+              </div>
+              <div class="p-6">
+                <app-image-upload
+                  [images]="product()?.images ?? []"
+                  [maxImages]="10"
+                  [isUploading]="uploadingImages()"
+                  [uploadProgress]="uploadProgress()"
+                  (filesSelected)="onImagesSelected($event)"
+                  (imageReordered)="onImageReordered($event)"
+                  (imagePrimaryChanged)="onImagePrimaryChanged($event)"
+                  (imageDeleted)="onImageDeleted($event)"
+                  (altTextChanged)="onAltTextChanged($event)"
+                />
+              </div>
+            </div>
+          }
         </form>
       </div>
     }
+
+    <app-confirm-modal
+      [open]="showDeleteImageModal()"
+      title="Supprimer l'image"
+      message="Cette image sera definitivement supprimee. Cette action est irreversible."
+      confirmLabel="Supprimer"
+      cancelLabel="Annuler"
+      variant="danger"
+      (confirm)="confirmDeleteImage()"
+      (cancel)="showDeleteImageModal.set(false)"
+    />
   `,
 })
 export class ProductFormComponent implements OnInit {
@@ -560,11 +603,17 @@ export class ProductFormComponent implements OnInit {
   private readonly api = inject(ApiService);
   private readonly notifications = inject(NotificationService);
   private readonly translate = inject(TranslateService);
+  private readonly imageService = inject(ImageService);
 
   isEdit = signal(false);
   loadingProduct = signal(false);
   saving = signal(false);
   categories = signal<Category[]>([]);
+  product = signal<Product | null>(null);
+  uploadingImages = signal(false);
+  uploadProgress = signal<number | null>(null);
+  showDeleteImageModal = signal(false);
+  deletingImageId = signal<string | null>(null);
   productId = '';
   basePath = '/products';
   newTitleKey = 'PRODUCTS.NEW_PRODUCT';
@@ -640,6 +689,7 @@ export class ProductFormComponent implements OnInit {
     this.loadingProduct.set(true);
     this.api.get<Product>(`admin/catalog/products/${id}`).subscribe({
       next: (p) => {
+        this.product.set(p);
         this.form.patchValue({
           nameFr: p.nameFr,
           nameEn: p.nameEn,
@@ -710,6 +760,164 @@ export class ProductFormComponent implements OnInit {
           err.error?.message || this.translate.instant('PRODUCTS.SAVE_ERROR'),
         );
       },
+    });
+  }
+
+  // --- Image handlers ---
+
+  onImagesSelected(files: File[]) {
+    const currentImages = this.product()?.images ?? [];
+    const remaining = 10 - currentImages.length;
+    if (remaining <= 0) {
+      this.notifications.error("Nombre maximum d'images atteint (10).");
+      return;
+    }
+
+    const validFiles: File[] = [];
+    for (const file of files.slice(0, remaining)) {
+      const validation = this.imageService.validateFile(file);
+      if (!validation.valid) {
+        this.notifications.error(validation.error!);
+      } else {
+        validFiles.push(file);
+      }
+    }
+
+    if (validFiles.length === 0) return;
+
+    this.uploadingImages.set(true);
+    this.uploadProgress.set(0);
+
+    let completed = 0;
+    for (const file of validFiles) {
+      const isPrimary = currentImages.length === 0 && completed === 0;
+
+      this.imageService
+        .requestUploadUrl(this.productId, file)
+        .pipe(
+          switchMap((presigned) =>
+            this.imageService.uploadToR2(file, presigned.uploadUrl).pipe(
+              switchMap((progress) => {
+                if (!progress.complete) {
+                  this.uploadProgress.set(progress.progress);
+                  return [];
+                }
+                return this.imageService.confirmUpload(this.productId, {
+                  storageKey: presigned.storageKey,
+                  isPrimary,
+                });
+              }),
+            ),
+          ),
+        )
+        .subscribe({
+          next: (confirmedImage) => {
+            const p = this.product();
+            if (p && confirmedImage) {
+              this.product.set({
+                ...p,
+                images: [...p.images, confirmedImage],
+              });
+            }
+            completed++;
+            if (completed === validFiles.length) {
+              this.uploadingImages.set(false);
+              this.uploadProgress.set(null);
+              // Final reload to ensure full consistency with backend
+              this.reloadProductImages();
+            }
+          },
+          error: (err) => {
+            completed++;
+            this.notifications.error(err.error?.message || "Erreur lors de l'upload.");
+            if (completed === validFiles.length) {
+              this.uploadingImages.set(false);
+              this.uploadProgress.set(null);
+              this.reloadProductImages();
+            }
+          },
+        });
+    }
+  }
+
+  onImageDeleted(imageId: string) {
+    this.deletingImageId.set(imageId);
+    this.showDeleteImageModal.set(true);
+  }
+
+  confirmDeleteImage() {
+    const imageId = this.deletingImageId();
+    this.showDeleteImageModal.set(false);
+    this.deletingImageId.set(null);
+    if (!imageId) return;
+
+    this.imageService.deleteImage(this.productId, imageId).subscribe({
+      next: () => {
+        const p = this.product();
+        if (p) {
+          this.product.set({
+            ...p,
+            images: p.images.filter((img) => img.id !== imageId),
+          });
+        }
+        this.notifications.success('Image supprimee.');
+      },
+      error: (err) => {
+        this.notifications.error(err.error?.message || 'Erreur lors de la suppression.');
+      },
+    });
+  }
+
+  onImageReordered({ fromIndex, toIndex }: { fromIndex: number; toIndex: number }) {
+    const p = this.product();
+    if (!p) return;
+    const images = [...p.images];
+    const [moved] = images.splice(fromIndex, 1);
+    images.splice(toIndex, 0, moved);
+    this.product.set({ ...p, images });
+
+    const imageIds = images.map((img) => img.id);
+    this.imageService.reorderImages(this.productId, imageIds).subscribe({
+      error: () => {
+        this.reloadProductImages();
+        this.notifications.error('Erreur lors du reordonnancement.');
+      },
+    });
+  }
+
+  onImagePrimaryChanged(imageId: string) {
+    const p = this.product();
+    if (!p) return;
+    this.product.set({
+      ...p,
+      images: p.images.map((img) => ({
+        ...img,
+        isPrimary: img.id === imageId,
+      })),
+    });
+
+    this.api
+      .patch<any, any>(`admin/catalog/products/${this.productId}/images/${imageId}/primary`, {})
+      .subscribe({
+        error: () => {
+          this.reloadProductImages();
+          this.notifications.error("Erreur lors du changement d'image principale.");
+        },
+      });
+  }
+
+  onAltTextChanged(event: { imageId: string; altTextFr?: string; altTextEn?: string }) {
+    this.api
+      .patch<any, any>(`admin/catalog/products/${this.productId}/images/${event.imageId}`, {
+        altTextFr: event.altTextFr,
+        altTextEn: event.altTextEn,
+      })
+      .subscribe();
+  }
+
+  private reloadProductImages() {
+    this.api.get<Product>(`admin/catalog/products/${this.productId}`).subscribe({
+      next: (p) => this.product.set(p),
     });
   }
 }
