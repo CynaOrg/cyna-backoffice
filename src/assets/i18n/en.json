@@ -141,7 +141,13 @@
     "SAVE_FAILED": "Failed to save product",
     "LOAD_ERROR": "Failed to load products",
     "SAVE_ERROR": "Failed to save product",
-    "DELETE_ERROR": "Failed to delete product"
+    "DELETE_ERROR": "Failed to delete product",
+    "LOW_STOCK": "Low stock",
+    "DISPLAY_ORDER": "Display order",
+    "UPDATED_AT": "Last updated",
+    "CHAR_KEY": "Property",
+    "CHAR_VALUE": "Value",
+    "YEARLY_SAVINGS": "Save {{pct}}% with yearly billing"
   },
   "SERVICES": {
     "TITLE": "SaaS Services",

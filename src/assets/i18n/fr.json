@@ -141,7 +141,13 @@
     "SAVE_FAILED": "Échec de l'enregistrement",
     "LOAD_ERROR": "Échec du chargement des produits",
     "SAVE_ERROR": "Échec de l'enregistrement du produit",
-    "DELETE_ERROR": "Échec de la suppression du produit"
+    "DELETE_ERROR": "Échec de la suppression du produit",
+    "LOW_STOCK": "Stock faible",
+    "DISPLAY_ORDER": "Ordre d'affichage",
+    "UPDATED_AT": "Dernière mise à jour",
+    "CHAR_KEY": "Propriété",
+    "CHAR_VALUE": "Valeur",
+    "YEARLY_SAVINGS": "{{pct}}% d'économie sur l'abonnement annuel"
   },
   "SERVICES": {
     "TITLE": "Services SaaS",
