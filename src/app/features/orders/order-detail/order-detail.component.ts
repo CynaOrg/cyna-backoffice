@@ -58,7 +58,7 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
                   >
                     <div>
                       <p class="text-sm font-medium text-text-primary">
-                        {{ item.productSnapshot?.name || item.productName || item.productId }}
+                        {{ item.productSnapshot?.['name'] || item.productName || item.productId }}
                       </p>
                       <p class="text-xs text-text-muted">
                         {{ 'ORDERS.QTY' | translate }}: {{ item.quantity }}
