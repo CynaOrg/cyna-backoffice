@@ -373,7 +373,7 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
             </div>
 
             <!-- Stock (physical only) -->
-            @if (p.productType === 'PHYSICAL') {
+            @if (p.productType === 'physical') {
               <div
                 class="rounded-xl border border-border-light bg-surface shadow-sm overflow-hidden"
               >
@@ -501,7 +501,7 @@ export class ProductDetailComponent implements OnInit {
 
   stockPercent = computed(() => {
     const p = this.product();
-    if (!p || p.productType !== 'PHYSICAL') return 0;
+    if (!p || p.productType !== 'physical') return 0;
     const qty = p.stockQuantity ?? 0;
     const max = Math.max(qty, p.stockAlertThreshold * 3, 100);
     return Math.min((qty / max) * 100, 100);
@@ -518,7 +518,7 @@ export class ProductDetailComponent implements OnInit {
 
   isLowStock = computed(() => {
     const p = this.product();
-    if (!p || p.productType !== 'PHYSICAL') return false;
+    if (!p || p.productType !== 'physical') return false;
     return (p.stockQuantity ?? 0) <= p.stockAlertThreshold;
   });
 
