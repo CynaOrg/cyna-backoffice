@@ -11,8 +11,8 @@ export interface Order {
   discountAmount: number;
   total: number;
   currency: string;
-  billingAddressSnapshot: any;
-  shippingAddressSnapshot?: any;
+  billingAddressSnapshot: Record<string, unknown>;
+  shippingAddressSnapshot?: Record<string, unknown>;
   stripePaymentIntentId?: string;
   paidAt?: string;
   shippedAt?: string;
@@ -28,7 +28,7 @@ export interface Order {
 export interface OrderItem {
   id: string;
   productId: string;
-  productSnapshot?: any;
+  productSnapshot?: Record<string, unknown>;
   productName?: string;
   quantity: number;
   unitPrice: number;
