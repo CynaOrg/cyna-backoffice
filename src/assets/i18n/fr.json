@@ -151,7 +151,9 @@
     "CHAR_VALUE": "Valeur",
     "ADD_CHAR": "Ajouter",
     "NO_CHARS": "Aucune caractéristique",
-    "YEARLY_SAVINGS": "{{pct}}% d'économie sur l'abonnement annuel"
+    "YEARLY_SAVINGS": "{{pct}}% d'économie sur l'abonnement annuel",
+    "STOCK_UPDATED": "Stock mis à jour",
+    "STOCK_UPDATE_ERROR": "Échec de la mise à jour du stock"
   },
   "SERVICES": {
     "TITLE": "Services SaaS",
@@ -231,7 +233,19 @@
     "CANCELLED_SUCCESS": "Abonnement annulé",
     "REACTIVATED_SUCCESS": "Abonnement réactivé",
     "LOAD_FAILED": "Échec du chargement des abonnements",
-    "UPDATE_FAILED": "Échec de la mise à jour de l'abonnement"
+    "UPDATE_FAILED": "Échec de la mise à jour de l'abonnement",
+    "BILLING_INFO": "Facturation",
+    "CURRENCY": "Devise",
+    "CANCEL_AT_PERIOD_END": "Annulation en fin de période",
+    "PERIOD_INFO": "Période en cours",
+    "PERIOD_START": "Début de période",
+    "CANCELLED_AT": "Annulé le",
+    "ENDED_AT": "Terminé le",
+    "USER_ID": "ID utilisateur",
+    "DETAILS": "Détails",
+    "CREATED_AT": "Créé le",
+    "UPDATED_AT": "Mis à jour le",
+    "PRODUCT_ID": "ID produit"
   },
   "CUSTOMERS": {
     "TITLE": "Clients",
@@ -516,7 +530,8 @@
     "STATUS": "Statut",
     "NA": "N/A",
     "PREV": "Précédent",
-    "NEXT": "Suivant"
+    "NEXT": "Suivant",
+    "SAVING": "Enregistrement..."
   },
   "PAGES": {
     "DASHBOARD": "Tableau de bord",

@@ -1,5 +1,6 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { ActivatedRoute, RouterLink, Router } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ApiService } from '../../../core/services/api.service';
 import { AdminAuthService } from '../../../core/auth/services/admin-auth.service';
@@ -11,7 +12,7 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
 @Component({
   selector: 'app-product-detail',
   standalone: true,
-  imports: [RouterLink, TranslateModule, StatusBadgeComponent, ConfirmModalComponent],
+  imports: [RouterLink, FormsModule, TranslateModule, StatusBadgeComponent, ConfirmModalComponent],
   template: `
     @if (loading()) {
       <!-- Skeleton loading -->
@@ -377,47 +378,104 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
               <div
                 class="rounded-xl border border-border-light bg-surface shadow-sm overflow-hidden"
               >
-                <div class="px-6 py-4 border-b border-border-light">
+                <div
+                  class="px-6 py-4 border-b border-border-light flex items-center justify-between"
+                >
                   <h3 class="text-sm font-semibold text-text-primary !m-0">
                     {{ 'PRODUCTS.STOCK' | translate }}
                   </h3>
+                  @if (auth.isSuperAdmin() && !editingStock()) {
+                    <button
+                      (click)="startStockEdit()"
+                      class="text-xs text-primary hover:text-primary-hover font-medium bg-transparent border-none cursor-pointer"
+                    >
+                      {{ 'PRODUCTS.UPDATE' | translate }}
+                    </button>
+                  }
                 </div>
                 <div class="p-5">
-                  <div class="flex items-baseline justify-between mb-3">
-                    <span class="text-2xl font-semibold tracking-tight text-text-primary">{{
-                      p.stockQuantity ?? 0
-                    }}</span>
-                    <span class="text-xs text-text-muted"
-                      >{{ 'PRODUCTS.ALERT_THRESHOLD' | translate }}:
-                      {{ p.stockAlertThreshold }}</span
-                    >
-                  </div>
-                  <div class="w-full bg-border-light rounded-full h-2">
-                    <div
-                      class="rounded-full h-2 transition-all duration-500"
-                      [class]="stockBarColor()"
-                      [style.width.%]="stockPercent()"
-                    ></div>
-                  </div>
-                  @if (isLowStock()) {
-                    <div class="flex items-center gap-1.5 mt-3">
-                      <svg
-                        class="w-3.5 h-3.5 text-warning"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="1.5"
-                          d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
+                  @if (editingStock()) {
+                    <div class="space-y-3">
+                      <div>
+                        <label class="block text-xs text-text-muted mb-1">{{
+                          'PRODUCTS.QUANTITY' | translate
+                        }}</label>
+                        <input
+                          type="number"
+                          [(ngModel)]="stockQuantityInput"
+                          min="0"
+                          class="w-full px-3 py-2 rounded-lg border border-border bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                         />
-                      </svg>
-                      <span class="text-xs font-medium text-warning">{{
-                        'PRODUCTS.LOW_STOCK' | translate
-                      }}</span>
+                      </div>
+                      <div>
+                        <label class="block text-xs text-text-muted mb-1">{{
+                          'PRODUCTS.ALERT_THRESHOLD' | translate
+                        }}</label>
+                        <input
+                          type="number"
+                          [(ngModel)]="stockThresholdInput"
+                          min="0"
+                          class="w-full px-3 py-2 rounded-lg border border-border bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                        />
+                      </div>
+                      <div class="flex gap-2 pt-1">
+                        <button
+                          (click)="saveStock()"
+                          [disabled]="savingStock()"
+                          class="flex-1 px-3 py-2 bg-primary text-white text-xs font-medium rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50 border-none cursor-pointer"
+                        >
+                          @if (savingStock()) {
+                            {{ 'COMMON.SAVING' | translate }}
+                          } @else {
+                            {{ 'COMMON.SAVE' | translate }}
+                          }
+                        </button>
+                        <button
+                          (click)="editingStock.set(false)"
+                          [disabled]="savingStock()"
+                          class="px-3 py-2 border border-border-light text-text-secondary text-xs font-medium rounded-lg hover:bg-background transition-colors bg-transparent cursor-pointer"
+                        >
+                          {{ 'COMMON.CANCEL' | translate }}
+                        </button>
+                      </div>
                     </div>
+                  } @else {
+                    <div class="flex items-baseline justify-between mb-3">
+                      <span class="text-2xl font-semibold tracking-tight text-text-primary">{{
+                        p.stockQuantity ?? 0
+                      }}</span>
+                      <span class="text-xs text-text-muted"
+                        >{{ 'PRODUCTS.ALERT_THRESHOLD' | translate }}:
+                        {{ p.stockAlertThreshold }}</span
+                      >
+                    </div>
+                    <div class="w-full bg-border-light rounded-full h-2">
+                      <div
+                        class="rounded-full h-2 transition-all duration-500"
+                        [class]="stockBarColor()"
+                        [style.width.%]="stockPercent()"
+                      ></div>
+                    </div>
+                    @if (isLowStock()) {
+                      <div class="flex items-center gap-1.5 mt-3">
+                        <svg
+                          class="w-3.5 h-3.5 text-warning"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="1.5"
+                            d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
+                          />
+                        </svg>
+                        <span class="text-xs font-medium text-warning">{{
+                          'PRODUCTS.LOW_STOCK' | translate
+                        }}</span>
+                      </div>
+                    }
                   }
                 </div>
               </div>
@@ -499,6 +557,11 @@ export class ProductDetailComponent implements OnInit {
   selectedImage = signal<string>('');
   basePath = '/products';
 
+  editingStock = signal(false);
+  savingStock = signal(false);
+  stockQuantityInput = 0;
+  stockThresholdInput = 0;
+
   stockPercent = computed(() => {
     const p = this.product();
     if (!p || p.productType !== 'PHYSICAL') return 0;
@@ -548,6 +611,37 @@ export class ProductDetailComponent implements OnInit {
         this.router.navigate([this.basePath]);
       },
     });
+  }
+
+  startStockEdit() {
+    const p = this.product();
+    if (!p) return;
+    this.stockQuantityInput = p.stockQuantity ?? 0;
+    this.stockThresholdInput = p.stockAlertThreshold ?? 10;
+    this.editingStock.set(true);
+  }
+
+  saveStock() {
+    const p = this.product();
+    if (!p) return;
+    this.savingStock.set(true);
+    this.api
+      .patch<any, any>(`admin/catalog/products/${p.id}/stock`, {
+        stockQuantity: this.stockQuantityInput,
+        stockAlertThreshold: this.stockThresholdInput,
+      })
+      .subscribe({
+        next: () => {
+          this.notifications.success(this.translate.instant('PRODUCTS.STOCK_UPDATED'));
+          this.editingStock.set(false);
+          this.savingStock.set(false);
+          this.loadProduct(p.id);
+        },
+        error: () => {
+          this.notifications.error(this.translate.instant('PRODUCTS.STOCK_UPDATE_ERROR'));
+          this.savingStock.set(false);
+        },
+      });
   }
 
   deleteProduct() {

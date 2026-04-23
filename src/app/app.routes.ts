@@ -169,6 +169,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'subscriptions/:id',
+        loadComponent: () =>
+          import('./features/subscriptions/subscription-detail/subscription-detail.component').then(
+            (m) => m.SubscriptionDetailComponent,
+          ),
+      },
+      {
         path: 'customers',
         loadComponent: () =>
           import('./features/customers/customer-list/customer-list.component').then(
