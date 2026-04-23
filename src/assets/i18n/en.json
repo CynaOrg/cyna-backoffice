@@ -151,7 +151,9 @@
     "CHAR_VALUE": "Value",
     "ADD_CHAR": "Add",
     "NO_CHARS": "No characteristics",
-    "YEARLY_SAVINGS": "Save {{pct}}% with yearly billing"
+    "YEARLY_SAVINGS": "Save {{pct}}% with yearly billing",
+    "STOCK_UPDATED": "Stock updated",
+    "STOCK_UPDATE_ERROR": "Failed to update stock"
   },
   "SERVICES": {
     "TITLE": "SaaS Services",
@@ -231,7 +233,19 @@
     "CANCELLED_SUCCESS": "Subscription cancelled",
     "REACTIVATED_SUCCESS": "Subscription reactivated",
     "LOAD_FAILED": "Failed to load subscriptions",
-    "UPDATE_FAILED": "Failed to update subscription"
+    "UPDATE_FAILED": "Failed to update subscription",
+    "BILLING_INFO": "Billing",
+    "CURRENCY": "Currency",
+    "CANCEL_AT_PERIOD_END": "Cancel at period end",
+    "PERIOD_INFO": "Current Period",
+    "PERIOD_START": "Period start",
+    "CANCELLED_AT": "Cancelled on",
+    "ENDED_AT": "Ended on",
+    "USER_ID": "User ID",
+    "DETAILS": "Details",
+    "CREATED_AT": "Created on",
+    "UPDATED_AT": "Updated on",
+    "PRODUCT_ID": "Product ID"
   },
   "CUSTOMERS": {
     "TITLE": "Customers",
@@ -516,7 +530,8 @@
     "STATUS": "Status",
     "NA": "N/A",
     "PREV": "Previous",
-    "NEXT": "Next"
+    "NEXT": "Next",
+    "SAVING": "Saving..."
   },
   "PAGES": {
     "DASHBOARD": "Dashboard",

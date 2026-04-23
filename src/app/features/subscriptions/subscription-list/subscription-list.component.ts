@@ -1,5 +1,6 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ApiService } from '../../../core/services/api.service';
 import { AdminAuthService } from '../../../core/auth/services/admin-auth.service';
@@ -14,6 +15,7 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
   standalone: true,
   imports: [
     FormsModule,
+    RouterLink,
     TranslateModule,
     StatusBadgeComponent,
     LoadingSpinnerComponent,
@@ -86,10 +88,11 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
               <tbody class="divide-y divide-border-light">
                 @for (sub of subscriptions(); track sub.id) {
                   <tr
-                    class="hover:bg-gray-50/50"
+                    class="hover:bg-gray-50/50 cursor-pointer"
                     [class]="sub.status === 'past_due' ? 'bg-orange-50/30' : ''"
+                    [routerLink]="['/subscriptions', sub.id]"
                   >
-                    <td class="px-6 py-4 text-sm font-medium text-text-primary">
+                    <td class="px-6 py-4 text-sm font-medium text-primary hover:text-primary-hover">
                       {{ sub.productName || sub.productId }}
                     </td>
                     <td class="px-6 py-4 text-sm text-text-secondary">
