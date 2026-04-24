@@ -254,7 +254,14 @@
     "CANCELLED_SUCCESS": "Abonnement annulé",
     "REACTIVATED_SUCCESS": "Abonnement réactivé",
     "LOAD_FAILED": "Échec du chargement des abonnements",
-    "UPDATE_FAILED": "Échec de la mise à jour de l'abonnement"
+    "UPDATE_FAILED": "Échec de la mise à jour de l'abonnement",
+    "EDIT_TERMS": "Modifier les termes",
+    "CANCEL_AT_PERIOD_END": "Annuler à la fin de la période",
+    "TRIAL_END": "Fin de l'essai",
+    "END_TRIAL_NOW": "Terminer l'essai maintenant",
+    "TERMS_UPDATED": "Termes mis à jour",
+    "TERMS_UPDATE_FAILED": "Échec de la mise à jour des termes",
+    "SAVE": "Enregistrer"
   },
   "CUSTOMERS": {
     "TITLE": "Clients",
@@ -293,7 +300,10 @@
     "ACTIVATED": "Utilisateur activé",
     "DEACTIVATED": "Utilisateur désactivé",
     "UPDATE_FAILED": "Échec de la mise à jour",
-    "NOT_FOUND": "Utilisateur non trouvé"
+    "NOT_FOUND": "Utilisateur non trouvé",
+    "ORDER_HISTORY": "Historique des commandes",
+    "NO_ORDERS": "Aucune commande",
+    "VIEW_ALL_ORDERS": "Voir toutes les commandes"
   },
   "ANALYTICS": {
     "TITLE": "Statistiques",
