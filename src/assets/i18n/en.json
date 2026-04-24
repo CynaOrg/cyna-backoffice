@@ -254,7 +254,14 @@
     "CANCELLED_SUCCESS": "Subscription cancelled",
     "REACTIVATED_SUCCESS": "Subscription reactivated",
     "LOAD_FAILED": "Failed to load subscriptions",
-    "UPDATE_FAILED": "Failed to update subscription"
+    "UPDATE_FAILED": "Failed to update subscription",
+    "EDIT_TERMS": "Edit terms",
+    "CANCEL_AT_PERIOD_END": "Cancel at period end",
+    "TRIAL_END": "Trial end",
+    "END_TRIAL_NOW": "End trial now",
+    "TERMS_UPDATED": "Terms updated",
+    "TERMS_UPDATE_FAILED": "Failed to update terms",
+    "SAVE": "Save"
   },
   "CUSTOMERS": {
     "TITLE": "Customers",
@@ -293,7 +300,10 @@
     "ACTIVATED": "User activated",
     "DEACTIVATED": "User deactivated",
     "UPDATE_FAILED": "Failed to update user",
-    "NOT_FOUND": "User not found"
+    "NOT_FOUND": "User not found",
+    "ORDER_HISTORY": "Order history",
+    "NO_ORDERS": "No orders",
+    "VIEW_ALL_ORDERS": "View all orders"
   },
   "ANALYTICS": {
     "TITLE": "Analytics",
