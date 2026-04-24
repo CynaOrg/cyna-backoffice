@@ -37,7 +37,7 @@ export interface ContactMessage {
   subject: string;
   message: string;
   isRead: boolean;
-  isTreated: boolean;
+  isProcessed: boolean;
   createdAt: string;
   updatedAt: string;
 }

@@ -106,7 +106,7 @@ type MessagesTab = 'inbox' | 'archived';
                               : ('CONTENT.UNREAD' | translate)
                           "
                         />
-                        @if (msg.isTreated) {
+                        @if (msg.isProcessed) {
                           <app-status-badge
                             status="completed"
                             [label]="'MESSAGES.ARCHIVED' | translate"
@@ -260,13 +260,13 @@ export class MessagesComponent implements OnInit {
 
   readonly inboxMessages = computed(() =>
     this.all()
-      .filter((m) => !m.isTreated)
+      .filter((m) => !m.isProcessed)
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
   );
 
   readonly archivedMessages = computed(() =>
     this.all()
-      .filter((m) => m.isTreated)
+      .filter((m) => m.isProcessed)
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
   );
 
@@ -306,11 +306,11 @@ export class MessagesComponent implements OnInit {
   }
 
   archive(msg: ContactMessage): void {
-    this.update(msg, { isTreated: true });
+    this.update(msg, { isProcessed: true });
   }
 
   restore(msg: ContactMessage): void {
-    this.update(msg, { isTreated: false });
+    this.update(msg, { isProcessed: false });
   }
 
   confirmDelete(msg: ContactMessage): void {
@@ -345,7 +345,7 @@ export class MessagesComponent implements OnInit {
     });
   }
 
-  private update(msg: ContactMessage, patch: { isRead?: boolean; isTreated?: boolean }): void {
+  private update(msg: ContactMessage, patch: { isRead?: boolean; isProcessed?: boolean }): void {
     this.contentService.updateContactMessage(msg.id, patch).subscribe({
       next: (updated) => {
         this.all.update((msgs) => msgs.map((m) => (m.id === msg.id ? updated : m)));
