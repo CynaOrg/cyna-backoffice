@@ -15,13 +15,11 @@ import { StatusBadgeComponent } from '../../shared/components/status-badge/statu
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import {
   DashboardData,
-  DashboardKPIs,
   StockStatusResponse,
   SalesDataPoint,
   SalesByProductTypeData,
   MrrDataPoint,
   StockItem,
-  TopProductData,
   CategorySalesEntry,
   AverageCartByTypeEntry,
   AverageCartProductType,
@@ -143,10 +141,9 @@ Chart.defaults.plugins.tooltip.usePointStyle = true;
           />
         </div>
 
-        <!-- Sales Overview + Category Distribution -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
-          <!-- Sales Bar Chart (2/3) -->
-          <div class="lg:col-span-2 rounded-xl border border-border-light bg-surface shadow-sm">
+        <!-- Sales Overview -->
+        <div class="mb-4">
+          <div class="rounded-xl border border-border-light bg-surface shadow-sm">
             <div
               class="flex items-center justify-between px-4 sm:px-5 py-3 sm:py-4 border-b border-border-light"
             >
@@ -193,43 +190,6 @@ Chart.defaults.plugins.tooltip.usePointStyle = true;
               <canvas #salesChart height="110"></canvas>
             </div>
           </div>
-
-          <!-- Top Products Doughnut (1/3) -->
-          <div class="rounded-xl border border-border-light bg-surface shadow-sm">
-            <div class="px-4 sm:px-5 py-3 sm:py-4 border-b border-border-light">
-              <h3 class="text-sm font-semibold text-text-primary !m-0">
-                {{ 'ANALYTICS.TOP_PRODUCTS' | translate }}
-              </h3>
-            </div>
-            <div class="p-4 sm:p-5 flex flex-col items-center">
-              <div class="w-40 h-40">
-                <canvas
-                  #categoryChart
-                  class="block w-full h-full"
-                  width="160"
-                  height="160"
-                ></canvas>
-              </div>
-              <div class="w-full mt-4 space-y-2">
-                @for (product of topProductsData(); track product.productName) {
-                  <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-2 min-w-0">
-                      <span
-                        class="w-2 h-2 rounded-full flex-shrink-0"
-                        [style.background-color]="chartColors[$index % chartColors.length]"
-                      ></span>
-                      <span class="text-xs text-text-primary truncate">{{
-                        product.productName
-                      }}</span>
-                    </div>
-                    <span class="text-xs font-medium text-text-primary tabular-nums">
-                      {{ product.percentage }}%
-                    </span>
-                  </div>
-                }
-              </div>
-            </div>
-          </div>
         </div>
 
         <!-- MRR Evolution + Product Type Distribution -->
@@ -268,14 +228,14 @@ Chart.defaults.plugins.tooltip.usePointStyle = true;
                 ></canvas>
               </div>
               <div class="w-full mt-4 space-y-2">
-                @for (pt of productTypeData(); track pt.productType) {
+                @for (pt of productTypeData(); track pt.type) {
                   <div class="flex items-center justify-between">
                     <div class="flex items-center gap-2 min-w-0">
                       <span
                         class="w-2 h-2 rounded-full flex-shrink-0"
                         [style.background-color]="chartColors[$index % chartColors.length]"
                       ></span>
-                      <span class="text-xs text-text-primary truncate">{{ pt.productType }}</span>
+                      <span class="text-xs text-text-primary truncate">{{ pt.type }}</span>
                     </div>
                     <span class="text-xs font-medium text-text-primary tabular-nums">
                       {{ pt.percentage }}%
@@ -360,11 +320,6 @@ Chart.defaults.plugins.tooltip.usePointStyle = true;
                       {{ 'ANALYTICS.PRODUCT_NAME' | translate }}
                     </th>
                     <th
-                      class="px-4 sm:px-5 py-2.5 text-left text-[10px] font-semibold uppercase tracking-wider text-text-muted"
-                    >
-                      {{ 'ANALYTICS.SKU' | translate }}
-                    </th>
-                    <th
                       class="px-4 sm:px-5 py-2.5 text-right text-[10px] font-semibold uppercase tracking-wider text-text-muted"
                     >
                       {{ 'ANALYTICS.CURRENT_STOCK' | translate }}
@@ -385,10 +340,7 @@ Chart.defaults.plugins.tooltip.usePointStyle = true;
                   @for (item of stockItems(); track item.productId) {
                     <tr class="hover:bg-background transition-colors">
                       <td class="px-4 sm:px-5 py-3 text-xs font-medium text-text-primary">
-                        {{ item.productName }}
-                      </td>
-                      <td class="px-4 sm:px-5 py-3 text-xs text-text-muted font-mono">
-                        {{ item.sku }}
+                        {{ item.name }}
                       </td>
                       <td
                         class="px-4 sm:px-5 py-3 text-xs text-text-primary text-right tabular-nums"
@@ -396,7 +348,7 @@ Chart.defaults.plugins.tooltip.usePointStyle = true;
                         {{ item.currentStock }}
                       </td>
                       <td class="px-4 sm:px-5 py-3 text-xs text-text-muted text-right tabular-nums">
-                        {{ item.alertThreshold }}
+                        {{ item.threshold }}
                       </td>
                       <td class="px-4 sm:px-5 py-3">
                         <span
@@ -480,7 +432,6 @@ Chart.defaults.plugins.tooltip.usePointStyle = true;
 })
 export class AnalyticsComponent implements OnInit, AfterViewInit {
   @ViewChild('salesChart') salesChartRef!: ElementRef<HTMLCanvasElement>;
-  @ViewChild('categoryChart') categoryChartRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('productTypeChart') productTypeChartRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('mrrChart') mrrChartRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('categorySalesChart') categorySalesChartRef!: ElementRef<HTMLCanvasElement>;
@@ -496,7 +447,6 @@ export class AnalyticsComponent implements OnInit, AfterViewInit {
 
   dashboard = signal<AnalyticsViewModel | null>(null);
   salesData = signal<SalesDataPoint[]>([]);
-  topProductsData = signal<TopProductData[]>([]);
   productTypeData = signal<SalesByProductTypeData[]>([]);
   mrrHistory = signal<MrrDataPoint[]>([]);
   stockItems = signal<StockItem[]>([]);
@@ -508,7 +458,6 @@ export class AnalyticsComponent implements OnInit, AfterViewInit {
   exporting = signal(false);
 
   private salesChart: Chart | null = null;
-  private categoryChart: Chart | null = null;
   private productTypeChart: Chart | null = null;
   private mrrChart: Chart | null = null;
   private categorySalesChart: Chart | null = null;
@@ -564,7 +513,6 @@ export class AnalyticsComponent implements OnInit, AfterViewInit {
       sales: this.analyticsService
         .getSales(period, this.groupBy())
         .pipe(catchError(() => of(null))),
-      topProducts: this.analyticsService.getTopProducts(period).pipe(catchError(() => of(null))),
       productType: this.analyticsService
         .getSalesByProductType(period)
         .pipe(catchError(() => of(null))),
@@ -594,8 +542,7 @@ export class AnalyticsComponent implements OnInit, AfterViewInit {
           this.dashboard.set(null);
         }
 
-        this.salesData.set(results.sales?.sales || []);
-        this.topProductsData.set(this.aggregateTopProducts(results.topProducts?.data || []));
+        this.salesData.set(results.sales?.series || []);
         this.productTypeData.set(results.productType?.data || []);
         this.salesByCategoryData.set(results.salesByCategory?.categories || []);
         this.averageCartByTypeData.set(results.averageCartByType?.data || []);
@@ -618,7 +565,7 @@ export class AnalyticsComponent implements OnInit, AfterViewInit {
     const period = this.selectedPeriod();
     this.analyticsService.getSales(period, this.groupBy()).subscribe({
       next: (result) => {
-        this.salesData.set(result?.sales || []);
+        this.salesData.set(result?.series || []);
         setTimeout(() => this.renderSalesChart(), 100);
       },
       error: () => {
@@ -627,29 +574,8 @@ export class AnalyticsComponent implements OnInit, AfterViewInit {
     });
   }
 
-  private aggregateTopProducts(products: TopProductData[]): TopProductData[] {
-    if (products.length <= 4) return products;
-
-    const top3 = products.slice(0, 3);
-    const rest = products.slice(3);
-    const otherRevenue = rest.reduce((sum, p) => sum + p.revenue, 0);
-    const otherOrders = rest.reduce((sum, p) => sum + p.orderCount, 0);
-    const otherPercentage = rest.reduce((sum, p) => sum + p.percentage, 0);
-
-    return [
-      ...top3,
-      {
-        productName: this.translate.instant('ANALYTICS.OTHER'),
-        revenue: otherRevenue,
-        orderCount: otherOrders,
-        percentage: otherPercentage,
-      },
-    ];
-  }
-
   renderAllCharts(): void {
     this.renderSalesChart();
-    this.renderCategoryChart();
     this.renderProductTypeChart();
     this.renderMrrChart();
     this.renderSalesByCategoryChart();
@@ -771,7 +697,7 @@ export class AnalyticsComponent implements OnInit, AfterViewInit {
     this.salesChart = new Chart(this.salesChartRef.nativeElement, {
       type: 'bar',
       data: {
-        labels: sales.map((s) => s.period),
+        labels: sales.map((s) => s.date),
         datasets: [
           {
             label: 'Revenue',
@@ -810,45 +736,6 @@ export class AnalyticsComponent implements OnInit, AfterViewInit {
     });
   }
 
-  renderCategoryChart(): void {
-    const data = this.topProductsData();
-    if (!data.length || !this.categoryChartRef) return;
-
-    if (this.categoryChart) this.categoryChart.destroy();
-
-    this.categoryChart = new Chart(this.categoryChartRef.nativeElement, {
-      type: 'doughnut',
-      data: {
-        labels: data.map((d) => d.productName),
-        datasets: [
-          {
-            data: data.map((d) => d.revenue),
-            backgroundColor: data.map((_, i) => this.chartColors[i % this.chartColors.length]),
-            borderColor: '#ffffff',
-            borderWidth: 2,
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        cutout: '58%',
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            callbacks: {
-              label: (ctx) => {
-                const value = this.formatCurrency(ctx.parsed);
-                const pct = data[ctx.dataIndex]?.percentage ?? 0;
-                return `${ctx.label}: ${value} (${pct}%)`;
-              },
-            },
-          },
-        },
-      },
-    });
-  }
-
   renderProductTypeChart(): void {
     const data = this.productTypeData();
     if (!data.length || !this.productTypeChartRef) return;
@@ -858,7 +745,7 @@ export class AnalyticsComponent implements OnInit, AfterViewInit {
     this.productTypeChart = new Chart(this.productTypeChartRef.nativeElement, {
       type: 'doughnut',
       data: {
-        labels: data.map((d) => d.productType),
+        labels: data.map((d) => d.type),
         datasets: [
           {
             data: data.map((d) => d.revenue),
@@ -905,7 +792,7 @@ export class AnalyticsComponent implements OnInit, AfterViewInit {
     this.mrrChart = new Chart(this.mrrChartRef.nativeElement, {
       type: 'line',
       data: {
-        labels: data.map((d) => d.period),
+        labels: data.map((d) => d.month),
         datasets: [
           {
             label: 'MRR',
@@ -930,13 +817,7 @@ export class AnalyticsComponent implements OnInit, AfterViewInit {
           legend: { display: false },
           tooltip: {
             callbacks: {
-              label: (ctx) => {
-                const value = this.formatCurrency(ctx.parsed.y ?? 0);
-                const growth = data[ctx.dataIndex]?.growth;
-                const growthStr =
-                  growth !== undefined ? ` (${growth >= 0 ? '+' : ''}${growth}%)` : '';
-                return `MRR: ${value}${growthStr}`;
-              },
+              label: (ctx) => `MRR: ${this.formatCurrency(ctx.parsed.y ?? 0)}`,
             },
           },
         },
