@@ -5,6 +5,7 @@
     "PRODUCTS": "Products",
     "SERVICES": "SaaS Services",
     "LICENCES": "Licences",
+    "CATEGORIES": "Categories",
     "MANAGEMENT": "Management",
     "ORDERS": "Orders",
     "SUBSCRIPTIONS": "Subscriptions",
@@ -511,7 +512,14 @@
     "DELETED": "Category deleted",
     "LOAD_FAILED": "Failed to load categories",
     "SAVE_FAILED": "Failed to save",
-    "DELETE_FAILED": "Failed to delete"
+    "DELETE_FAILED": "Failed to delete",
+    "DESCRIPTION_FR": "Description (FR)",
+    "DESCRIPTION_EN": "Description (EN)",
+    "MOVE_UP": "Move up",
+    "MOVE_DOWN": "Move down",
+    "REORDER_FAILED": "Failed to reorder",
+    "IMAGE": "Image",
+    "IMAGE_PREVIEW": "Image preview"
   },
   "COMMON": {
     "LOADING": "Loading...",
@@ -538,6 +546,7 @@
     "PRODUCTS": "Products",
     "SERVICES": "SaaS Services",
     "LICENCES": "Licences",
+    "CATEGORIES": "Categories",
     "ORDERS": "Orders",
     "SUBSCRIPTIONS": "Subscriptions",
     "CUSTOMERS": "Customers",

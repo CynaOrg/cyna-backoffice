@@ -9,6 +9,17 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge/st
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/confirm-modal.component';
 
+interface CategoryFormData {
+  nameFr: string;
+  nameEn: string;
+  slug: string;
+  descriptionFr: string;
+  descriptionEn: string;
+  imageUrl: string;
+  displayOrder: number;
+  isActive: boolean;
+}
+
 @Component({
   selector: 'app-category-list',
   standalone: true,
@@ -70,12 +81,16 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
                 </tr>
               </thead>
               <tbody class="divide-y divide-border-light">
-                @for (cat of categories(); track cat.id) {
+                @for (cat of categories(); track cat.id; let i = $index) {
                   <tr class="hover:bg-gray-50/50">
                     <td class="px-6 py-4">
                       <div class="flex items-center gap-3">
                         @if (cat.imageUrl) {
-                          <img [src]="cat.imageUrl" class="w-8 h-8 rounded object-cover" />
+                          <img
+                            [src]="cat.imageUrl"
+                            [alt]="cat.nameFr"
+                            class="w-8 h-8 rounded object-cover"
+                          />
                         }
                         <div>
                           <p class="text-sm font-medium text-text-primary">{{ cat.nameFr }}</p>
@@ -91,6 +106,52 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
                     @if (auth.isSuperAdmin()) {
                       <td class="px-6 py-4 text-right">
                         <div class="flex items-center justify-end gap-2">
+                          <div class="flex flex-col gap-0.5 mr-2">
+                            <button
+                              type="button"
+                              (click)="moveCategory(i, 'up')"
+                              [disabled]="i === 0 || reordering()"
+                              class="p-1 rounded hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed text-text-secondary"
+                              [title]="'CATEGORIES.MOVE_UP' | translate"
+                              [attr.aria-label]="'CATEGORIES.MOVE_UP' | translate"
+                            >
+                              <svg
+                                class="w-4 h-4"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  stroke-linecap="round"
+                                  stroke-linejoin="round"
+                                  stroke-width="2"
+                                  d="M5 15l7-7 7 7"
+                                />
+                              </svg>
+                            </button>
+                            <button
+                              type="button"
+                              (click)="moveCategory(i, 'down')"
+                              [disabled]="i === categories().length - 1 || reordering()"
+                              class="p-1 rounded hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed text-text-secondary"
+                              [title]="'CATEGORIES.MOVE_DOWN' | translate"
+                              [attr.aria-label]="'CATEGORIES.MOVE_DOWN' | translate"
+                            >
+                              <svg
+                                class="w-4 h-4"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  stroke-linecap="round"
+                                  stroke-linejoin="round"
+                                  stroke-width="2"
+                                  d="M19 9l-7 7-7-7"
+                                />
+                              </svg>
+                            </button>
+                          </div>
                           <button
                             (click)="openForm(cat)"
                             class="text-sm text-primary hover:text-primary-hover"
@@ -124,7 +185,9 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
       @if (showForm()) {
         <div class="fixed inset-0 z-50 flex items-center justify-center">
           <div class="absolute inset-0 bg-black/40" (click)="showForm.set(false)"></div>
-          <div class="relative bg-white rounded-xl shadow-xl p-6 max-w-lg w-full mx-4">
+          <div
+            class="relative bg-white rounded-xl shadow-xl p-6 max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto"
+          >
             <h3 class="text-lg font-semibold mb-4">
               {{
                 editingCategory()
@@ -159,8 +222,30 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
                 }}</label>
                 <input
                   [(ngModel)]="formData.slug"
-                  class="w-full px-3 py-2 rounded-lg border border-border bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                  class="w-full px-3 py-2 rounded-lg border border-border bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary font-mono"
                 />
+              </div>
+              <div class="grid grid-cols-1 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-text-secondary mb-1">{{
+                    'CATEGORIES.DESCRIPTION_FR' | translate
+                  }}</label>
+                  <textarea
+                    [(ngModel)]="formData.descriptionFr"
+                    rows="3"
+                    class="w-full px-3 py-2 rounded-lg border border-border bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none"
+                  ></textarea>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-text-secondary mb-1">{{
+                    'CATEGORIES.DESCRIPTION_EN' | translate
+                  }}</label>
+                  <textarea
+                    [(ngModel)]="formData.descriptionEn"
+                    rows="3"
+                    class="w-full px-3 py-2 rounded-lg border border-border bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none"
+                  ></textarea>
+                </div>
               </div>
               <div>
                 <label class="block text-sm font-medium text-text-secondary mb-1">{{
@@ -168,8 +253,22 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
                 }}</label>
                 <input
                   [(ngModel)]="formData.imageUrl"
+                  type="url"
+                  placeholder="https://..."
                   class="w-full px-3 py-2 rounded-lg border border-border bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                 />
+                @if (formData.imageUrl) {
+                  <div class="mt-3 flex items-center gap-3">
+                    <img
+                      [src]="formData.imageUrl"
+                      [alt]="'CATEGORIES.IMAGE_PREVIEW' | translate"
+                      class="w-16 h-16 rounded-lg object-cover border border-border-light"
+                    />
+                    <span class="text-xs text-text-muted">{{
+                      'CATEGORIES.IMAGE_PREVIEW' | translate
+                    }}</span>
+                  </div>
+                }
               </div>
               <div class="grid grid-cols-2 gap-4">
                 <div>
@@ -183,10 +282,10 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
                   />
                 </div>
                 <div class="flex items-end pb-1">
-                  <label class="flex items-center gap-2 text-sm"
-                    ><input type="checkbox" [(ngModel)]="formData.isActive" class="rounded" />
-                    {{ 'CATEGORIES.ACTIVE' | translate }}</label
-                  >
+                  <label class="flex items-center gap-2 text-sm">
+                    <input type="checkbox" [(ngModel)]="formData.isActive" class="rounded" />
+                    {{ 'CATEGORIES.ACTIVE' | translate }}
+                  </label>
                 </div>
               </div>
             </div>
@@ -228,26 +327,26 @@ export class CategoryListComponent implements OnInit {
   private readonly translate = inject(TranslateService);
 
   categories = signal<Category[]>([]);
-  loading = signal(true);
-  showForm = signal(false);
-  showDeleteModal = signal(false);
-  saving = signal(false);
+  loading = signal<boolean>(true);
+  showForm = signal<boolean>(false);
+  showDeleteModal = signal<boolean>(false);
+  saving = signal<boolean>(false);
+  reordering = signal<boolean>(false);
   editingCategory = signal<Category | null>(null);
   categoryToDelete = signal<Category | null>(null);
 
-  formData = { nameFr: '', nameEn: '', slug: '', imageUrl: '', displayOrder: 0, isActive: true };
+  formData: CategoryFormData = this.emptyForm();
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.loadCategories();
   }
 
-  loadCategories() {
+  loadCategories(): void {
     this.loading.set(true);
-    this.api.get<any>('admin/catalog/categories').subscribe({
+    this.api.get<Category[]>('admin/catalog/categories').subscribe({
       next: (res) => {
-        // Handle both array and wrapped formats
-        const cats = Array.isArray(res) ? res : res?.data || res || [];
-        this.categories.set(cats);
+        const cats = Array.isArray(res) ? res : [];
+        this.categories.set([...cats].sort((a, b) => a.displayOrder - b.displayOrder));
         this.loading.set(false);
       },
       error: () => {
@@ -257,37 +356,37 @@ export class CategoryListComponent implements OnInit {
     });
   }
 
-  openForm(cat?: Category) {
+  openForm(cat?: Category): void {
     if (cat) {
       this.editingCategory.set(cat);
       this.formData = {
         nameFr: cat.nameFr,
         nameEn: cat.nameEn,
         slug: cat.slug,
-        imageUrl: cat.imageUrl || '',
+        descriptionFr: cat.descriptionFr ?? '',
+        descriptionEn: cat.descriptionEn ?? '',
+        imageUrl: cat.imageUrl ?? '',
         displayOrder: cat.displayOrder,
         isActive: cat.isActive,
       };
     } else {
       this.editingCategory.set(null);
-      this.formData = {
-        nameFr: '',
-        nameEn: '',
-        slug: '',
-        imageUrl: '',
-        displayOrder: 0,
-        isActive: true,
-      };
+      this.formData = this.emptyForm();
     }
     this.showForm.set(true);
   }
 
-  saveCategory() {
+  saveCategory(): void {
     this.saving.set(true);
     const editing = this.editingCategory();
+    const payload = this.buildPayload(this.formData);
+
     const request = editing
-      ? this.api.patch<any, Category>(`admin/catalog/categories/${editing.id}`, this.formData)
-      : this.api.post<any, Category>('admin/catalog/categories', this.formData);
+      ? this.api.patch<Partial<Category>, Category>(
+          `admin/catalog/categories/${editing.id}`,
+          payload,
+        )
+      : this.api.post<Partial<Category>, Category>('admin/catalog/categories', payload);
 
     request.subscribe({
       next: () => {
@@ -300,7 +399,7 @@ export class CategoryListComponent implements OnInit {
         this.saving.set(false);
         this.loadCategories();
       },
-      error: (err) => {
+      error: (err: { error?: { message?: string } }) => {
         this.notifications.error(
           err.error?.message || this.translate.instant('CATEGORIES.SAVE_FAILED'),
         );
@@ -309,26 +408,88 @@ export class CategoryListComponent implements OnInit {
     });
   }
 
-  confirmDelete(cat: Category) {
+  confirmDelete(cat: Category): void {
     this.categoryToDelete.set(cat);
     this.showDeleteModal.set(true);
   }
 
-  deleteCategory() {
+  deleteCategory(): void {
     const cat = this.categoryToDelete();
     if (!cat) return;
-    this.api.delete(`admin/catalog/categories/${cat.id}`).subscribe({
+    this.api.delete<void>(`admin/catalog/categories/${cat.id}`).subscribe({
       next: () => {
         this.notifications.success(this.translate.instant('CATEGORIES.DELETED'));
-        this.categories.update((c) => c.filter((x) => x.id !== cat.id));
+        this.categories.update((list) => list.filter((x) => x.id !== cat.id));
         this.showDeleteModal.set(false);
       },
-      error: (err) => {
+      error: (err: { error?: { message?: string } }) => {
         this.notifications.error(
           err.error?.message || this.translate.instant('CATEGORIES.DELETE_FAILED'),
         );
         this.showDeleteModal.set(false);
       },
     });
+  }
+
+  moveCategory(index: number, direction: 'up' | 'down'): void {
+    if (this.reordering()) return;
+    const previous = this.categories();
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= previous.length) return;
+
+    // Optimistic update (swap + re-number displayOrder locally)
+    const next = [...previous];
+    [next[index], next[targetIndex]] = [next[targetIndex], next[index]];
+    const reindexed = next.map((cat, i) => ({ ...cat, displayOrder: i }));
+    this.categories.set(reindexed);
+
+    const categoryIds = reindexed.map((c) => c.id);
+    this.reordering.set(true);
+    this.api
+      .patch<{ categoryIds: string[] }, Category[]>('admin/catalog/categories/reorder', {
+        categoryIds,
+      })
+      .subscribe({
+        next: () => {
+          this.reordering.set(false);
+        },
+        error: (err: { error?: { message?: string } }) => {
+          // Rollback
+          this.categories.set(previous);
+          this.reordering.set(false);
+          this.notifications.error(
+            err.error?.message || this.translate.instant('CATEGORIES.REORDER_FAILED'),
+          );
+        },
+      });
+  }
+
+  private emptyForm(): CategoryFormData {
+    return {
+      nameFr: '',
+      nameEn: '',
+      slug: '',
+      descriptionFr: '',
+      descriptionEn: '',
+      imageUrl: '',
+      displayOrder: 0,
+      isActive: true,
+    };
+  }
+
+  private buildPayload(data: CategoryFormData): Partial<Category> {
+    const payload: Partial<Category> = {
+      nameFr: data.nameFr,
+      nameEn: data.nameEn,
+      slug: data.slug,
+      displayOrder: data.displayOrder,
+      isActive: data.isActive,
+    };
+    // Only send optional fields when they have a value (avoid sending empty strings
+    // that would fail @IsUrl() validation on imageUrl).
+    if (data.descriptionFr?.trim()) payload.descriptionFr = data.descriptionFr.trim();
+    if (data.descriptionEn?.trim()) payload.descriptionEn = data.descriptionEn.trim();
+    if (data.imageUrl?.trim()) payload.imageUrl = data.imageUrl.trim();
+    return payload;
   }
 }
