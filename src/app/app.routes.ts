@@ -211,6 +211,12 @@ export const routes: Routes = [
         canActivate: [superAdminGuard],
       },
       {
+        path: 'messages',
+        loadComponent: () =>
+          import('./features/messages/messages.component').then((m) => m.MessagesComponent),
+        canActivate: [superAdminGuard],
+      },
+      {
         path: 'admins',
         loadComponent: () =>
           import('./features/admins/admin-list/admin-list.component').then(

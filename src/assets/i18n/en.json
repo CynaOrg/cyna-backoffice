@@ -14,6 +14,7 @@
     "ANALYTICS": "Analytics",
     "SETTINGS": "Settings",
     "CONTENT": "Content",
+    "MESSAGES": "Messages",
     "USER_MANAGEMENT": "User Management",
     "ADMINS": "Admins",
     "ACCOUNT": "Account",
@@ -366,7 +367,7 @@
   },
   "CONTENT": {
     "TITLE": "Content Management",
-    "SUBTITLE": "Manage carousel, hero text, top products and contact messages",
+    "SUBTITLE": "Manage carousel, hero text and top products",
     "CAROUSEL": "Carousel",
     "TOP_PRODUCTS": "Top Products",
     "HERO_TEXT": "Hero Text",
@@ -463,6 +464,24 @@
     "CLOSE": "Close",
     "CONFIGURE": "Configure",
     "NO_PRODUCTS_FOUND": "No products found"
+  },
+  "MESSAGES": {
+    "TITLE": "Contact messages",
+    "SUBTITLE": "Inbox and archives",
+    "INBOX": "Inbox",
+    "ARCHIVED": "Archived",
+    "MARK_READ": "Mark as read",
+    "MARK_UNREAD": "Mark as unread",
+    "ARCHIVE": "Archive",
+    "RESTORE": "Restore",
+    "DELETE": "Delete",
+    "NO_MESSAGES": "No messages",
+    "NO_ARCHIVED": "No archived messages",
+    "CONFIRM_DELETE": "Delete this message?",
+    "DELETED": "Message deleted",
+    "DELETE_FAILED": "Delete failed",
+    "UPDATED": "Message updated",
+    "UPDATE_FAILED": "Update failed"
   },
   "ADMINS": {
     "TITLE": "Admins",
@@ -594,6 +613,7 @@
     "CUSTOMERS": "Customers",
     "ANALYTICS": "Analytics",
     "CONTENT": "Content",
+    "MESSAGES": "Messages",
     "ADMIN_MANAGEMENT": "Admin Management",
     "ACCOUNT": "My Account"
   },

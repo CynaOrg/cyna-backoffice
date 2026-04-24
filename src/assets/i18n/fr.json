@@ -14,6 +14,7 @@
     "ANALYTICS": "Statistiques",
     "SETTINGS": "Paramètres",
     "CONTENT": "Contenu",
+    "MESSAGES": "Messages",
     "USER_MANAGEMENT": "Gestion des utilisateurs",
     "ADMINS": "Administrateurs",
     "ACCOUNT": "Compte",
@@ -366,7 +367,7 @@
   },
   "CONTENT": {
     "TITLE": "Gestion du contenu",
-    "SUBTITLE": "Gérer le carrousel, le texte hero, les produits mis en avant et les messages",
+    "SUBTITLE": "Gérer le carrousel, le texte hero et les produits mis en avant",
     "CAROUSEL": "Carrousel",
     "TOP_PRODUCTS": "Produits phares",
     "HERO_TEXT": "Texte Hero",
@@ -463,6 +464,24 @@
     "CLOSE": "Fermer",
     "CONFIGURE": "Configurer",
     "NO_PRODUCTS_FOUND": "Aucun produit trouvé"
+  },
+  "MESSAGES": {
+    "TITLE": "Messages de contact",
+    "SUBTITLE": "Boîte de réception et archives",
+    "INBOX": "Boîte de réception",
+    "ARCHIVED": "Archivés",
+    "MARK_READ": "Marquer comme lu",
+    "MARK_UNREAD": "Marquer comme non lu",
+    "ARCHIVE": "Archiver",
+    "RESTORE": "Restaurer",
+    "DELETE": "Supprimer",
+    "NO_MESSAGES": "Aucun message",
+    "NO_ARCHIVED": "Aucun message archivé",
+    "CONFIRM_DELETE": "Supprimer ce message ?",
+    "DELETED": "Message supprimé",
+    "DELETE_FAILED": "Échec de la suppression",
+    "UPDATED": "Message mis à jour",
+    "UPDATE_FAILED": "Échec de la mise à jour"
   },
   "ADMINS": {
     "TITLE": "Administrateurs",
@@ -594,6 +613,7 @@
     "CUSTOMERS": "Clients",
     "ANALYTICS": "Statistiques",
     "CONTENT": "Contenu",
+    "MESSAGES": "Messages",
     "ADMIN_MANAGEMENT": "Gestion des administrateurs",
     "ACCOUNT": "Mon compte"
   },

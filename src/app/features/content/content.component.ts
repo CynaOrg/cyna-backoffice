@@ -1,15 +1,10 @@
-import { Component, inject, signal, OnInit, effect } from '@angular/core';
+import { Component, inject, signal, OnInit } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { FormsModule } from '@angular/forms';
 import { map, switchMap } from 'rxjs/operators';
 import { ContentService } from '../../core/services/content.service';
 import { NotificationService } from '../../core/services/notification.service';
-import {
-  CarouselSlide,
-  HeroText,
-  TopProductConfig,
-  ContactMessage,
-} from '../../core/models/content.model';
+import { CarouselSlide } from '../../core/models/content.model';
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
 import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
 import { ConfirmModalComponent } from '../../shared/components/confirm-modal/confirm-modal.component';
@@ -67,17 +62,6 @@ const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
           "
         >
           {{ 'CONTENT.HERO_TEXT' | translate }}
-        </button>
-        <button
-          (click)="switchTab('messages')"
-          class="px-4 py-2 text-sm font-medium border-b-2 transition-colors"
-          [class]="
-            activeTab() === 'messages'
-              ? 'border-primary text-primary'
-              : 'border-transparent text-text-secondary hover:text-text-primary'
-          "
-        >
-          {{ 'CONTENT.CONTACT_MESSAGES' | translate }}
         </button>
       </div>
 
@@ -335,138 +319,6 @@ const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
         </div>
       }
 
-      <!-- Tab: Contact Messages -->
-      @if (activeTab() === 'messages') {
-        <div>
-          @if (loadingMessages()) {
-            <app-loading-spinner />
-          } @else {
-            <div class="bg-surface rounded-xl border border-border-light shadow-sm overflow-hidden">
-              <div class="overflow-x-auto">
-                <table class="w-full">
-                  <thead>
-                    <tr class="border-b border-border-light">
-                      <th
-                        class="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider"
-                      >
-                        {{ 'CONTENT.NAME' | translate }}
-                      </th>
-                      <th
-                        class="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider"
-                      >
-                        {{ 'CONTENT.EMAIL' | translate }}
-                      </th>
-                      <th
-                        class="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider"
-                      >
-                        {{ 'CONTENT.SUBJECT' | translate }}
-                      </th>
-                      <th
-                        class="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider"
-                      >
-                        {{ 'CONTENT.DATE' | translate }}
-                      </th>
-                      <th
-                        class="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider"
-                      >
-                        {{ 'CONTENT.STATUS' | translate }}
-                      </th>
-                      <th
-                        class="px-6 py-3 text-right text-xs font-semibold text-text-secondary uppercase tracking-wider"
-                      >
-                        {{ 'CONTENT.ACTIONS' | translate }}
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody class="divide-y divide-border-light">
-                    @for (msg of messages(); track msg.id) {
-                      <tr
-                        class="hover:bg-gray-50/50 cursor-pointer"
-                        (click)="toggleMessageExpand(msg.id)"
-                      >
-                        <td class="px-6 py-4 text-sm text-text-primary font-medium">
-                          {{ msg.name }}
-                        </td>
-                        <td class="px-6 py-4 text-sm text-text-secondary">{{ msg.email }}</td>
-                        <td class="px-6 py-4 text-sm text-text-secondary truncate max-w-[200px]">
-                          {{ msg.subject }}
-                        </td>
-                        <td class="px-6 py-4 text-sm text-text-secondary whitespace-nowrap">
-                          {{ formatDate(msg.createdAt) }}
-                        </td>
-                        <td class="px-6 py-4">
-                          <div class="flex items-center gap-1.5">
-                            <app-status-badge
-                              [status]="msg.isRead ? 'active' : 'pending'"
-                              [label]="
-                                msg.isRead
-                                  ? ('CONTENT.READ' | translate)
-                                  : ('CONTENT.UNREAD' | translate)
-                              "
-                            />
-                            @if (msg.isTreated) {
-                              <app-status-badge
-                                status="completed"
-                                [label]="'CONTENT.TREATED' | translate"
-                              />
-                            }
-                          </div>
-                        </td>
-                        <td class="px-6 py-4 text-right" (click)="$event.stopPropagation()">
-                          <div class="flex items-center justify-end gap-2">
-                            <button
-                              (click)="toggleMessageRead(msg)"
-                              class="text-xs text-primary hover:text-primary-hover font-medium whitespace-nowrap"
-                            >
-                              {{
-                                msg.isRead
-                                  ? ('CONTENT.MARK_UNREAD' | translate)
-                                  : ('CONTENT.MARK_READ' | translate)
-                              }}
-                            </button>
-                            <button
-                              (click)="toggleMessageTreated(msg)"
-                              class="text-xs text-primary hover:text-primary-hover font-medium whitespace-nowrap"
-                            >
-                              {{
-                                msg.isTreated
-                                  ? ('CONTENT.UNTREATED' | translate)
-                                  : ('CONTENT.MARK_TREATED' | translate)
-                              }}
-                            </button>
-                            <button
-                              (click)="confirmDeleteMessage(msg)"
-                              class="text-xs text-error hover:text-red-700 font-medium"
-                            >
-                              {{ 'CONTENT.DELETE' | translate }}
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                      @if (expandedMessageId() === msg.id) {
-                        <tr>
-                          <td colspan="6" class="px-6 py-4 bg-gray-50/50">
-                            <div class="text-sm text-text-primary whitespace-pre-wrap">
-                              {{ msg.message }}
-                            </div>
-                          </td>
-                        </tr>
-                      }
-                    } @empty {
-                      <tr>
-                        <td colspan="6" class="px-6 py-12 text-center text-text-muted text-sm">
-                          {{ 'CONTENT.NO_MESSAGES' | translate }}
-                        </td>
-                      </tr>
-                    }
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          }
-        </div>
-      }
-
       <!-- Slide Modal -->
       @if (showSlideModal()) {
         <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
@@ -685,17 +537,6 @@ const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
         (confirm)="deleteSlide()"
         (cancel)="showDeleteSlideModal.set(false)"
       />
-
-      <!-- Confirm Delete Message -->
-      <app-confirm-modal
-        [open]="showDeleteMessageModal()"
-        [title]="'CONTENT.DELETE_MESSAGE_TITLE' | translate"
-        [message]="'CONTENT.DELETE_MESSAGE_CONFIRM' | translate"
-        confirmLabel="Delete"
-        variant="danger"
-        (confirm)="deleteMessage()"
-        (cancel)="showDeleteMessageModal.set(false)"
-      />
     </div>
   `,
 })
@@ -706,7 +547,7 @@ export class ContentComponent implements OnInit {
   private readonly translate = inject(TranslateService);
 
   // Tab state
-  activeTab = signal<'carousel' | 'top-products' | 'hero-text' | 'messages'>('carousel');
+  activeTab = signal<'carousel' | 'top-products' | 'hero-text'>('carousel');
 
   // Carousel state
   slides = signal<CarouselSlide[]>([]);
@@ -738,13 +579,6 @@ export class ContentComponent implements OnInit {
   loadingHero = signal(false);
   savingHero = signal(false);
 
-  // Messages state
-  messages = signal<ContactMessage[]>([]);
-  loadingMessages = signal(false);
-  expandedMessageId = signal<string | null>(null);
-  showDeleteMessageModal = signal(false);
-  messageToDelete = signal<ContactMessage | null>(null);
-
   // Forms
   slideForm: FormGroup = this.fb.group({
     titleFr: ['', Validators.required],
@@ -771,7 +605,7 @@ export class ContentComponent implements OnInit {
 
   // --- Tab Management ---
 
-  switchTab(tab: 'carousel' | 'top-products' | 'hero-text' | 'messages') {
+  switchTab(tab: 'carousel' | 'top-products' | 'hero-text') {
     this.activeTab.set(tab);
     if (tab === 'carousel' && this.slides().length === 0) {
       this.loadCarouselSlides();
@@ -779,8 +613,6 @@ export class ContentComponent implements OnInit {
       this.loadTopConfigs();
     } else if (tab === 'hero-text') {
       this.loadHeroText();
-    } else if (tab === 'messages') {
-      this.loadMessages();
     }
   }
 
@@ -1056,91 +888,6 @@ export class ContentComponent implements OnInit {
         );
         this.savingHero.set(false);
       },
-    });
-  }
-
-  // --- Contact Messages ---
-
-  loadMessages() {
-    this.loadingMessages.set(true);
-    this.contentService.getContactMessages().subscribe({
-      next: (messages) => {
-        this.messages.set(messages);
-        this.loadingMessages.set(false);
-      },
-      error: () => {
-        this.notifications.error(this.translate.instant('CONTENT.LOAD_MESSAGES_FAILED'));
-        this.loadingMessages.set(false);
-      },
-    });
-  }
-
-  toggleMessageExpand(messageId: string) {
-    this.expandedMessageId.update((current) => (current === messageId ? null : messageId));
-  }
-
-  toggleMessageRead(msg: ContactMessage) {
-    this.contentService.updateContactMessage(msg.id, { isRead: !msg.isRead }).subscribe({
-      next: (updated) => {
-        this.messages.update((msgs) => msgs.map((m) => (m.id === msg.id ? updated : m)));
-        this.notifications.success(
-          updated.isRead
-            ? this.translate.instant('CONTENT.MARKED_READ')
-            : this.translate.instant('CONTENT.MARKED_UNREAD'),
-        );
-      },
-      error: () => {
-        this.notifications.error(this.translate.instant('CONTENT.UPDATE_MESSAGE_FAILED'));
-      },
-    });
-  }
-
-  toggleMessageTreated(msg: ContactMessage) {
-    this.contentService.updateContactMessage(msg.id, { isTreated: !msg.isTreated }).subscribe({
-      next: (updated) => {
-        this.messages.update((msgs) => msgs.map((m) => (m.id === msg.id ? updated : m)));
-        this.notifications.success(
-          updated.isTreated
-            ? this.translate.instant('CONTENT.MARKED_TREATED')
-            : this.translate.instant('CONTENT.MARKED_UNTREATED'),
-        );
-      },
-      error: () => {
-        this.notifications.error(this.translate.instant('CONTENT.UPDATE_MESSAGE_FAILED'));
-      },
-    });
-  }
-
-  confirmDeleteMessage(msg: ContactMessage) {
-    this.messageToDelete.set(msg);
-    this.showDeleteMessageModal.set(true);
-  }
-
-  deleteMessage() {
-    const msg = this.messageToDelete();
-    if (!msg) return;
-    this.contentService.deleteContactMessage(msg.id).subscribe({
-      next: () => {
-        this.notifications.success(this.translate.instant('CONTENT.MESSAGE_DELETED'));
-        this.messages.update((msgs) => msgs.filter((m) => m.id !== msg.id));
-        this.showDeleteMessageModal.set(false);
-      },
-      error: (err) => {
-        this.notifications.error(
-          err.error?.message || this.translate.instant('CONTENT.DELETE_MESSAGE_FAILED'),
-        );
-        this.showDeleteMessageModal.set(false);
-      },
-    });
-  }
-
-  // --- Helpers ---
-
-  formatDate(dateString: string): string {
-    return new Date(dateString).toLocaleDateString('fr-FR', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
     });
   }
 }
