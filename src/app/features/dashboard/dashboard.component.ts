@@ -129,7 +129,7 @@ interface DashboardViewModel {
 
             <!-- Unread Messages -->
             <a
-              routerLink="/content"
+              routerLink="/messages"
               class="group flex items-center gap-4 rounded-xl border border-border-light bg-surface p-6 shadow-sm hover:shadow-md hover:-translate-y-px transition-all duration-200 no-underline"
             >
               <div
