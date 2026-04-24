@@ -1,4 +1,5 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink, Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ApiService } from '../../../core/services/api.service';
@@ -8,10 +9,15 @@ import { Product } from '../../../core/models/product.model';
 import { StatusBadgeComponent } from '../../../shared/components/status-badge/status-badge.component';
 import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/confirm-modal.component';
 
+interface StockUpdatePayload {
+  stockQuantity: number;
+  stockAlertThreshold: number;
+}
+
 @Component({
   selector: 'app-product-detail',
   standalone: true,
-  imports: [RouterLink, TranslateModule, StatusBadgeComponent, ConfirmModalComponent],
+  imports: [FormsModule, RouterLink, TranslateModule, StatusBadgeComponent, ConfirmModalComponent],
   template: `
     @if (loading()) {
       <!-- Skeleton loading -->
@@ -377,10 +383,34 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
               <div
                 class="rounded-xl border border-border-light bg-surface shadow-sm overflow-hidden"
               >
-                <div class="px-6 py-4 border-b border-border-light">
+                <div
+                  class="px-6 py-4 border-b border-border-light flex items-center justify-between"
+                >
                   <h3 class="text-sm font-semibold text-text-primary !m-0">
                     {{ 'PRODUCTS.STOCK' | translate }}
                   </h3>
+                  @if (auth.isSuperAdmin()) {
+                    <button
+                      type="button"
+                      (click)="openStockModal()"
+                      class="inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:text-primary-hover bg-transparent border-0 cursor-pointer p-0"
+                    >
+                      <svg
+                        class="w-3.5 h-3.5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="1.5"
+                          d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125"
+                        />
+                      </svg>
+                      {{ 'PRODUCTS.EDIT_STOCK' | translate }}
+                    </button>
+                  }
                 </div>
                 <div class="p-5">
                   <div class="flex items-baseline justify-between mb-3">
@@ -399,7 +429,26 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
                       [style.width.%]="stockPercent()"
                     ></div>
                   </div>
-                  @if (isLowStock()) {
+                  @if (isOutOfStock()) {
+                    <div class="flex items-center gap-1.5 mt-3">
+                      <svg
+                        class="w-3.5 h-3.5 text-error"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="1.5"
+                          d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
+                        />
+                      </svg>
+                      <span class="text-xs font-medium text-error">{{
+                        'PRODUCTS.OUT_OF_STOCK' | translate
+                      }}</span>
+                    </div>
+                  } @else if (isLowStock()) {
                     <div class="flex items-center gap-1.5 mt-3">
                       <svg
                         class="w-3.5 h-3.5 text-warning"
@@ -483,6 +532,87 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
       (confirm)="deleteProduct()"
       (cancel)="showDeleteModal.set(false)"
     />
+
+    @if (showStockModal()) {
+      <div class="fixed inset-0 z-50 flex items-center justify-center">
+        <div class="absolute inset-0 bg-black/40" (click)="closeStockModal()"></div>
+        <div
+          class="relative bg-white rounded-xl shadow-xl p-6 max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto"
+        >
+          <h3 class="text-lg font-semibold mb-4 !mt-0">
+            {{ 'PRODUCTS.EDIT_STOCK' | translate }}
+          </h3>
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-text-secondary mb-1">{{
+                'PRODUCTS.STOCK_QUANTITY' | translate
+              }}</label>
+              <input
+                type="number"
+                min="0"
+                [ngModel]="stockFormQuantity()"
+                (ngModelChange)="stockFormQuantity.set($event)"
+                [disabled]="savingStock()"
+                class="w-full px-3 py-2 rounded-lg border border-border bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary disabled:opacity-60"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-text-secondary mb-1">{{
+                'PRODUCTS.STOCK_ALERT_THRESHOLD' | translate
+              }}</label>
+              <input
+                type="number"
+                min="0"
+                [ngModel]="stockFormThreshold()"
+                (ngModelChange)="stockFormThreshold.set($event)"
+                [disabled]="savingStock()"
+                class="w-full px-3 py-2 rounded-lg border border-border bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary disabled:opacity-60"
+              />
+            </div>
+          </div>
+          <div class="mt-6 flex justify-end gap-3">
+            <button
+              type="button"
+              (click)="closeStockModal()"
+              [disabled]="savingStock()"
+              class="px-4 py-2 text-sm border border-border rounded-lg hover:bg-gray-50 disabled:opacity-60"
+            >
+              {{ 'PRODUCTS.STOCK_CANCEL' | translate }}
+            </button>
+            <button
+              type="button"
+              (click)="saveStock()"
+              [disabled]="savingStock()"
+              class="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white text-sm font-medium rounded-lg hover:bg-primary-hover disabled:opacity-60"
+            >
+              @if (savingStock()) {
+                <svg
+                  class="animate-spin w-4 h-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <circle
+                    class="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    stroke-width="4"
+                  ></circle>
+                  <path
+                    class="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                  ></path>
+                </svg>
+              }
+              {{ 'PRODUCTS.STOCK_SAVE' | translate }}
+            </button>
+          </div>
+        </div>
+      </div>
+    }
   `,
 })
 export class ProductDetailComponent implements OnInit {
@@ -498,6 +628,11 @@ export class ProductDetailComponent implements OnInit {
   showDeleteModal = signal(false);
   selectedImage = signal<string>('');
   basePath = '/products';
+
+  showStockModal = signal<boolean>(false);
+  savingStock = signal<boolean>(false);
+  stockFormQuantity = signal<number>(0);
+  stockFormThreshold = signal<number>(10);
 
   stockPercent = computed(() => {
     const p = this.product();
@@ -516,10 +651,17 @@ export class ProductDetailComponent implements OnInit {
     return 'bg-success';
   });
 
+  isOutOfStock = computed(() => {
+    const p = this.product();
+    if (!p || p.productType !== 'physical') return false;
+    return (p.stockQuantity ?? 0) === 0;
+  });
+
   isLowStock = computed(() => {
     const p = this.product();
     if (!p || p.productType !== 'physical') return false;
-    return (p.stockQuantity ?? 0) <= p.stockAlertThreshold;
+    const qty = p.stockQuantity ?? 0;
+    return qty > 0 && qty <= p.stockAlertThreshold;
   });
 
   priceCount = computed(() => {
@@ -548,6 +690,45 @@ export class ProductDetailComponent implements OnInit {
         this.router.navigate([this.basePath]);
       },
     });
+  }
+
+  openStockModal(): void {
+    const p = this.product();
+    if (!p || p.productType !== 'physical') return;
+    this.stockFormQuantity.set(p.stockQuantity ?? 0);
+    this.stockFormThreshold.set(p.stockAlertThreshold);
+    this.showStockModal.set(true);
+  }
+
+  closeStockModal(): void {
+    if (this.savingStock()) return;
+    this.showStockModal.set(false);
+  }
+
+  saveStock(): void {
+    const p = this.product();
+    if (!p) return;
+    const payload: StockUpdatePayload = {
+      stockQuantity: Math.max(0, Number(this.stockFormQuantity()) || 0),
+      stockAlertThreshold: Math.max(0, Number(this.stockFormThreshold()) || 0),
+    };
+    this.savingStock.set(true);
+    this.api
+      .patch<StockUpdatePayload, Product>(`admin/catalog/products/${p.id}/stock`, payload)
+      .subscribe({
+        next: () => {
+          this.notifications.success(this.translate.instant('PRODUCTS.STOCK_UPDATED'));
+          this.savingStock.set(false);
+          this.showStockModal.set(false);
+          this.loadProduct(p.id);
+        },
+        error: (err: { error?: { message?: string } }) => {
+          this.notifications.error(
+            err.error?.message || this.translate.instant('PRODUCTS.STOCK_UPDATE_FAILED'),
+          );
+          this.savingStock.set(false);
+        },
+      });
   }
 
   deleteProduct() {
