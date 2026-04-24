@@ -22,6 +22,9 @@ import {
   MrrDataPoint,
   StockItem,
   TopProductData,
+  CategorySalesEntry,
+  AverageCartByTypeEntry,
+  AverageCartProductType,
 } from '../../core/models/analytics.model';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
@@ -284,6 +287,61 @@ Chart.defaults.plugins.tooltip.usePointStyle = true;
           </div>
         </div>
 
+        <!-- Sales by Category (Doughnut) + Avg Cart by Product Type (Bar) -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+          <!-- Sales by Category Doughnut (1/3) -->
+          <div class="rounded-xl border border-border-light bg-surface shadow-sm">
+            <div class="px-4 sm:px-5 py-3 sm:py-4 border-b border-border-light">
+              <h3 class="text-sm font-semibold text-text-primary !m-0">
+                {{ 'ANALYTICS.SALES_BY_CATEGORY' | translate }}
+              </h3>
+            </div>
+            <div class="p-4 sm:p-5 flex flex-col items-center">
+              <div class="w-40 h-40">
+                <canvas
+                  #categorySalesChart
+                  class="block w-full h-full"
+                  width="160"
+                  height="160"
+                ></canvas>
+              </div>
+              <div class="w-full mt-4 space-y-2">
+                @for (cat of salesByCategoryData(); track cat.categoryId) {
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2 min-w-0">
+                      <span
+                        class="w-2 h-2 rounded-full flex-shrink-0"
+                        [style.background-color]="chartColors[$index % chartColors.length]"
+                      ></span>
+                      <span class="text-xs text-text-primary truncate">{{ cat.name }}</span>
+                    </div>
+                    <span class="text-xs font-medium text-text-primary tabular-nums">
+                      {{ cat.percentage }}%
+                    </span>
+                  </div>
+                }
+                @if (!salesByCategoryData().length) {
+                  <span class="text-xs text-text-muted">{{ 'ANALYTICS.OTHER' | translate }}</span>
+                }
+              </div>
+            </div>
+          </div>
+
+          <!-- Avg Cart by Product Type Bar (2/3) -->
+          <div class="lg:col-span-2 rounded-xl border border-border-light bg-surface shadow-sm">
+            <div
+              class="flex items-center justify-between px-4 sm:px-5 py-3 sm:py-4 border-b border-border-light"
+            >
+              <h3 class="text-sm font-semibold text-text-primary !m-0">
+                {{ 'ANALYTICS.AVG_CART_BY_TYPE' | translate }}
+              </h3>
+            </div>
+            <div class="p-4 sm:p-5">
+              <canvas #avgCartTypeChart height="110"></canvas>
+            </div>
+          </div>
+        </div>
+
         <!-- Stock Status -->
         @if (stockItems().length > 0) {
           <div class="rounded-xl border border-border-light bg-surface shadow-sm mb-4">
@@ -425,6 +483,8 @@ export class AnalyticsComponent implements OnInit, AfterViewInit {
   @ViewChild('categoryChart') categoryChartRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('productTypeChart') productTypeChartRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('mrrChart') mrrChartRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('categorySalesChart') categorySalesChartRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('avgCartTypeChart') avgCartTypeChartRef!: ElementRef<HTMLCanvasElement>;
 
   private readonly analyticsService = inject(AnalyticsService);
   private readonly notifications = inject(NotificationService);
@@ -440,6 +500,8 @@ export class AnalyticsComponent implements OnInit, AfterViewInit {
   productTypeData = signal<SalesByProductTypeData[]>([]);
   mrrHistory = signal<MrrDataPoint[]>([]);
   stockItems = signal<StockItem[]>([]);
+  salesByCategoryData = signal<CategorySalesEntry[]>([]);
+  averageCartByTypeData = signal<AverageCartByTypeEntry[]>([]);
 
   exportDateFrom = signal<string>(this.getDefaultDateFrom());
   exportDateTo = signal<string>(this.getDefaultDateTo());
@@ -449,6 +511,8 @@ export class AnalyticsComponent implements OnInit, AfterViewInit {
   private categoryChart: Chart | null = null;
   private productTypeChart: Chart | null = null;
   private mrrChart: Chart | null = null;
+  private categorySalesChart: Chart | null = null;
+  private avgCartTypeChart: Chart | null = null;
 
   readonly chartColors = [
     '#4f39f6',
@@ -504,6 +568,12 @@ export class AnalyticsComponent implements OnInit, AfterViewInit {
       productType: this.analyticsService
         .getSalesByProductType(period)
         .pipe(catchError(() => of(null))),
+      salesByCategory: this.analyticsService
+        .getSalesByCategory(period)
+        .pipe(catchError(() => of(null))),
+      averageCartByType: this.analyticsService
+        .getAverageCartByProductType(period)
+        .pipe(catchError(() => of(null))),
       mrr: this.analyticsService.getMrr().pipe(catchError(() => of(null))),
       stock: this.analyticsService.getStockStatus().pipe(catchError(() => of(null))),
     }).subscribe({
@@ -527,6 +597,8 @@ export class AnalyticsComponent implements OnInit, AfterViewInit {
         this.salesData.set(results.sales?.sales || []);
         this.topProductsData.set(this.aggregateTopProducts(results.topProducts?.data || []));
         this.productTypeData.set(results.productType?.data || []);
+        this.salesByCategoryData.set(results.salesByCategory?.categories || []);
+        this.averageCartByTypeData.set(results.averageCartByType?.data || []);
         this.mrrHistory.set(results.mrr?.history || []);
 
         const stockRes = results.stock as StockStatusResponse | null;
@@ -580,6 +652,114 @@ export class AnalyticsComponent implements OnInit, AfterViewInit {
     this.renderCategoryChart();
     this.renderProductTypeChart();
     this.renderMrrChart();
+    this.renderSalesByCategoryChart();
+    this.renderAverageCartByTypeChart();
+  }
+
+  renderSalesByCategoryChart(): void {
+    const data = this.salesByCategoryData();
+    if (!data.length || !this.categorySalesChartRef) return;
+
+    if (this.categorySalesChart) this.categorySalesChart.destroy();
+
+    this.categorySalesChart = new Chart(this.categorySalesChartRef.nativeElement, {
+      type: 'doughnut',
+      data: {
+        labels: data.map((d) => d.name),
+        datasets: [
+          {
+            data: data.map((d) => d.revenue),
+            backgroundColor: data.map((_, i) => this.chartColors[i % this.chartColors.length]),
+            borderColor: '#ffffff',
+            borderWidth: 2,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        cutout: '58%',
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => {
+                const value = this.formatCurrency(ctx.parsed);
+                const pct = data[ctx.dataIndex]?.percentage ?? 0;
+                return `${ctx.label}: ${value} (${pct}%)`;
+              },
+            },
+          },
+        },
+      },
+    });
+  }
+
+  renderAverageCartByTypeChart(): void {
+    const data = this.averageCartByTypeData();
+    if (!data.length || !this.avgCartTypeChartRef) return;
+
+    if (this.avgCartTypeChart) this.avgCartTypeChart.destroy();
+
+    const labels = data.map((d) => this.productTypeLabel(d.productType));
+    const values = data.map((d) => d.averageCartValue);
+    const colors = data.map((_, i) => this.chartColors[i % this.chartColors.length]);
+
+    this.avgCartTypeChart = new Chart(this.avgCartTypeChartRef.nativeElement, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [
+          {
+            label: this.translate.instant('ANALYTICS.AVG_CART'),
+            data: values,
+            backgroundColor: colors.map((c) => `${c}33`),
+            borderColor: colors,
+            borderWidth: 2,
+            borderRadius: 6,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => {
+                const avg = this.formatCurrency(ctx.parsed.y ?? 0);
+                const orders = data[ctx.dataIndex]?.orderCount ?? 0;
+                return `${ctx.label}: ${avg} (${orders})`;
+              },
+            },
+          },
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            stacked: true,
+            ticks: {
+              callback: (v) => this.formatCurrency(Number(v)),
+            },
+            grid: { color: '#f3f4f6' },
+          },
+          x: {
+            stacked: true,
+            grid: { display: false },
+          },
+        },
+      },
+    });
+  }
+
+  private productTypeLabel(type: AverageCartProductType): string {
+    const keyMap: Record<AverageCartProductType, string> = {
+      saas: 'ANALYTICS.TYPE_SAAS',
+      physical: 'ANALYTICS.TYPE_PHYSICAL',
+      license: 'ANALYTICS.TYPE_LICENSE',
+    };
+    return this.translate.instant(keyMap[type]);
   }
 
   renderSalesChart(): void {

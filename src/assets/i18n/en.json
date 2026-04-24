@@ -341,7 +341,11 @@
     "SELECT_DATE_RANGE": "Please select a date range for export",
     "MONTHLY_TREND": "Monthly trend",
     "TOP_PRODUCTS": "Top SaaS Products",
-    "OTHER": "Other"
+    "OTHER": "Other",
+    "AVG_CART_BY_TYPE": "Average cart by type",
+    "TYPE_SAAS": "SaaS",
+    "TYPE_PHYSICAL": "Physical",
+    "TYPE_LICENSE": "License"
   },
   "CONTENT": {
     "TITLE": "Content Management",
