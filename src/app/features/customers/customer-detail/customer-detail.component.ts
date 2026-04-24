@@ -4,8 +4,13 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ApiService } from '../../../core/services/api.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { User } from '../../../core/models/user.model';
+import { Order } from '../../../core/models/order.model';
 import { StatusBadgeComponent } from '../../../shared/components/status-badge/status-badge.component';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
+
+interface UpdateStatusPayload {
+  isActive: boolean;
+}
 
 @Component({
   selector: 'app-customer-detail',
@@ -104,6 +109,81 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
             </div>
           </div>
         </div>
+
+        <div class="mt-6 bg-surface rounded-xl border border-border-light shadow-sm p-6">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold">
+              {{ 'CUSTOMERS.ORDER_HISTORY' | translate }}
+            </h3>
+            <a [routerLink]="['/orders']" class="text-sm text-primary hover:text-primary-hover">
+              {{ 'CUSTOMERS.VIEW_ALL_ORDERS' | translate }}
+            </a>
+          </div>
+
+          @if (ordersLoading()) {
+            <app-loading-spinner />
+          } @else if (orders().length === 0) {
+            <p class="py-8 text-center text-text-muted text-sm">
+              {{ 'CUSTOMERS.NO_ORDERS' | translate }}
+            </p>
+          } @else {
+            <div class="overflow-x-auto">
+              <table class="w-full">
+                <thead>
+                  <tr class="border-b border-border-light">
+                    <th
+                      class="px-4 py-2 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider"
+                    >
+                      {{ 'ORDERS.DATE' | translate }}
+                    </th>
+                    <th
+                      class="px-4 py-2 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider"
+                    >
+                      {{ 'ORDERS.ORDER' | translate }}
+                    </th>
+                    <th
+                      class="px-4 py-2 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider"
+                    >
+                      {{ 'ORDERS.STATUS' | translate }}
+                    </th>
+                    <th
+                      class="px-4 py-2 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider"
+                    >
+                      {{ 'ORDERS.TOTAL' | translate }}
+                    </th>
+                    <th class="px-4 py-2"></th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-border-light">
+                  @for (order of orders(); track order.id) {
+                    <tr class="hover:bg-gray-50/50">
+                      <td class="px-4 py-3 text-sm text-text-secondary">
+                        {{ formatDate(order.createdAt) }}
+                      </td>
+                      <td class="px-4 py-3 text-sm font-medium text-text-primary font-mono">
+                        {{ order.orderNumber }}
+                      </td>
+                      <td class="px-4 py-3">
+                        <app-status-badge [status]="order.status" />
+                      </td>
+                      <td class="px-4 py-3 text-sm text-text-primary font-medium">
+                        {{ formatCurrency(order.total) }}
+                      </td>
+                      <td class="px-4 py-3 text-right">
+                        <a
+                          [routerLink]="['/orders', order.id]"
+                          class="text-sm text-primary hover:text-primary-hover"
+                        >
+                          {{ 'ORDERS.VIEW' | translate }}
+                        </a>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        </div>
       }
     </div>
   `,
@@ -116,15 +196,20 @@ export class CustomerDetailComponent implements OnInit {
   private readonly translate = inject(TranslateService);
 
   user = signal<User | null>(null);
-  loading = signal(true);
-  toggling = signal(false);
+  loading = signal<boolean>(true);
+  toggling = signal<boolean>(false);
+  orders = signal<Order[]>([]);
+  ordersLoading = signal<boolean>(false);
 
-  ngOnInit() {
+  ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
-    if (id) this.loadUser(id);
+    if (id) {
+      this.loadUser(id);
+      this.loadOrders(id);
+    }
   }
 
-  loadUser(id: string) {
+  loadUser(id: string): void {
     this.api.get<User>(`admin/users/${id}`).subscribe({
       next: (u) => {
         this.user.set(u);
@@ -137,32 +222,52 @@ export class CustomerDetailComponent implements OnInit {
     });
   }
 
-  toggleActive() {
-    const u = this.user();
-    if (!u) return;
-    this.toggling.set(true);
-    this.api.patch<any, any>(`admin/users/${u.id}/status`, { isActive: !u.isActive }).subscribe({
-      next: () => {
-        this.user.update((usr) => (usr ? { ...usr, isActive: !usr.isActive } : null));
-        this.notifications.success(
-          !u.isActive
-            ? this.translate.instant('CUSTOMERS.ACTIVATED')
-            : this.translate.instant('CUSTOMERS.DEACTIVATED'),
-        );
-        this.toggling.set(false);
+  loadOrders(userId: string): void {
+    this.ordersLoading.set(true);
+    this.api.getList<Order>(`admin/users/${userId}/orders`, { page: 1, limit: 10 }).subscribe({
+      next: (list) => {
+        this.orders.set(list || []);
+        this.ordersLoading.set(false);
       },
       error: () => {
-        this.notifications.error(this.translate.instant('CUSTOMERS.UPDATE_FAILED'));
-        this.toggling.set(false);
+        this.orders.set([]);
+        this.ordersLoading.set(false);
       },
     });
   }
 
-  formatDate(d: string) {
+  toggleActive(): void {
+    const u = this.user();
+    if (!u) return;
+    this.toggling.set(true);
+    this.api
+      .patch<UpdateStatusPayload, User>(`admin/users/${u.id}/status`, { isActive: !u.isActive })
+      .subscribe({
+        next: () => {
+          this.user.update((usr) => (usr ? { ...usr, isActive: !usr.isActive } : null));
+          this.notifications.success(
+            !u.isActive
+              ? this.translate.instant('CUSTOMERS.ACTIVATED')
+              : this.translate.instant('CUSTOMERS.DEACTIVATED'),
+          );
+          this.toggling.set(false);
+        },
+        error: () => {
+          this.notifications.error(this.translate.instant('CUSTOMERS.UPDATE_FAILED'));
+          this.toggling.set(false);
+        },
+      });
+  }
+
+  formatDate(d: string): string {
     return new Date(d).toLocaleDateString('fr-FR', {
       day: '2-digit',
       month: 'short',
       year: 'numeric',
     });
+  }
+
+  formatCurrency(v: number): string {
+    return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(v);
   }
 }

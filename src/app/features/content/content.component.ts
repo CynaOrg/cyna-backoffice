@@ -1,6 +1,7 @@
 import { Component, inject, signal, OnInit, effect } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { FormsModule } from '@angular/forms';
+import { map, switchMap } from 'rxjs/operators';
 import { ContentService } from '../../core/services/content.service';
 import { NotificationService } from '../../core/services/notification.service';
 import {
@@ -13,6 +14,10 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
 import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
 import { ConfirmModalComponent } from '../../shared/components/confirm-modal/confirm-modal.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { ProductPickerComponent } from './product-picker.component';
+
+const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
 
 @Component({
   selector: 'app-content',
@@ -24,6 +29,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
     StatusBadgeComponent,
     ConfirmModalComponent,
     TranslateModule,
+    ProductPickerComponent,
   ],
   template: `
     <div>
@@ -206,74 +212,56 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
           @if (loadingTopConfig()) {
             <app-loading-spinner />
           } @else {
-            <!-- Top Services -->
+            <!-- Top Services (SaaS) -->
             <div class="bg-surface rounded-xl border border-border-light shadow-sm p-6">
-              <h2 class="text-lg font-semibold text-text-primary mb-4">
-                {{ 'CONTENT.TOP_SERVICES' | translate }}
-              </h2>
-              <div class="space-y-3">
-                <div>
-                  <label class="block text-sm font-medium text-text-primary mb-1">
-                    {{ 'CONTENT.PRODUCT_IDS_LABEL' | translate }}
-                  </label>
-                  <input
-                    type="text"
-                    [(ngModel)]="topServicesInput"
-                    class="w-full px-3 py-2 border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                    [placeholder]="'CONTENT.PRODUCT_IDS_PLACEHOLDER' | translate"
-                  />
-                </div>
-                <div class="flex justify-end">
-                  <button
-                    (click)="saveTopConfig('top_services')"
-                    [disabled]="savingTopConfig()"
-                    class="bg-primary text-white hover:bg-primary-hover rounded-lg px-4 py-2 text-sm font-medium disabled:opacity-60"
-                  >
-                    {{
-                      savingTopConfig()
-                        ? ('CONTENT.SAVING' | translate)
-                        : ('CONTENT.SAVE_TOP_SERVICES' | translate)
-                    }}
-                  </button>
-                </div>
+              <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold text-text-primary">
+                  {{ 'CONTENT.TOP_SERVICES' | translate }}
+                </h2>
+                <button
+                  type="button"
+                  (click)="openPicker('top_services')"
+                  class="bg-primary text-white hover:bg-primary-hover rounded-lg px-4 py-2 text-sm font-medium"
+                >
+                  {{ 'CONTENT.CONFIGURE' | translate }}
+                </button>
               </div>
+              <p class="text-xs text-text-muted">
+                {{ 'CONTENT.SELECTED_COUNT' | translate: { count: topServicesIds().length } }}
+              </p>
             </div>
 
-            <!-- Top Products -->
+            <!-- Top Products (Physical) -->
             <div class="bg-surface rounded-xl border border-border-light shadow-sm p-6">
-              <h2 class="text-lg font-semibold text-text-primary mb-4">
-                {{ 'CONTENT.TOP_PRODUCTS' | translate }}
-              </h2>
-              <div class="space-y-3">
-                <div>
-                  <label class="block text-sm font-medium text-text-primary mb-1">
-                    {{ 'CONTENT.PRODUCT_IDS_LABEL' | translate }}
-                  </label>
-                  <input
-                    type="text"
-                    [(ngModel)]="topProductsInput"
-                    class="w-full px-3 py-2 border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                    [placeholder]="'CONTENT.PRODUCT_IDS_PLACEHOLDER' | translate"
-                  />
-                </div>
-                <div class="flex justify-end">
-                  <button
-                    (click)="saveTopConfig('top_products')"
-                    [disabled]="savingTopConfig()"
-                    class="bg-primary text-white hover:bg-primary-hover rounded-lg px-4 py-2 text-sm font-medium disabled:opacity-60"
-                  >
-                    {{
-                      savingTopConfig()
-                        ? ('CONTENT.SAVING' | translate)
-                        : ('CONTENT.SAVE_TOP_PRODUCTS' | translate)
-                    }}
-                  </button>
-                </div>
+              <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold text-text-primary">
+                  {{ 'CONTENT.TOP_PRODUCTS' | translate }}
+                </h2>
+                <button
+                  type="button"
+                  (click)="openPicker('top_products')"
+                  class="bg-primary text-white hover:bg-primary-hover rounded-lg px-4 py-2 text-sm font-medium"
+                >
+                  {{ 'CONTENT.CONFIGURE' | translate }}
+                </button>
               </div>
+              <p class="text-xs text-text-muted">
+                {{ 'CONTENT.SELECTED_COUNT' | translate: { count: topProductsIds().length } }}
+              </p>
             </div>
           }
         </div>
       }
+
+      <!-- Product Picker Modal -->
+      <app-product-picker
+        [open]="showPicker()"
+        [productType]="pickerProductType()"
+        [selectedIds]="pickerSelectedIds()"
+        [titleKey]="pickerTitleKey()"
+        (close)="showPicker.set(false)"
+        (saved)="onPickerSaved($event)"
+      />
 
       <!-- Tab: Hero Text -->
       @if (activeTab() === 'hero-text') {
@@ -537,11 +525,86 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
                 <label class="block text-sm font-medium text-text-primary mb-1">{{
                   'CONTENT.IMAGE_URL' | translate
                 }}</label>
-                <input
-                  formControlName="imageUrl"
-                  class="w-full px-3 py-2 border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                  [placeholder]="'CONTENT.IMAGE_URL_PLACEHOLDER' | translate"
-                />
+
+                <!-- Mode toggle -->
+                <div class="flex gap-2 mb-2">
+                  <button
+                    type="button"
+                    (click)="imageInputMode.set('upload')"
+                    class="px-3 py-1.5 text-xs font-medium rounded-lg border"
+                    [class]="
+                      imageInputMode() === 'upload'
+                        ? 'bg-primary text-white border-primary'
+                        : 'bg-white text-text-secondary border-border hover:bg-gray-50'
+                    "
+                  >
+                    {{ 'CONTENT.UPLOAD_IMAGE' | translate }}
+                  </button>
+                  <button
+                    type="button"
+                    (click)="imageInputMode.set('url')"
+                    class="px-3 py-1.5 text-xs font-medium rounded-lg border"
+                    [class]="
+                      imageInputMode() === 'url'
+                        ? 'bg-primary text-white border-primary'
+                        : 'bg-white text-text-secondary border-border hover:bg-gray-50'
+                    "
+                  >
+                    {{ 'CONTENT.PASTE_URL' | translate }}
+                  </button>
+                </div>
+
+                @if (imageInputMode() === 'upload') {
+                  <!-- Upload mode -->
+                  <input
+                    #carouselFileInput
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    class="hidden"
+                    (change)="onCarouselFileSelected($event)"
+                  />
+                  <div class="flex items-center gap-3">
+                    <button
+                      type="button"
+                      (click)="carouselFileInput.click()"
+                      [disabled]="carouselUploading()"
+                      class="px-4 py-2 text-sm font-medium border border-border rounded-lg hover:bg-gray-50 disabled:opacity-60"
+                    >
+                      @if (carouselUploading()) {
+                        {{ 'CONTENT.UPLOAD_IN_PROGRESS' | translate }}
+                      } @else {
+                        {{ 'CONTENT.UPLOAD_IMAGE' | translate }}
+                      }
+                    </button>
+                    @if (carouselUploading()) {
+                      <div class="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                        <div
+                          class="h-full bg-primary rounded-full animate-pulse"
+                          style="width: 100%"
+                        ></div>
+                      </div>
+                    }
+                  </div>
+                } @else {
+                  <input
+                    formControlName="imageUrl"
+                    class="w-full px-3 py-2 border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                    [placeholder]="'CONTENT.IMAGE_URL_PLACEHOLDER' | translate"
+                  />
+                }
+
+                @if (slideForm.get('imageUrl')?.value) {
+                  <div class="mt-3">
+                    <p class="text-xs text-text-muted mb-1">
+                      {{ 'CONTENT.IMAGE_PREVIEW' | translate }}
+                    </p>
+                    <img
+                      [src]="slideForm.get('imageUrl')?.value"
+                      alt="Preview"
+                      class="w-full max-w-xs h-32 rounded-lg object-cover border border-border-light"
+                    />
+                  </div>
+                }
               </div>
               <div class="grid grid-cols-2 gap-4">
                 <div>
@@ -655,10 +718,21 @@ export class ContentComponent implements OnInit {
   slideToDelete = signal<CarouselSlide | null>(null);
 
   // Top Products state
-  topServicesInput = '';
-  topProductsInput = '';
+  topServicesIds = signal<string[]>([]);
+  topProductsIds = signal<string[]>([]);
   loadingTopConfig = signal(false);
   savingTopConfig = signal(false);
+
+  // Picker state
+  showPicker = signal(false);
+  pickerTarget = signal<'top_services' | 'top_products'>('top_services');
+  pickerProductType = signal<'saas' | 'physical' | 'license'>('saas');
+  pickerSelectedIds = signal<string[]>([]);
+  pickerTitleKey = signal<string>('');
+
+  // Carousel image upload
+  imageInputMode = signal<'upload' | 'url'>('upload');
+  carouselUploading = signal(false);
 
   // Hero Text state
   loadingHero = signal(false);
@@ -835,14 +909,14 @@ export class ContentComponent implements OnInit {
   loadTopConfigs() {
     this.loadingTopConfig.set(true);
     let loaded = 0;
-    const checkDone = () => {
+    const checkDone = (): void => {
       loaded++;
       if (loaded === 2) this.loadingTopConfig.set(false);
     };
 
     this.contentService.getTopConfig('top_services').subscribe({
       next: (config) => {
-        this.topServicesInput = config.productIds?.join(', ') || '';
+        this.topServicesIds.set(config.productIds ?? []);
         checkDone();
       },
       error: () => {
@@ -852,7 +926,7 @@ export class ContentComponent implements OnInit {
 
     this.contentService.getTopConfig('top_products').subscribe({
       next: (config) => {
-        this.topProductsInput = config.productIds?.join(', ') || '';
+        this.topProductsIds.set(config.productIds ?? []);
         checkDone();
       },
       error: () => {
@@ -861,16 +935,32 @@ export class ContentComponent implements OnInit {
     });
   }
 
-  saveTopConfig(type: 'top_services' | 'top_products') {
+  openPicker(type: 'top_services' | 'top_products'): void {
+    this.pickerTarget.set(type);
+    if (type === 'top_services') {
+      this.pickerProductType.set('saas');
+      this.pickerSelectedIds.set([...this.topServicesIds()]);
+      this.pickerTitleKey.set('CONTENT.PICK_SERVICES');
+    } else {
+      this.pickerProductType.set('physical');
+      this.pickerSelectedIds.set([...this.topProductsIds()]);
+      this.pickerTitleKey.set('CONTENT.PICK_PRODUCTS');
+    }
+    this.showPicker.set(true);
+  }
+
+  onPickerSaved(productIds: string[]): void {
+    const type = this.pickerTarget();
     this.savingTopConfig.set(true);
-    const input = type === 'top_services' ? this.topServicesInput : this.topProductsInput;
-    const productIds = input
-      .split(',')
-      .map((id) => id.trim())
-      .filter((id) => id.length > 0);
+    this.showPicker.set(false);
 
     this.contentService.updateTopConfig(type, { productIds }).subscribe({
       next: () => {
+        if (type === 'top_services') {
+          this.topServicesIds.set(productIds);
+        } else {
+          this.topProductsIds.set(productIds);
+        }
         const label =
           type === 'top_services'
             ? this.translate.instant('CONTENT.TOP_SERVICES')
@@ -885,6 +975,49 @@ export class ContentComponent implements OnInit {
         this.savingTopConfig.set(false);
       },
     });
+  }
+
+  // --- Carousel Image Upload ---
+
+  onCarouselFileSelected(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    const file = target.files?.[0];
+    if (!file) return;
+
+    if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+      this.notifications.error(this.translate.instant('CONTENT.UPLOAD_FAILED'));
+      target.value = '';
+      return;
+    }
+    if (file.size > MAX_IMAGE_SIZE) {
+      this.notifications.error(this.translate.instant('CONTENT.UPLOAD_FAILED'));
+      target.value = '';
+      return;
+    }
+
+    this.carouselUploading.set(true);
+
+    this.contentService
+      .requestCarouselUploadUrl(file.name, file.type)
+      .pipe(
+        switchMap((response) =>
+          this.contentService
+            .uploadBlobToPresignedUrl(response.uploadUrl, file)
+            .pipe(map(() => response)),
+        ),
+      )
+      .subscribe({
+        next: (response) => {
+          this.slideForm.patchValue({ imageUrl: response.publicUrl });
+          this.carouselUploading.set(false);
+          target.value = '';
+        },
+        error: () => {
+          this.notifications.error(this.translate.instant('CONTENT.UPLOAD_FAILED'));
+          this.carouselUploading.set(false);
+          target.value = '';
+        },
+      });
   }
 
   // --- Hero Text ---

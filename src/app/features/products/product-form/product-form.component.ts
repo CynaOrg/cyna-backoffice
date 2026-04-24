@@ -1,6 +1,13 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { ReactiveFormsModule, FormBuilder, FormArray, FormGroup, Validators } from '@angular/forms';
+import {
+  ReactiveFormsModule,
+  FormBuilder,
+  FormArray,
+  FormGroup,
+  AbstractControl,
+  Validators,
+} from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { switchMap } from 'rxjs';
 import { ApiService } from '../../../core/services/api.service';
@@ -219,9 +226,9 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
                         formControlName="productType"
                         class="w-full px-3 py-2 rounded-lg border border-border-light bg-white text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
                       >
-                        <option value="SAAS">{{ 'PRODUCTS.SAAS' | translate }}</option>
-                        <option value="PHYSICAL">{{ 'PRODUCTS.PHYSICAL' | translate }}</option>
-                        <option value="LICENSE">{{ 'PRODUCTS.LICENSE' | translate }}</option>
+                        <option value="saas">{{ 'PRODUCTS.SAAS' | translate }}</option>
+                        <option value="physical">{{ 'PRODUCTS.PHYSICAL' | translate }}</option>
+                        <option value="license">{{ 'PRODUCTS.LICENSE' | translate }}</option>
                       </select>
                     </div>
                   </div>
@@ -365,7 +372,7 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
                   </h3>
                 </div>
                 <div class="px-6 py-5">
-                  @if (form.get('productType')?.value === 'SAAS') {
+                  @if (form.get('productType')?.value === 'saas') {
                     <div class="space-y-4">
                       <div>
                         <label class="block text-xs font-medium text-text-muted mb-1.5">{{
@@ -425,7 +432,7 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
               </div>
 
               <!-- Stock (physical only) -->
-              @if (form.get('productType')?.value === 'PHYSICAL') {
+              @if (form.get('productType')?.value === 'physical') {
                 <div
                   class="rounded-xl border border-border-light bg-surface shadow-sm overflow-hidden"
                 >
@@ -624,7 +631,7 @@ export class ProductFormComponent implements OnInit {
     slug: ['', Validators.required],
     sku: ['', Validators.required],
     categoryId: ['', Validators.required],
-    productType: ['SAAS', Validators.required],
+    productType: ['saas', Validators.required],
     descriptionFr: ['', Validators.required],
     descriptionEn: ['', Validators.required],
     shortDescriptionFr: [''],
@@ -644,7 +651,7 @@ export class ProductFormComponent implements OnInit {
     return this.form.get('characteristics') as FormArray<FormGroup>;
   }
 
-  asFormGroup(control: any): FormGroup {
+  asFormGroup(control: AbstractControl): FormGroup {
     return control as FormGroup;
   }
 
@@ -696,7 +703,7 @@ export class ProductFormComponent implements OnInit {
           slug: p.slug,
           sku: p.sku,
           categoryId: p.categoryId,
-          productType: p.productType?.toUpperCase() as any,
+          productType: p.productType,
           descriptionFr: p.descriptionFr,
           descriptionEn: p.descriptionEn,
           shortDescriptionFr: p.shortDescriptionFr ?? '',

@@ -9,6 +9,16 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge/st
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/confirm-modal.component';
 
+interface TermsFormData {
+  cancelAtPeriodEnd: boolean;
+  trialEndDate: string;
+}
+
+interface UpdateTermsPayload {
+  cancelAtPeriodEnd?: boolean;
+  trialEnd?: 'now' | number;
+}
+
 @Component({
   selector: 'app-subscription-list',
   standalone: true,
@@ -109,21 +119,29 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
                     </td>
                     @if (auth.isSuperAdmin()) {
                       <td class="px-6 py-4 text-right">
-                        @if (sub.status === 'active') {
+                        <div class="flex items-center justify-end gap-3">
                           <button
-                            (click)="confirmAction(sub, 'cancel')"
-                            class="text-sm text-error hover:text-red-700"
-                          >
-                            {{ 'SUBSCRIPTIONS.CANCEL' | translate }}
-                          </button>
-                        } @else if (sub.status === 'cancelled' || sub.status === 'paused') {
-                          <button
-                            (click)="confirmAction(sub, 'reactivate')"
+                            (click)="openTermsModal(sub)"
                             class="text-sm text-primary hover:text-primary-hover"
                           >
-                            {{ 'SUBSCRIPTIONS.REACTIVATE' | translate }}
+                            {{ 'SUBSCRIPTIONS.EDIT_TERMS' | translate }}
                           </button>
-                        }
+                          @if (sub.status === 'active') {
+                            <button
+                              (click)="confirmAction(sub, 'cancel')"
+                              class="text-sm text-error hover:text-red-700"
+                            >
+                              {{ 'SUBSCRIPTIONS.CANCEL' | translate }}
+                            </button>
+                          } @else if (sub.status === 'cancelled' || sub.status === 'paused') {
+                            <button
+                              (click)="confirmAction(sub, 'reactivate')"
+                              class="text-sm text-primary hover:text-primary-hover"
+                            >
+                              {{ 'SUBSCRIPTIONS.REACTIVATE' | translate }}
+                            </button>
+                          }
+                        </div>
                       </td>
                     }
                   </tr>
@@ -162,6 +180,67 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
       (confirm)="executeAction()"
       (cancel)="showModal.set(false)"
     />
+
+    @if (showTermsModal()) {
+      <div class="fixed inset-0 z-50 flex items-center justify-center">
+        <div class="absolute inset-0 bg-black/40" (click)="closeTermsModal()"></div>
+        <div
+          class="relative bg-white rounded-xl shadow-xl p-6 max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto"
+        >
+          <h3 class="text-lg font-semibold mb-4">
+            {{ 'SUBSCRIPTIONS.EDIT_TERMS' | translate }}
+          </h3>
+          <div class="space-y-4">
+            <label class="flex items-center gap-2 text-sm">
+              <input type="checkbox" [(ngModel)]="termsForm.cancelAtPeriodEnd" class="rounded" />
+              {{ 'SUBSCRIPTIONS.CANCEL_AT_PERIOD_END' | translate }}
+            </label>
+
+            <div>
+              <label class="block text-sm font-medium text-text-secondary mb-1">{{
+                'SUBSCRIPTIONS.TRIAL_END' | translate
+              }}</label>
+              <input
+                type="date"
+                [(ngModel)]="termsForm.trialEndDate"
+                class="w-full px-3 py-2 rounded-lg border border-border bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+              />
+            </div>
+
+            <div>
+              <button
+                type="button"
+                (click)="endTrialNow()"
+                class="text-sm text-primary hover:text-primary-hover underline"
+              >
+                {{ 'SUBSCRIPTIONS.END_TRIAL_NOW' | translate }}
+              </button>
+              @if (endTrialNowFlag()) {
+                <p class="mt-1 text-xs text-text-muted">
+                  {{ 'SUBSCRIPTIONS.END_TRIAL_NOW' | translate }}
+                </p>
+              }
+            </div>
+          </div>
+
+          <div class="mt-6 flex justify-end gap-3">
+            <button
+              (click)="closeTermsModal()"
+              class="px-4 py-2 text-sm border border-border rounded-lg hover:bg-gray-50"
+            >
+              {{ 'SUBSCRIPTIONS.CANCEL' | translate }}
+            </button>
+            <button
+              (click)="saveTerms()"
+              [disabled]="savingTerms()"
+              class="px-4 py-2 bg-primary text-white text-sm font-medium rounded-lg hover:bg-primary-hover disabled:opacity-60"
+            >
+              {{ 'SUBSCRIPTIONS.SAVE' | translate }}
+            </button>
+          </div>
+        </div>
+      </div>
+    }
   `,
 })
 export class SubscriptionListComponent implements OnInit {
@@ -171,17 +250,23 @@ export class SubscriptionListComponent implements OnInit {
   private readonly translate = inject(TranslateService);
 
   subscriptions = signal<Subscription[]>([]);
-  loading = signal(true);
+  loading = signal<boolean>(true);
   statusFilter = '';
-  showModal = signal(false);
+  showModal = signal<boolean>(false);
   modalAction = signal<'cancel' | 'reactivate'>('cancel');
   selectedSub = signal<Subscription | null>(null);
 
-  ngOnInit() {
+  showTermsModal = signal<boolean>(false);
+  savingTerms = signal<boolean>(false);
+  endTrialNowFlag = signal<boolean>(false);
+  termsForm: TermsFormData = { cancelAtPeriodEnd: false, trialEndDate: '' };
+  private initialCancelAtPeriodEnd = false;
+
+  ngOnInit(): void {
     this.loadSubscriptions();
   }
 
-  loadSubscriptions() {
+  loadSubscriptions(): void {
     this.loading.set(true);
     const params: Record<string, string | number> = {};
     if (this.statusFilter) params['status'] = this.statusFilter;
@@ -192,25 +277,26 @@ export class SubscriptionListComponent implements OnInit {
         this.loading.set(false);
       },
       error: () => {
-        this.notifications.error('Failed to load subscriptions');
+        this.notifications.error(this.translate.instant('SUBSCRIPTIONS.LOAD_FAILED'));
         this.loading.set(false);
       },
     });
   }
 
-  confirmAction(sub: Subscription, action: 'cancel' | 'reactivate') {
+  confirmAction(sub: Subscription, action: 'cancel' | 'reactivate'): void {
     this.selectedSub.set(sub);
     this.modalAction.set(action);
     this.showModal.set(true);
   }
 
-  executeAction() {
+  executeAction(): void {
     const sub = this.selectedSub();
     if (!sub) return;
     this.api
-      .patch<any, any>(`admin/payments/subscriptions/${sub.id}/status`, {
-        action: this.modalAction(),
-      })
+      .patch<
+        { action: 'cancel' | 'reactivate' },
+        Subscription
+      >(`admin/payments/subscriptions/${sub.id}/status`, { action: this.modalAction() })
       .subscribe({
         next: () => {
           this.notifications.success(
@@ -228,11 +314,76 @@ export class SubscriptionListComponent implements OnInit {
       });
   }
 
-  formatCurrency(v: number) {
+  openTermsModal(sub: Subscription): void {
+    this.selectedSub.set(sub);
+    this.initialCancelAtPeriodEnd = Boolean(sub.cancelAtPeriodEnd);
+    this.termsForm = {
+      cancelAtPeriodEnd: this.initialCancelAtPeriodEnd,
+      trialEndDate: '',
+    };
+    this.endTrialNowFlag.set(false);
+    this.showTermsModal.set(true);
+  }
+
+  closeTermsModal(): void {
+    this.showTermsModal.set(false);
+    this.endTrialNowFlag.set(false);
+  }
+
+  endTrialNow(): void {
+    this.endTrialNowFlag.set(true);
+    this.termsForm.trialEndDate = '';
+  }
+
+  saveTerms(): void {
+    const sub = this.selectedSub();
+    if (!sub) return;
+
+    const payload: UpdateTermsPayload = {};
+
+    if (this.termsForm.cancelAtPeriodEnd !== this.initialCancelAtPeriodEnd) {
+      payload.cancelAtPeriodEnd = this.termsForm.cancelAtPeriodEnd;
+    }
+
+    if (this.endTrialNowFlag()) {
+      payload.trialEnd = 'now';
+    } else if (this.termsForm.trialEndDate) {
+      const ts = Math.floor(new Date(this.termsForm.trialEndDate).getTime() / 1000);
+      if (!Number.isNaN(ts)) {
+        payload.trialEnd = ts;
+      }
+    }
+
+    if (Object.keys(payload).length === 0) {
+      this.notifications.error(this.translate.instant('SUBSCRIPTIONS.TERMS_UPDATE_FAILED'));
+      return;
+    }
+
+    this.savingTerms.set(true);
+    this.api
+      .patch<
+        UpdateTermsPayload,
+        Subscription
+      >(`admin/payments/subscriptions/${sub.id}/terms`, payload)
+      .subscribe({
+        next: () => {
+          this.notifications.success(this.translate.instant('SUBSCRIPTIONS.TERMS_UPDATED'));
+          this.savingTerms.set(false);
+          this.closeTermsModal();
+          this.loadSubscriptions();
+        },
+        error: () => {
+          this.notifications.error(this.translate.instant('SUBSCRIPTIONS.TERMS_UPDATE_FAILED'));
+          this.savingTerms.set(false);
+        },
+      });
+  }
+
+  formatCurrency(v: number): string {
     return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(v);
   }
 
-  formatDate(d: string) {
+  formatDate(d: string): string {
     return d
       ? new Date(d).toLocaleDateString('fr-FR', {
           day: '2-digit',

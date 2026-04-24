@@ -31,6 +31,7 @@ export const routes: Routes = [
           import('./features/products/product-list/product-list.component').then(
             (m) => m.ProductListComponent,
           ),
+        canActivate: [superAdminGuard],
         data: {
           productType: 'physical',
           titleKey: 'PRODUCTS.TITLE',
@@ -63,6 +64,7 @@ export const routes: Routes = [
           import('./features/products/product-detail/product-detail.component').then(
             (m) => m.ProductDetailComponent,
           ),
+        canActivate: [superAdminGuard],
         data: { basePath: '/products' },
       },
       {
@@ -71,6 +73,7 @@ export const routes: Routes = [
           import('./features/products/product-list/product-list.component').then(
             (m) => m.ProductListComponent,
           ),
+        canActivate: [superAdminGuard],
         data: {
           productType: 'saas',
           titleKey: 'SERVICES.TITLE',
@@ -103,6 +106,7 @@ export const routes: Routes = [
           import('./features/products/product-detail/product-detail.component').then(
             (m) => m.ProductDetailComponent,
           ),
+        canActivate: [superAdminGuard],
         data: { basePath: '/services' },
       },
       {
@@ -111,6 +115,7 @@ export const routes: Routes = [
           import('./features/products/product-list/product-list.component').then(
             (m) => m.ProductListComponent,
           ),
+        canActivate: [superAdminGuard],
         data: {
           productType: 'license',
           titleKey: 'LICENCES.TITLE',
@@ -143,7 +148,16 @@ export const routes: Routes = [
           import('./features/products/product-detail/product-detail.component').then(
             (m) => m.ProductDetailComponent,
           ),
+        canActivate: [superAdminGuard],
         data: { basePath: '/licences' },
+      },
+      {
+        path: 'categories',
+        loadComponent: () =>
+          import('./features/categories/category-list/category-list.component').then(
+            (m) => m.CategoryListComponent,
+          ),
+        canActivate: [superAdminGuard],
       },
       {
         path: 'orders',
@@ -167,6 +181,7 @@ export const routes: Routes = [
           import('./features/subscriptions/subscription-list/subscription-list.component').then(
             (m) => m.SubscriptionListComponent,
           ),
+        canActivate: [superAdminGuard],
       },
       {
         path: 'customers',
