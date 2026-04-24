@@ -3,6 +3,7 @@ import { RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AdminAuthService } from '../../core/auth/services/admin-auth.service';
+import { ApiService } from '../../core/services/api.service';
 import { AnalyticsService } from '../../core/services/analytics.service';
 import { ContentService } from '../../core/services/content.service';
 import { NotificationService } from '../../core/services/notification.service';
@@ -11,6 +12,7 @@ import { StatusBadgeComponent } from '../../shared/components/status-badge/statu
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
 import { DashboardData, DashboardKPIs } from '../../core/models/analytics.model';
 import { ContactMessage } from '../../core/models/content.model';
+import { Order } from '../../core/models/order.model';
 
 interface DashboardViewModel {
   kpis: DashboardKPIs;
@@ -310,6 +312,7 @@ export class DashboardComponent implements OnInit {
   readonly authService = inject(AdminAuthService);
   private readonly analyticsService = inject(AnalyticsService);
   private readonly contentService = inject(ContentService);
+  private readonly api = inject(ApiService);
   private readonly notifications = inject(NotificationService);
   private readonly translate = inject(TranslateService);
 
@@ -333,9 +336,14 @@ export class DashboardComponent implements OnInit {
   loadDashboard() {
     this.loading.set(true);
 
-    this.analyticsService.getDashboard().subscribe({
-      next: (apiData: DashboardData) => {
-        // Map the actual API response to the view model the template expects
+    forkJoin({
+      dashboard: this.analyticsService.getDashboard(),
+      recentOrders: this.api.get<{ data: Order[]; total: number }>('admin/orders', {
+        page: 1,
+        limit: 5,
+      }),
+    }).subscribe({
+      next: ({ dashboard: apiData, recentOrders }) => {
         const viewModel: DashboardViewModel = {
           kpis: {
             totalRevenue: apiData?.revenue?.total ?? 0,
@@ -349,7 +357,13 @@ export class DashboardComponent implements OnInit {
             avgCartValue: apiData?.averageOrderValue ?? 0,
             conversionRate: apiData?.conversionRate,
           },
-          recentOrders: [], // API does not return recent orders in dashboard endpoint
+          recentOrders: (recentOrders?.data ?? []).map((o) => ({
+            id: o.id,
+            orderNumber: o.orderNumber,
+            status: o.status,
+            total: Number(o.total) || 0,
+            createdAt: o.createdAt,
+          })),
         };
         this.data.set(viewModel);
         this.loading.set(false);
