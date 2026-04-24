@@ -7,10 +7,11 @@ import {
   DashboardData,
   StockStatusResponse,
   SalesDataPoint,
-  SalesByCategoryData,
+  SalesByCategoryResponse,
   SalesByProductTypeData,
   MrrDataPoint,
   TopProductData,
+  AverageCartByTypeResponse,
 } from '../models/analytics.model';
 
 @Injectable({ providedIn: 'root' })
@@ -31,10 +32,15 @@ export class AnalyticsService {
     return this.api.get<{ sales: SalesDataPoint[] }>(`${this.basePath}/sales`, params);
   }
 
-  getSalesByCategory(period?: string): Observable<{ data: SalesByCategoryData[] }> {
+  getSalesByCategory(period?: string): Observable<SalesByCategoryResponse> {
     const params = period ? { period } : undefined;
-    return this.api.get<{ data: SalesByCategoryData[] }>(
-      `${this.basePath}/sales-by-category`,
+    return this.api.get<SalesByCategoryResponse>(`${this.basePath}/sales-by-category`, params);
+  }
+
+  getAverageCartByProductType(period?: string): Observable<AverageCartByTypeResponse> {
+    const params = period ? { period } : undefined;
+    return this.api.get<AverageCartByTypeResponse>(
+      `${this.basePath}/average-cart-by-product-type`,
       params,
     );
   }
