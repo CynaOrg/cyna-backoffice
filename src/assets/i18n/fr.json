@@ -5,6 +5,7 @@
     "PRODUCTS": "Produits",
     "SERVICES": "Services SaaS",
     "LICENCES": "Licences",
+    "CATEGORIES": "Catégories",
     "MANAGEMENT": "Gestion",
     "ORDERS": "Commandes",
     "SUBSCRIPTIONS": "Abonnements",
@@ -511,7 +512,14 @@
     "DELETED": "Catégorie supprimée",
     "LOAD_FAILED": "Échec du chargement des catégories",
     "SAVE_FAILED": "Échec de l'enregistrement",
-    "DELETE_FAILED": "Échec de la suppression"
+    "DELETE_FAILED": "Échec de la suppression",
+    "DESCRIPTION_FR": "Description (FR)",
+    "DESCRIPTION_EN": "Description (EN)",
+    "MOVE_UP": "Monter",
+    "MOVE_DOWN": "Descendre",
+    "REORDER_FAILED": "Échec de la réorganisation",
+    "IMAGE": "Image",
+    "IMAGE_PREVIEW": "Aperçu de l'image"
   },
   "COMMON": {
     "LOADING": "Chargement...",
@@ -538,6 +546,7 @@
     "PRODUCTS": "Produits",
     "SERVICES": "Services SaaS",
     "LICENCES": "Licences",
+    "CATEGORIES": "Catégories",
     "ORDERS": "Commandes",
     "SUBSCRIPTIONS": "Abonnements",
     "CUSTOMERS": "Clients",

@@ -146,6 +146,14 @@ export const routes: Routes = [
         data: { basePath: '/licences' },
       },
       {
+        path: 'categories',
+        loadComponent: () =>
+          import('./features/categories/category-list/category-list.component').then(
+            (m) => m.CategoryListComponent,
+          ),
+        canActivate: [superAdminGuard],
+      },
+      {
         path: 'orders',
         loadComponent: () =>
           import('./features/orders/order-list/order-list.component').then(
