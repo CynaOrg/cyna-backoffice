@@ -6,11 +6,11 @@ import { environment } from '../../../environments/environment';
 import {
   DashboardData,
   StockStatusResponse,
-  SalesDataPoint,
+  SalesResponse,
   SalesByCategoryResponse,
   SalesByProductTypeData,
-  MrrDataPoint,
-  TopProductData,
+  MrrResponse,
+  AverageCartResponse,
   AverageCartByTypeResponse,
 } from '../models/analytics.model';
 
@@ -25,11 +25,11 @@ export class AnalyticsService {
     return this.api.get<DashboardData>(`${this.basePath}/dashboard`, params);
   }
 
-  getSales(period?: string, groupBy?: string): Observable<{ sales: SalesDataPoint[] }> {
+  getSales(period?: string, groupBy?: string): Observable<SalesResponse> {
     const params: Record<string, string> = {};
     if (period) params['period'] = period;
     if (groupBy) params['groupBy'] = groupBy;
-    return this.api.get<{ sales: SalesDataPoint[] }>(`${this.basePath}/sales`, params);
+    return this.api.get<SalesResponse>(`${this.basePath}/sales`, params);
   }
 
   getSalesByCategory(period?: string): Observable<SalesByCategoryResponse> {
@@ -53,21 +53,13 @@ export class AnalyticsService {
     );
   }
 
-  getTopProducts(period?: string): Observable<{ data: TopProductData[] }> {
+  getAverageCart(period?: string): Observable<AverageCartResponse> {
     const params = period ? { period } : undefined;
-    return this.api.get<{ data: TopProductData[] }>(`${this.basePath}/top-products`, params);
+    return this.api.get<AverageCartResponse>(`${this.basePath}/average-cart`, params);
   }
 
-  getAverageCart(period?: string): Observable<{ avgCart: number; history: SalesDataPoint[] }> {
-    const params = period ? { period } : undefined;
-    return this.api.get<{ avgCart: number; history: SalesDataPoint[] }>(
-      `${this.basePath}/average-cart`,
-      params,
-    );
-  }
-
-  getMrr(): Observable<{ current: number; history: MrrDataPoint[] }> {
-    return this.api.get<{ current: number; history: MrrDataPoint[] }>(`${this.basePath}/mrr`);
+  getMrr(): Observable<MrrResponse> {
+    return this.api.get<MrrResponse>(`${this.basePath}/mrr`);
   }
 
   getStockStatus(): Observable<StockStatusResponse> {
