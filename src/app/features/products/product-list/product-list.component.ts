@@ -205,6 +205,43 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
         </div>
       </div>
 
+      <!-- Bulk action bar -->
+      @if (selectedIds().size > 0 && auth.isSuperAdmin()) {
+        <div
+          class="flex items-center justify-between gap-4 mb-3 px-4 py-3 rounded-xl border border-primary/30 bg-primary-light/40 shadow-sm"
+          style="animation: fadeInUp 0.3s ease-out both"
+        >
+          <span class="text-sm font-medium text-text-primary">
+            {{ 'PRODUCTS.SELECTED_COUNT' | translate: { count: selectedIds().size } }}
+          </span>
+          <div class="flex items-center gap-2">
+            <button
+              type="button"
+              (click)="clearSelection()"
+              class="px-3 py-1.5 text-[13px] font-medium text-text-secondary bg-surface border border-border rounded-lg hover:bg-background transition-colors cursor-pointer"
+            >
+              {{ 'PRODUCTS.DESELECT_ALL' | translate }}
+            </button>
+            <button
+              type="button"
+              (click)="openBulkDeleteModal()"
+              [disabled]="bulkDeleting()"
+              class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium text-white bg-error rounded-lg hover:bg-red-600 transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="1.5"
+                  d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
+                />
+              </svg>
+              {{ 'PRODUCTS.DELETE_SELECTED' | translate }}
+            </button>
+          </div>
+        </div>
+      }
+
       <!-- Table -->
       <div
         class="rounded-xl border border-border-light bg-surface shadow-sm overflow-hidden"
@@ -275,6 +312,17 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
             <table class="w-full">
               <thead>
                 <tr class="border-b border-border-light">
+                  @if (auth.isSuperAdmin()) {
+                    <th class="px-4 py-3 w-10">
+                      <input
+                        type="checkbox"
+                        class="w-4 h-4 rounded border-border cursor-pointer accent-primary"
+                        [checked]="allSelected()"
+                        [indeterminate]="someSelected()"
+                        (change)="toggleSelectAll()"
+                      />
+                    </th>
+                  }
                   <th
                     class="px-6 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-text-muted"
                   >
@@ -312,6 +360,17 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
               <tbody class="divide-y divide-border-light">
                 @for (product of filteredProducts(); track product.id) {
                   <tr class="group hover:bg-background transition-colors">
+                    @if (auth.isSuperAdmin()) {
+                      <td class="px-4 py-4 w-10">
+                        <input
+                          type="checkbox"
+                          class="w-4 h-4 rounded border-border cursor-pointer accent-primary"
+                          [checked]="selectedIds().has(product.id)"
+                          (change)="toggleSelect(product.id)"
+                          (click)="$event.stopPropagation()"
+                        />
+                      </td>
+                    }
                     <td class="px-6 py-4">
                       <a
                         [routerLink]="[basePath, product.id]"
@@ -487,6 +546,16 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
       (confirm)="deleteProduct()"
       (cancel)="showDeleteModal.set(false)"
     />
+
+    <app-confirm-modal
+      [open]="showBulkDeleteModal()"
+      [title]="'PRODUCTS.BULK_DELETE_CONFIRM' | translate"
+      [message]="'PRODUCTS.SELECTED_COUNT' | translate: { count: selectedIds().size }"
+      [confirmLabel]="'PRODUCTS.DELETE_SELECTED' | translate"
+      variant="danger"
+      (confirm)="deleteSelected()"
+      (cancel)="showBulkDeleteModal.set(false)"
+    />
   `,
 })
 export class ProductListComponent implements OnInit {
@@ -503,6 +572,9 @@ export class ProductListComponent implements OnInit {
   fixedType = '';
   showDeleteModal = signal(false);
   productToDelete = signal<Product | null>(null);
+  selectedIds = signal<Set<string>>(new Set<string>());
+  bulkDeleting = signal<boolean>(false);
+  showBulkDeleteModal = signal<boolean>(false);
 
   titleKey = 'PRODUCTS.TITLE';
   subtitleKey = 'PRODUCTS.SUBTITLE';
@@ -516,6 +588,20 @@ export class ProductListComponent implements OnInit {
   availableCount = computed(() => this.products().filter((p) => p.isAvailable).length);
   unavailableCount = computed(() => this.products().filter((p) => !p.isAvailable).length);
   featuredCount = computed(() => this.products().filter((p) => p.isFeatured).length);
+
+  allSelected = computed<boolean>(() => {
+    const filtered = this.filteredProducts();
+    if (filtered.length === 0) return false;
+    const selected = this.selectedIds();
+    return filtered.every((p) => selected.has(p.id));
+  });
+
+  someSelected = computed<boolean>(() => {
+    const filtered = this.filteredProducts();
+    const selected = this.selectedIds();
+    const selectedInFiltered = filtered.filter((p) => selected.has(p.id)).length;
+    return selectedInFiltered > 0 && selectedInFiltered < filtered.length;
+  });
 
   private searchTimeout: any;
 
@@ -625,5 +711,83 @@ export class ProductListComponent implements OnInit {
         this.showDeleteModal.set(false);
       },
     });
+  }
+
+  toggleSelect(productId: string): void {
+    this.selectedIds.update((current) => {
+      const next = new Set(current);
+      if (next.has(productId)) {
+        next.delete(productId);
+      } else {
+        next.add(productId);
+      }
+      return next;
+    });
+  }
+
+  toggleSelectAll(): void {
+    const filtered = this.filteredProducts();
+    const allCurrentlySelected = this.allSelected();
+    this.selectedIds.update((current) => {
+      const next = new Set(current);
+      if (allCurrentlySelected) {
+        for (const p of filtered) next.delete(p.id);
+      } else {
+        for (const p of filtered) next.add(p.id);
+      }
+      return next;
+    });
+  }
+
+  clearSelection(): void {
+    this.selectedIds.set(new Set<string>());
+  }
+
+  openBulkDeleteModal(): void {
+    if (this.selectedIds().size === 0) return;
+    this.showBulkDeleteModal.set(true);
+  }
+
+  deleteSelected(): void {
+    const ids = Array.from(this.selectedIds());
+    if (ids.length === 0) {
+      this.showBulkDeleteModal.set(false);
+      return;
+    }
+
+    this.bulkDeleting.set(true);
+    this.api
+      .post<
+        { productIds: string[] },
+        { deletedCount: number; failedIds: string[] }
+      >('admin/catalog/products/bulk-delete', { productIds: ids })
+      .subscribe({
+        next: (res) => {
+          const deletedCount = res?.deletedCount ?? 0;
+          const failedIds = res?.failedIds ?? [];
+
+          this.notifications.success(
+            this.translate.instant('PRODUCTS.BULK_DELETE_SUCCESS', { count: deletedCount }),
+          );
+
+          if (failedIds.length > 0) {
+            this.notifications.warning(
+              this.translate.instant('PRODUCTS.BULK_DELETE_PARTIAL', {
+                count: failedIds.length,
+              }),
+            );
+          }
+
+          this.showBulkDeleteModal.set(false);
+          this.clearSelection();
+          this.bulkDeleting.set(false);
+          this.loadProducts();
+        },
+        error: () => {
+          this.notifications.error(this.translate.instant('PRODUCTS.BULK_DELETE_FAILED'));
+          this.showBulkDeleteModal.set(false);
+          this.bulkDeleting.set(false);
+        },
+      });
   }
 }
