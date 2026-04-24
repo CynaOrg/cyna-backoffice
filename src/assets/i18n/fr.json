@@ -341,7 +341,11 @@
     "SELECT_DATE_RANGE": "Sélectionnez une plage de dates pour l'export",
     "MONTHLY_TREND": "Tendance mensuelle",
     "TOP_PRODUCTS": "Top produits SaaS",
-    "OTHER": "Autres"
+    "OTHER": "Autres",
+    "AVG_CART_BY_TYPE": "Panier moyen par type",
+    "TYPE_SAAS": "SaaS",
+    "TYPE_PHYSICAL": "Physique",
+    "TYPE_LICENSE": "Licence"
   },
   "CONTENT": {
     "TITLE": "Gestion du contenu",

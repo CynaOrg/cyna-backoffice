@@ -58,11 +58,29 @@ export interface SalesData {
   salesByMonth: SalesDataPoint[];
 }
 
-export interface SalesByCategoryData {
-  category: string;
+export interface CategorySalesEntry {
+  categoryId: string;
+  name: string;
   revenue: number;
-  orderCount: number;
   percentage: number;
+}
+
+export interface SalesByCategoryResponse {
+  period: string;
+  categories: CategorySalesEntry[];
+}
+
+export type AverageCartProductType = 'saas' | 'physical' | 'license';
+
+export interface AverageCartByTypeEntry {
+  productType: AverageCartProductType;
+  averageCartValue: number;
+  orderCount: number;
+}
+
+export interface AverageCartByTypeResponse {
+  period: string;
+  data: AverageCartByTypeEntry[];
 }
 
 export interface SalesByProductTypeData {
