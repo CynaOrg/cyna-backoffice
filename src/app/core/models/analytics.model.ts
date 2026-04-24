@@ -49,13 +49,16 @@ export interface StockStatusResponse {
 }
 
 export interface SalesDataPoint {
-  period: string;
+  date: string;
   revenue: number;
-  orderCount: number;
+  orders: number;
 }
 
-export interface SalesData {
-  salesByMonth: SalesDataPoint[];
+export interface SalesResponse {
+  period: string;
+  groupBy: string;
+  series: SalesDataPoint[];
+  totals: { revenue: number; orders: number };
 }
 
 export interface CategorySalesEntry {
@@ -84,25 +87,36 @@ export interface AverageCartByTypeResponse {
 }
 
 export interface SalesByProductTypeData {
-  productType: string;
+  type: string;
   revenue: number;
-  orderCount: number;
+  count: number;
   percentage: number;
 }
 
 export interface MrrDataPoint {
-  period: string;
+  month: string;
   mrr: number;
-  growth: number;
+}
+
+export interface MrrResponse {
+  currentMrr: number;
+  history: MrrDataPoint[];
+  growth: { monthOverMonth: number; yearOverYear: number };
+}
+
+export interface AverageCartResponse {
+  period: string;
+  averageCartValue: number;
+  totalOrders: number;
+  totalRevenue: number;
 }
 
 export interface StockItem {
   productId: string;
-  productName: string;
-  sku: string;
+  name: string;
   currentStock: number;
-  alertThreshold: number;
-  status: 'ok' | 'low' | 'critical' | 'out_of_stock';
+  threshold: number;
+  status: string;
 }
 
 export interface TopProductData {
