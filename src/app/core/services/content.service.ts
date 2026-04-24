@@ -111,7 +111,7 @@ export class ContentService {
 
   updateContactMessage(
     messageId: string,
-    body: { isRead?: boolean; isTreated?: boolean },
+    body: { isRead?: boolean; isProcessed?: boolean },
   ): Observable<ContactMessage> {
     return this.api.patch<typeof body, ContactMessage>(
       `${this.basePath}/contact-messages/${messageId}`,
