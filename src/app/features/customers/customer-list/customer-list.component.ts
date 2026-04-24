@@ -312,7 +312,7 @@ export class CustomerListComponent implements OnInit {
 
     this.api.get<any>('admin/users', params).subscribe({
       next: (res) => {
-        this.users.set(res?.data || []);
+        this.users.set(res?.items || []);
         this.total.set(res?.total || 0);
         this.loading.set(false);
       },
