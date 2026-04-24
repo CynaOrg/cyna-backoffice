@@ -9,7 +9,7 @@ export interface Product {
   descriptionEn: string;
   shortDescriptionFr?: string;
   shortDescriptionEn?: string;
-  productType: 'SAAS' | 'PHYSICAL' | 'LICENSE';
+  productType: 'saas' | 'physical' | 'license';
   priceMonthly?: number;
   priceYearly?: number;
   priceUnit?: number;
@@ -73,7 +73,7 @@ export interface CreateProductDto {
   descriptionEn: string;
   shortDescriptionFr?: string;
   shortDescriptionEn?: string;
-  productType: 'SAAS' | 'PHYSICAL' | 'LICENSE';
+  productType: 'saas' | 'physical' | 'license';
   priceMonthly?: number;
   priceYearly?: number;
   priceUnit?: number;
@@ -82,5 +82,5 @@ export interface CreateProductDto {
   isAvailable?: boolean;
   isFeatured?: boolean;
   displayOrder?: number;
-  characteristics?: { key: string; valueFr: string; valueEn: string }[];
+  characteristics?: { keyFr: string; keyEn: string; valueFr: string; valueEn: string }[];
 }
