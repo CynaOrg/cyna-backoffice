@@ -431,7 +431,21 @@
     "HERO_UPDATE_FAILED": "Échec de la mise à jour du texte Hero",
     "LOAD_MESSAGES_FAILED": "Échec du chargement des messages",
     "UPDATE_MESSAGE_FAILED": "Échec de la mise à jour du message",
-    "DELETE_MESSAGE_FAILED": "Échec de la suppression du message"
+    "DELETE_MESSAGE_FAILED": "Échec de la suppression du message",
+    "UPLOAD_IMAGE": "Téléverser une image",
+    "PASTE_URL": "Coller une URL",
+    "UPLOAD_IN_PROGRESS": "Upload en cours...",
+    "UPLOAD_FAILED": "Échec de l'upload",
+    "IMAGE_PREVIEW": "Aperçu",
+    "PICK_PRODUCTS": "Choisir les produits",
+    "PICK_SERVICES": "Choisir les services",
+    "SELECTED_COUNT": "{{count}} sélectionné(s)",
+    "SELECTED_ORDER": "Sélection (ordre d'affichage)",
+    "SEARCH_PRODUCTS": "Rechercher...",
+    "CONFIRM": "Valider",
+    "CLOSE": "Fermer",
+    "CONFIGURE": "Configurer",
+    "NO_PRODUCTS_FOUND": "Aucun produit trouvé"
   },
   "ADMINS": {
     "TITLE": "Administrateurs",
