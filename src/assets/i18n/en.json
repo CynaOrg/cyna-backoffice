@@ -201,7 +201,14 @@
     "CREATED": "Created",
     "STATUS_UPDATED": "Status updated",
     "UPDATE_FAILED": "Failed to update status",
-    "NOT_FOUND": "Order not found"
+    "NOT_FOUND": "Order not found",
+    "TRACKING_NUMBER": "Tracking number",
+    "TRACKING_URL": "Tracking URL",
+    "ADMIN_NOTES": "Admin notes",
+    "OPEN_TRACKING": "Open tracking",
+    "TRACKING_NUMBER_PLACEHOLDER": "Ex: 1Z999AA10123456784",
+    "TRACKING_URL_PLACEHOLDER": "https://...",
+    "ADMIN_NOTES_PLACEHOLDER": "Internal notes..."
   },
   "SUBSCRIPTIONS": {
     "TITLE": "Subscriptions",

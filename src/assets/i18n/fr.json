@@ -201,7 +201,14 @@
     "CREATED": "Créée",
     "STATUS_UPDATED": "Statut mis à jour",
     "UPDATE_FAILED": "Échec de la mise à jour",
-    "NOT_FOUND": "Commande non trouvée"
+    "NOT_FOUND": "Commande non trouvée",
+    "TRACKING_NUMBER": "Numéro de suivi",
+    "TRACKING_URL": "URL de suivi",
+    "ADMIN_NOTES": "Notes admin",
+    "OPEN_TRACKING": "Ouvrir le suivi",
+    "TRACKING_NUMBER_PLACEHOLDER": "Ex: 1Z999AA10123456784",
+    "TRACKING_URL_PLACEHOLDER": "https://...",
+    "ADMIN_NOTES_PLACEHOLDER": "Notes internes..."
   },
   "SUBSCRIPTIONS": {
     "TITLE": "Abonnements",
