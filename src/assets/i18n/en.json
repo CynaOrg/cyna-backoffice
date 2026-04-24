@@ -431,7 +431,21 @@
     "HERO_UPDATE_FAILED": "Failed to update hero text",
     "LOAD_MESSAGES_FAILED": "Failed to load messages",
     "UPDATE_MESSAGE_FAILED": "Failed to update message",
-    "DELETE_MESSAGE_FAILED": "Failed to delete message"
+    "DELETE_MESSAGE_FAILED": "Failed to delete message",
+    "UPLOAD_IMAGE": "Upload image",
+    "PASTE_URL": "Paste URL",
+    "UPLOAD_IN_PROGRESS": "Uploading...",
+    "UPLOAD_FAILED": "Upload failed",
+    "IMAGE_PREVIEW": "Preview",
+    "PICK_PRODUCTS": "Select products",
+    "PICK_SERVICES": "Select services",
+    "SELECTED_COUNT": "{{count}} selected",
+    "SELECTED_ORDER": "Selection (display order)",
+    "SEARCH_PRODUCTS": "Search...",
+    "CONFIRM": "Confirm",
+    "CLOSE": "Close",
+    "CONFIGURE": "Configure",
+    "NO_PRODUCTS_FOUND": "No products found"
   },
   "ADMINS": {
     "TITLE": "Admins",
