@@ -46,6 +46,35 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
             <option value="cancelled">{{ 'ORDERS.CANCELLED' | translate }}</option>
             <option value="refunded">{{ 'ORDERS.REFUNDED' | translate }}</option>
           </select>
+          <label class="flex items-center gap-2 text-sm text-text-secondary">
+            <span>{{ 'ORDERS.FILTER_DATE_FROM' | translate }}</span>
+            <input
+              type="date"
+              [(ngModel)]="dateFrom"
+              (change)="loadOrders()"
+              class="px-4 py-2 rounded-lg border border-border bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+            />
+          </label>
+          <label class="flex items-center gap-2 text-sm text-text-secondary">
+            <span>{{ 'ORDERS.FILTER_DATE_TO' | translate }}</span>
+            <input
+              type="date"
+              [(ngModel)]="dateTo"
+              (change)="loadOrders()"
+              class="px-4 py-2 rounded-lg border border-border bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+            />
+          </label>
+          <select
+            [(ngModel)]="typeFilter"
+            (change)="loadOrders()"
+            class="px-4 py-2 rounded-lg border border-border bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+          >
+            <option value="">{{ 'ORDERS.ALL_TYPES' | translate }}</option>
+            <option value="saas">{{ 'ORDERS.TYPE_SAAS' | translate }}</option>
+            <option value="physical">{{ 'ORDERS.TYPE_PHYSICAL' | translate }}</option>
+            <option value="license">{{ 'ORDERS.TYPE_LICENSE' | translate }}</option>
+            <option value="mixed">{{ 'ORDERS.TYPE_MIXED' | translate }}</option>
+          </select>
         </div>
       </div>
 
@@ -111,8 +140,8 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
                     <td class="px-6 py-4 text-sm text-text-secondary">
                       {{ formatDate(order.createdAt) }}
                     </td>
-                    <td class="px-6 py-4 text-sm text-text-secondary capitalize">
-                      {{ order.orderType?.toLowerCase() }}
+                    <td class="px-6 py-4 text-sm text-text-secondary">
+                      {{ orderTypeLabel(order.orderType) | translate }}
                     </td>
                     <td class="px-6 py-4">
                       <app-status-badge [status]="order.status" />
@@ -161,21 +190,27 @@ export class OrderListComponent implements OnInit {
   total = signal(0);
   search = '';
   statusFilter = '';
+  dateFrom = '';
+  dateTo = '';
+  typeFilter = '';
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.loadOrders();
   }
 
-  loadOrders() {
+  loadOrders(): void {
     this.loading.set(true);
     const params: Record<string, string | number> = { page: this.page(), limit: 20 };
     if (this.search) params['search'] = this.search;
     if (this.statusFilter) params['status'] = this.statusFilter;
+    if (this.dateFrom) params['dateFrom'] = this.dateFrom;
+    if (this.dateTo) params['dateTo'] = this.dateTo;
+    if (this.typeFilter) params['orderType'] = this.typeFilter;
 
-    this.api.get<any>('admin/orders', params).subscribe({
+    this.api.get<{ data: Order[]; total: number }>('admin/orders', params).subscribe({
       next: (res) => {
-        this.orders.set(res?.data || []);
-        this.total.set(res?.total || 0);
+        this.orders.set(res?.data ?? []);
+        this.total.set(res?.total ?? 0);
         this.loading.set(false);
       },
       error: () => {
@@ -185,20 +220,35 @@ export class OrderListComponent implements OnInit {
     });
   }
 
-  onPageChange(page: number) {
+  onPageChange(page: number): void {
     this.page.set(page);
     this.loadOrders();
   }
 
-  formatCurrency(v: number) {
+  formatCurrency(v: number): string {
     return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(v);
   }
 
-  formatDate(d: string) {
+  formatDate(d: string): string {
     return new Date(d).toLocaleDateString('fr-FR', {
       day: '2-digit',
       month: 'short',
       year: 'numeric',
     });
+  }
+
+  orderTypeLabel(orderType: string | undefined): string {
+    switch (orderType?.toLowerCase()) {
+      case 'saas':
+        return 'ORDERS.TYPE_SAAS';
+      case 'physical':
+        return 'ORDERS.TYPE_PHYSICAL';
+      case 'license':
+        return 'ORDERS.TYPE_LICENSE';
+      case 'mixed':
+        return 'ORDERS.TYPE_MIXED';
+      default:
+        return '';
+    }
   }
 }
