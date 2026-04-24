@@ -1,4 +1,5 @@
 import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { ApiService } from './api.service';
@@ -13,10 +14,35 @@ import {
   UpdateTopConfigDto,
 } from '../models/content.model';
 
+export interface ContentPresignedUploadResponse {
+  uploadUrl: string;
+  storageKey: string;
+  publicUrl: string;
+  expiresAt: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class ContentService {
   private readonly api = inject(ApiService);
+  private readonly http = inject(HttpClient);
   private readonly basePath = 'admin/content';
+
+  // Carousel image upload (presigned)
+  requestCarouselUploadUrl(
+    fileName: string,
+    contentType: string,
+  ): Observable<ContentPresignedUploadResponse> {
+    return this.api.post<{ fileName: string; contentType: string }, ContentPresignedUploadResponse>(
+      `${this.basePath}/carousel/upload-url`,
+      { fileName, contentType },
+    );
+  }
+
+  uploadBlobToPresignedUrl(uploadUrl: string, file: File): Observable<unknown> {
+    return this.http.put(uploadUrl, file, {
+      headers: { 'Content-Type': file.type },
+    });
+  }
 
   // Carousel
   getCarouselSlides(): Observable<CarouselSlide[]> {
