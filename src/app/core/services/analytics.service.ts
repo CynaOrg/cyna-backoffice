@@ -45,9 +45,11 @@ export class AnalyticsService {
     );
   }
 
-  getSalesByProductType(period?: string): Observable<{ data: SalesByProductTypeData[] }> {
+  getSalesByProductType(
+    period?: string,
+  ): Observable<{ period: string; productTypes: SalesByProductTypeData[] }> {
     const params = period ? { period } : undefined;
-    return this.api.get<{ data: SalesByProductTypeData[] }>(
+    return this.api.get<{ period: string; productTypes: SalesByProductTypeData[] }>(
       `${this.basePath}/sales-by-product-type`,
       params,
     );
