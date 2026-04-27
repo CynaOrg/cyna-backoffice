@@ -543,7 +543,7 @@ export class AnalyticsComponent implements OnInit, AfterViewInit {
         }
 
         this.salesData.set(results.sales?.series || []);
-        this.productTypeData.set(results.productType?.data || []);
+        this.productTypeData.set(results.productType?.productTypes || []);
         this.salesByCategoryData.set(results.salesByCategory?.categories || []);
         this.averageCartByTypeData.set(results.averageCartByType?.data || []);
         this.mrrHistory.set(results.mrr?.history || []);
