@@ -304,7 +304,10 @@ Chart.defaults.plugins.tooltip.usePointStyle = true;
 
         <!-- Stock Status -->
         @if (stockItems().length > 0) {
-          <div class="rounded-xl border border-border-light bg-surface shadow-sm mb-4">
+          <div
+            id="stock-status"
+            class="rounded-xl border border-border-light bg-surface shadow-sm mb-4 scroll-mt-6"
+          >
             <div class="px-4 sm:px-5 py-3 sm:py-4 border-b border-border-light">
               <h3 class="text-sm font-semibold text-text-primary !m-0">
                 {{ 'ANALYTICS.STOCK_STATUS' | translate }}
