@@ -4,7 +4,7 @@ import {
   APP_INITIALIZER,
   importProvidersFrom,
 } from '@angular/core';
-import { provideRouter } from '@angular/router';
+import { provideRouter, withInMemoryScrolling } from '@angular/router';
 import { provideHttpClient, withInterceptors, withFetch, HttpClient } from '@angular/common/http';
 import { catchError, of } from 'rxjs';
 import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
@@ -22,7 +22,10 @@ export function HttpLoaderFactory(http: HttpClient) {
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
-    provideRouter(routes),
+    provideRouter(
+      routes,
+      withInMemoryScrolling({ anchorScrolling: 'enabled', scrollPositionRestoration: 'enabled' }),
+    ),
     provideHttpClient(withFetch(), withInterceptors([authInterceptor, errorInterceptor])),
     importProvidersFrom(
       TranslateModule.forRoot({
