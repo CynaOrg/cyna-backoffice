@@ -7,6 +7,7 @@ import {
   ViewChild,
   AfterViewInit,
 } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { AnalyticsService } from '../../core/services/analytics.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { KpiCardComponent } from '../../shared/components/kpi-card/kpi-card.component';
@@ -443,6 +444,7 @@ export class AnalyticsComponent implements OnInit, AfterViewInit {
   private readonly analyticsService = inject(AnalyticsService);
   private readonly notifications = inject(NotificationService);
   private readonly translate = inject(TranslateService);
+  private readonly route = inject(ActivatedRoute);
 
   loading = signal(true);
   selectedPeriod = signal<string>('month');
@@ -555,7 +557,15 @@ export class AnalyticsComponent implements OnInit, AfterViewInit {
         this.stockItems.set(stockRes?.products || []);
 
         this.loading.set(false);
-        setTimeout(() => this.renderAllCharts(), 100);
+        setTimeout(() => {
+          this.renderAllCharts();
+          const fragment = this.route.snapshot.fragment;
+          if (fragment) {
+            document
+              .getElementById(fragment)
+              ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        }, 150);
       },
       error: () => {
         this.notifications.error(this.translate.instant('ANALYTICS.LOAD_FAILED'));
