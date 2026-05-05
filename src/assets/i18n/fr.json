@@ -492,6 +492,8 @@
     "ARCHIVED": "Archivés",
     "MARK_READ": "Marquer comme lu",
     "MARK_UNREAD": "Marquer comme non lu",
+    "MARK_PROCESSED": "Basculer traité",
+    "PROCESSED": "Traité",
     "ARCHIVE": "Archiver",
     "RESTORE": "Restaurer",
     "DELETE": "Supprimer",
