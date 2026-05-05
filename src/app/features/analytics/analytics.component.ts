@@ -3,6 +3,7 @@ import {
   inject,
   signal,
   OnInit,
+  OnDestroy,
   ElementRef,
   ViewChild,
   AfterViewInit,
@@ -434,7 +435,7 @@ Chart.defaults.plugins.tooltip.usePointStyle = true;
     </div>
   `,
 })
-export class AnalyticsComponent implements OnInit, AfterViewInit {
+export class AnalyticsComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('salesChart') salesChartRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('productTypeChart') productTypeChartRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('mrrChart') mrrChartRef!: ElementRef<HTMLCanvasElement>;
@@ -492,6 +493,26 @@ export class AnalyticsComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit(): void {}
+
+  ngOnDestroy(): void {
+    const charts: Array<Chart | null> = [
+      this.salesChart,
+      this.productTypeChart,
+      this.mrrChart,
+      this.categorySalesChart,
+      this.avgCartTypeChart,
+    ];
+    for (const chart of charts) {
+      if (chart) {
+        chart.destroy();
+      }
+    }
+    this.salesChart = null;
+    this.productTypeChart = null;
+    this.mrrChart = null;
+    this.categorySalesChart = null;
+    this.avgCartTypeChart = null;
+  }
 
   onPeriodSelect(value: string): void {
     this.selectedPeriod.set(value);
