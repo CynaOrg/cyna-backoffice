@@ -1,6 +1,15 @@
 import { HttpInterceptorFn, HttpErrorResponse, HttpRequest, HttpEvent } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { BehaviorSubject, Observable, catchError, filter, switchMap, take, throwError } from 'rxjs';
+import {
+  BehaviorSubject,
+  Observable,
+  catchError,
+  filter,
+  switchMap,
+  take,
+  throwError,
+  timeout,
+} from 'rxjs';
 import { AdminAuthService } from '../services/admin-auth.service';
 import { environment } from '../../../../environments/environment';
 
@@ -41,13 +50,18 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(authReq).pipe(
     catchError((error: HttpErrorResponse) => {
-      if (error.status === 401 && !isAuthEndpoint && token) {
+      // Retry the request through the refresh flow on ANY 401 (the
+      // refresh-token cookie still works even if the access token had
+      // already expired and was cleared client-side).
+      if (error.status === 401 && !isAuthEndpoint) {
         return handle401(req, authService, next);
       }
       return throwError(() => error);
     }),
   );
 };
+
+const REFRESH_TIMEOUT_MS = 10_000;
 
 function handle401(
   req: HttpRequest<unknown>,
@@ -70,6 +84,7 @@ function handle401(
   refreshTokenSubject.next(null);
 
   return authService.refreshToken().pipe(
+    timeout(REFRESH_TIMEOUT_MS),
     switchMap((response) => {
       isRefreshing = false;
       refreshTokenSubject.next(response.accessToken);

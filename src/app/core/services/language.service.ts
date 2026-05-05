@@ -5,7 +5,9 @@ export type SupportedLanguage = 'fr' | 'en';
 
 const SUPPORTED_LANGUAGES: SupportedLanguage[] = ['fr', 'en'];
 const DEFAULT_LANGUAGE: SupportedLanguage = 'fr';
-const COOKIE_NAME = 'cyna_lang';
+// Admin-prefixed to avoid collision with the public storefront's language cookie
+// when both apps are served from the same root domain.
+const COOKIE_NAME = 'cyna_admin_lang';
 const COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 365; // 1 year
 
 /**
@@ -23,7 +25,7 @@ export class LanguageService {
   readonly current = this._current.asReadonly();
 
   /**
-   * Initialize ngx-translate with the language stored in the `cyna_lang`
+   * Initialize ngx-translate with the language stored in the `cyna_admin_lang`
    * cookie (or the default `fr` when the cookie is missing/invalid).
    * Idempotent — safe to call from APP_INITIALIZER and from the layout.
    */
