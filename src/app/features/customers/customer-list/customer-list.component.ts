@@ -8,7 +8,6 @@ import {
   phosphorFunnelSimple,
   phosphorArrowsClockwise,
   phosphorEye,
-  phosphorPencilSimple,
 } from '@ng-icons/phosphor-icons/regular';
 import { ApiService } from '../../../core/services/api.service';
 import { NotificationService } from '../../../core/services/notification.service';
@@ -37,7 +36,6 @@ import { KpiCardComponent } from '../../../shared/components/kpi-card/kpi-card.c
       phosphorFunnelSimple,
       phosphorArrowsClockwise,
       phosphorEye,
-      phosphorPencilSimple,
     }),
   ],
   template: `
@@ -224,13 +222,12 @@ import { KpiCardComponent } from '../../../shared/components/kpi-card/kpi-card.c
                         >
                           <ng-icon name="phosphorEye" size="18" />
                         </a>
-                        <a
-                          [routerLink]="['/customers', user.id]"
-                          class="p-2 rounded-lg text-text-muted hover:text-primary hover:bg-primary-light transition-colors"
-                          [title]="'COMMON.EDIT' | translate"
-                        >
-                          <ng-icon name="phosphorPencilSimple" size="18" />
-                        </a>
+                        <!--
+                          CUS-4: the "Edit" button used to deep-link to the same
+                          detail page as "View" because no dedicated edit screen
+                          exists yet. Hidden on purpose to avoid a UX trap.
+                          TODO: bring it back once a customer-edit modal/page lands.
+                        -->
                       </div>
                     </td>
                   </tr>
