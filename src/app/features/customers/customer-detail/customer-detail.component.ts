@@ -1,6 +1,7 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { ActivatedRoute, RouterLink, Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { finalize } from 'rxjs/operators';
 import { ApiService } from '../../../core/services/api.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { User } from '../../../core/models/user.model';
@@ -210,30 +211,39 @@ export class CustomerDetailComponent implements OnInit {
   }
 
   loadUser(id: string): void {
-    this.api.get<User>(`admin/users/${id}`).subscribe({
-      next: (u) => {
-        this.user.set(u);
-        this.loading.set(false);
-      },
-      error: () => {
-        this.notifications.error(this.translate.instant('CUSTOMERS.NOT_FOUND'));
-        this.router.navigate(['/customers']);
-      },
-    });
+    this.loading.set(true);
+    this.api
+      .get<User>(`admin/users/${id}`)
+      .pipe(finalize(() => this.loading.set(false)))
+      .subscribe({
+        next: (u) => {
+          this.user.set(u);
+        },
+        error: () => {
+          this.notifications.error(this.translate.instant('CUSTOMERS.NOT_FOUND'));
+          this.router.navigate(['/customers']);
+        },
+      });
   }
 
   loadOrders(userId: string): void {
     this.ordersLoading.set(true);
-    this.api.getList<Order>(`admin/users/${userId}/orders`, { page: 1, limit: 10 }).subscribe({
-      next: (list) => {
-        this.orders.set(list || []);
-        this.ordersLoading.set(false);
-      },
-      error: () => {
-        this.orders.set([]);
-        this.ordersLoading.set(false);
-      },
-    });
+    // After Sprint 1 TransformInterceptor unwrap, the paginated payload is
+    // { data: Order[], meta: {...} } — extract `.data` for the orders array.
+    this.api
+      .get<{ data: Order[]; meta?: unknown }>(`admin/users/${userId}/orders`, {
+        page: 1,
+        limit: 10,
+      })
+      .pipe(finalize(() => this.ordersLoading.set(false)))
+      .subscribe({
+        next: (res) => {
+          this.orders.set(Array.isArray(res) ? (res as unknown as Order[]) : (res?.data ?? []));
+        },
+        error: () => {
+          this.orders.set([]);
+        },
+      });
   }
 
   toggleActive(): void {
@@ -242,19 +252,21 @@ export class CustomerDetailComponent implements OnInit {
     this.toggling.set(true);
     this.api
       .patch<UpdateStatusPayload, User>(`admin/users/${u.id}/status`, { isActive: !u.isActive })
+      .pipe(finalize(() => this.toggling.set(false)))
       .subscribe({
-        next: () => {
-          this.user.update((usr) => (usr ? { ...usr, isActive: !usr.isActive } : null));
+        next: (updated) => {
+          // CUS-5: refresh local signal with the response's actual isActive value
+          this.user.update((usr) =>
+            usr ? { ...usr, isActive: updated?.isActive ?? !usr.isActive } : null,
+          );
           this.notifications.success(
             !u.isActive
               ? this.translate.instant('CUSTOMERS.ACTIVATED')
               : this.translate.instant('CUSTOMERS.DEACTIVATED'),
           );
-          this.toggling.set(false);
         },
         error: () => {
           this.notifications.error(this.translate.instant('CUSTOMERS.UPDATE_FAILED'));
-          this.toggling.set(false);
         },
       });
   }
