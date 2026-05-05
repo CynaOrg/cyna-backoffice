@@ -40,7 +40,8 @@
     "WELCOME": "Welcome to CYNA Backoffice",
     "INVALID_CODE": "Invalid verification code",
     "CODE_SENT": "New code sent",
-    "RESEND_FAILED": "Failed to resend code"
+    "RESEND_FAILED": "Failed to resend code",
+    "SESSION_EXPIRED": "Your session has expired, please sign in again."
   },
   "DASHBOARD": {
     "WELCOME_BACK": "Welcome back, {{name}}",

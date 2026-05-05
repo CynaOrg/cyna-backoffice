@@ -133,8 +133,11 @@ export class Verify2FAComponent implements AfterViewInit, OnDestroy {
   private cooldownInterval: ReturnType<typeof setInterval> | null = null;
 
   ngAfterViewInit(): void {
+    // AUTH-9: tempToken lives in memory only, so a hard refresh of /verify-2fa
+    // wipes it. Redirect explicitly to /login with a reason flag so the login
+    // screen can explain why the user got bounced.
     if (!this.authService.tempToken()) {
-      this.router.navigate(['/login']);
+      this.router.navigate(['/login'], { queryParams: { reason: 'session_expired' } });
       return;
     }
     setTimeout(() => this.digitInputs.first?.nativeElement.focus());
