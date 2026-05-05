@@ -377,9 +377,15 @@ export class CategoryListComponent implements OnInit {
   }
 
   saveCategory(): void {
+    // CAT-1: client-side validation. Block submit + toast when name/slug are invalid.
+    if (!this.isFormValid(this.formData)) {
+      this.notifications.error(this.translate.instant('CATEGORIES.VALIDATION_FAILED'));
+      return;
+    }
+
     this.saving.set(true);
     const editing = this.editingCategory();
-    const payload = this.buildPayload(this.formData);
+    const payload = this.buildPayload(this.formData, editing !== null);
 
     const request = editing
       ? this.api.patch<Partial<Category>, Category>(
@@ -477,19 +483,43 @@ export class CategoryListComponent implements OnInit {
     };
   }
 
-  private buildPayload(data: CategoryFormData): Partial<Category> {
+  private isFormValid(data: CategoryFormData): boolean {
+    if (!data.nameFr?.trim() || !data.nameEn?.trim()) return false;
+    const slug = data.slug?.trim() ?? '';
+    // RFC: lowercase letters, digits, hyphens; must start/end with alphanumeric.
+    return /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug);
+  }
+
+  private buildPayload(data: CategoryFormData, isUpdate: boolean): Partial<Category> {
     const payload: Partial<Category> = {
-      nameFr: data.nameFr,
-      nameEn: data.nameEn,
-      slug: data.slug,
+      nameFr: data.nameFr.trim(),
+      nameEn: data.nameEn.trim(),
+      slug: data.slug.trim(),
       displayOrder: data.displayOrder,
       isActive: data.isActive,
     };
-    // Only send optional fields when they have a value (avoid sending empty strings
-    // that would fail @IsUrl() validation on imageUrl).
-    if (data.descriptionFr?.trim()) payload.descriptionFr = data.descriptionFr.trim();
-    if (data.descriptionEn?.trim()) payload.descriptionEn = data.descriptionEn.trim();
-    if (data.imageUrl?.trim()) payload.imageUrl = data.imageUrl.trim();
+
+    // CAT-3: send `null` (not empty string) when admin clears description on update,
+    // so the backend properly persists the cleared value. On create, omit the key.
+    const trimmedFr = data.descriptionFr?.trim() ?? '';
+    const trimmedEn = data.descriptionEn?.trim() ?? '';
+    if (trimmedFr) {
+      payload.descriptionFr = trimmedFr;
+    } else if (isUpdate) {
+      (payload as Record<string, unknown>)['descriptionFr'] = null;
+    }
+    if (trimmedEn) {
+      payload.descriptionEn = trimmedEn;
+    } else if (isUpdate) {
+      (payload as Record<string, unknown>)['descriptionEn'] = null;
+    }
+
+    // imageUrl must remain a valid URL or be omitted (avoid @IsUrl() failure on '').
+    if (data.imageUrl?.trim()) {
+      payload.imageUrl = data.imageUrl.trim();
+    } else if (isUpdate) {
+      (payload as Record<string, unknown>)['imageUrl'] = null;
+    }
     return payload;
   }
 }

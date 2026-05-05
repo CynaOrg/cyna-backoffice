@@ -600,7 +600,8 @@
     "MOVE_DOWN": "Move down",
     "REORDER_FAILED": "Failed to reorder",
     "IMAGE": "Image",
-    "IMAGE_PREVIEW": "Image preview"
+    "IMAGE_PREVIEW": "Image preview",
+    "VALIDATION_FAILED": "Please provide a name and a valid slug (lowercase letters, digits, hyphens)."
   },
   "COMMON": {
     "LOADING": "Loading...",

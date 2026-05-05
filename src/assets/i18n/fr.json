@@ -600,7 +600,8 @@
     "MOVE_DOWN": "Descendre",
     "REORDER_FAILED": "Échec de la réorganisation",
     "IMAGE": "Image",
-    "IMAGE_PREVIEW": "Aperçu de l'image"
+    "IMAGE_PREVIEW": "Aperçu de l'image",
+    "VALIDATION_FAILED": "Veuillez renseigner un nom et un slug valide (lettres minuscules, chiffres, tirets)."
   },
   "COMMON": {
     "LOADING": "Chargement...",
