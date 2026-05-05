@@ -394,8 +394,8 @@ export class MessagesComponent implements OnInit {
     this.expandedId.update((current) => (current === messageId ? null : messageId));
   }
 
-  isBusy(key: MessageActionKey): boolean {
-    return this.busy().has(key);
+  isBusy(key: string): boolean {
+    return this.busy().has(key as MessageActionKey);
   }
 
   markRead(msg: ContactMessage): void {
