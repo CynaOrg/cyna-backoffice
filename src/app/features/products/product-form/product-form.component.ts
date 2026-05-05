@@ -218,19 +218,21 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
                         }
                       </select>
                     </div>
-                    <div>
-                      <label class="block text-xs font-medium text-text-muted mb-1.5">{{
-                        'PRODUCTS.PRODUCT_TYPE' | translate
-                      }}</label>
-                      <select
-                        formControlName="productType"
-                        class="w-full px-3 py-2 rounded-lg border border-border-light bg-white text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
-                      >
-                        <option value="saas">{{ 'PRODUCTS.SAAS' | translate }}</option>
-                        <option value="physical">{{ 'PRODUCTS.PHYSICAL' | translate }}</option>
-                        <option value="license">{{ 'PRODUCTS.LICENSE' | translate }}</option>
-                      </select>
-                    </div>
+                    @if (!fixedProductType) {
+                      <div>
+                        <label class="block text-xs font-medium text-text-muted mb-1.5">{{
+                          'PRODUCTS.PRODUCT_TYPE' | translate
+                        }}</label>
+                        <select
+                          formControlName="productType"
+                          class="w-full px-3 py-2 rounded-lg border border-border-light bg-white text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
+                        >
+                          <option value="saas">{{ 'PRODUCTS.SAAS' | translate }}</option>
+                          <option value="physical">{{ 'PRODUCTS.PHYSICAL' | translate }}</option>
+                          <option value="license">{{ 'PRODUCTS.LICENSE' | translate }}</option>
+                        </select>
+                      </div>
+                    }
                   </div>
                 </div>
               </div>
@@ -651,6 +653,7 @@ export class ProductFormComponent implements OnInit {
   productId = '';
   basePath = '/products';
   newTitleKey = 'PRODUCTS.NEW_PRODUCT';
+  fixedProductType: '' | 'physical' | 'saas' | 'license' = '';
 
   form = this.fb.group({
     nameFr: ['', Validators.required],
@@ -697,10 +700,20 @@ export class ProductFormComponent implements OnInit {
     this.characteristics.removeAt(index);
   }
 
-  ngOnInit() {
+  ngOnInit(): void {
     const data = this.route.snapshot.data;
     if (data['basePath']) this.basePath = data['basePath'];
     if (data['newTitleKey']) this.newTitleKey = data['newTitleKey'];
+
+    // PROD-6: when the route fixes a productType ('physical' / 'saas' / 'license'),
+    // pre-select it on the form and disable/hide the selector.
+    const routeProductType = data['productType'] as 'physical' | 'saas' | 'license' | undefined;
+    if (routeProductType) {
+      this.fixedProductType = routeProductType;
+      this.form.patchValue({ productType: routeProductType });
+      this.form.get('productType')?.disable({ emitEvent: false });
+    }
+
     this.loadCategories();
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
@@ -775,7 +788,8 @@ export class ProductFormComponent implements OnInit {
     this.saving.set(true);
 
     const isEditing = this.isEdit();
-    const payload = isEditing ? this.buildPatchPayload() : this.form.value;
+    // getRawValue() includes disabled fields (e.g. productType locked by route).
+    const payload = isEditing ? this.buildPatchPayload() : this.form.getRawValue();
 
     // PROD-8: in edit mode, if nothing changed, skip the API call.
     if (isEditing && Object.keys(payload).length === 0) {
