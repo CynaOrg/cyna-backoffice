@@ -205,16 +205,24 @@ interface UpdateOrderStatusBody {
             <div class="bg-surface rounded-xl border border-border-light shadow-sm p-6">
               <h3 class="text-lg font-semibold mb-4">{{ 'ORDERS.CUSTOMER' | translate }}</h3>
               <div class="space-y-2 text-sm">
-                <div>
-                  <span class="text-text-muted">{{ 'ORDERS.ID' | translate }}:</span>
-                  <span class="text-text-primary">{{
-                    order()!.userId || ('ORDERS.GUEST' | translate)
-                  }}</span>
-                </div>
-                @if (order()!.guestEmail) {
+                @if (order()!.customerEmail || order()!.guestEmail) {
                   <div>
                     <span class="text-text-muted">{{ 'ORDERS.EMAIL' | translate }}:</span>
-                    <span class="text-text-primary">{{ order()!.guestEmail }}</span>
+                    <span class="text-text-primary font-medium ml-1">{{
+                      order()!.customerEmail || order()!.guestEmail
+                    }}</span>
+                  </div>
+                }
+                @if (order()!.userId) {
+                  <div>
+                    <span class="text-text-muted">{{ 'ORDERS.ID' | translate }}:</span>
+                    <span class="text-text-primary font-mono text-xs ml-1">{{
+                      order()!.userId
+                    }}</span>
+                  </div>
+                } @else if (!order()!.customerEmail && !order()!.guestEmail) {
+                  <div>
+                    <span class="text-text-primary">{{ 'ORDERS.GUEST' | translate }}</span>
                   </div>
                 }
               </div>

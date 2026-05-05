@@ -3,6 +3,8 @@ export interface Order {
   orderNumber: string;
   userId?: string;
   guestEmail?: string;
+  /** Customer email projected by the admin endpoints (Sprint 3 backend addition). */
+  customerEmail?: string;
   status: OrderStatus;
   orderType: string;
   subtotal: number;

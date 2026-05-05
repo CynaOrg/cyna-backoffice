@@ -135,7 +135,7 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
                       </a>
                     </td>
                     <td class="px-6 py-4 text-sm text-text-secondary">
-                      {{ order.userId || order.guestEmail || ('ORDERS.GUEST' | translate) }}
+                      {{ customerLabel(order) }}
                     </td>
                     <td class="px-6 py-4 text-sm text-text-secondary">
                       {{ formatDate(order.createdAt) }}
@@ -235,6 +235,19 @@ export class OrderListComponent implements OnInit {
       month: 'short',
       year: 'numeric',
     });
+  }
+
+  customerLabel(order: Order): string {
+    if (order.customerEmail) {
+      return order.customerEmail;
+    }
+    if (order.guestEmail) {
+      return order.guestEmail;
+    }
+    if (order.userId) {
+      return order.userId.slice(0, 8);
+    }
+    return this.translate.instant('ORDERS.GUEST');
   }
 
   orderTypeLabel(orderType: string | undefined): string {
