@@ -620,5 +620,17 @@
   "ACCOUNT": {
     "TITLE": "My Account",
     "COMING_SOON": "Account management will be available soon."
+  },
+  "ERRORS": {
+    "NETWORK": "Unable to reach the server. Check your connection.",
+    "BAD_REQUEST": "Invalid request. Please verify the data and try again.",
+    "FORBIDDEN": "You don't have permission to perform this action.",
+    "NOT_FOUND": "The requested resource was not found.",
+    "CONFLICT": "This action conflicts with the current state.",
+    "VALIDATION": "Some fields are invalid. Please review and retry.",
+    "TOO_MANY_REQUESTS": "Too many requests. Please wait a moment and try again.",
+    "SERVER": "Server error. Please try again later.",
+    "SERVICE_UNAVAILABLE": "Service temporarily unavailable. Please try again later.",
+    "GENERIC": "An unexpected error occurred."
   }
 }

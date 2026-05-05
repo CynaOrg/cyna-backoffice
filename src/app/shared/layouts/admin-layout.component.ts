@@ -5,6 +5,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { phosphorSignOut, phosphorUser } from '@ng-icons/phosphor-icons/regular';
 import { AdminAuthService } from '../../core/auth/services/admin-auth.service';
+import { ToastContainerComponent } from '../components/toast-container/toast-container.component';
 
 interface NavItem {
   route: string;
@@ -22,7 +23,14 @@ interface NavSection {
 @Component({
   selector: 'app-admin-layout',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, TranslateModule, NgIconComponent],
+  imports: [
+    RouterOutlet,
+    RouterLink,
+    RouterLinkActive,
+    TranslateModule,
+    NgIconComponent,
+    ToastContainerComponent,
+  ],
   viewProviders: [provideIcons({ phosphorSignOut, phosphorUser })],
   template: `
     <!-- ========== SIDEBAR (fixed left, 256px) ========== -->
@@ -142,6 +150,9 @@ interface NavSection {
         <router-outlet />
       </div>
     </main>
+
+    <!-- Global toast notifications -->
+    <app-toast-container />
   `,
 })
 export class AdminLayoutComponent implements OnInit, OnDestroy {

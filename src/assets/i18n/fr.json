@@ -620,5 +620,17 @@
   "ACCOUNT": {
     "TITLE": "Mon compte",
     "COMING_SOON": "La gestion du compte sera disponible prochainement."
+  },
+  "ERRORS": {
+    "NETWORK": "Impossible de joindre le serveur. Vérifiez votre connexion.",
+    "BAD_REQUEST": "Requête invalide. Vérifiez les données et réessayez.",
+    "FORBIDDEN": "Vous n'avez pas l'autorisation d'effectuer cette action.",
+    "NOT_FOUND": "La ressource demandée est introuvable.",
+    "CONFLICT": "Cette action entre en conflit avec l'état actuel.",
+    "VALIDATION": "Certains champs sont invalides. Veuillez vérifier et réessayer.",
+    "TOO_MANY_REQUESTS": "Trop de requêtes. Patientez un instant avant de réessayer.",
+    "SERVER": "Erreur serveur. Veuillez réessayer plus tard.",
+    "SERVICE_UNAVAILABLE": "Service temporairement indisponible. Veuillez réessayer plus tard.",
+    "GENERIC": "Une erreur inattendue s'est produite."
   }
 }
