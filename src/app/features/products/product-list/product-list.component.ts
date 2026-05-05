@@ -642,12 +642,12 @@ export class ProductListComponent implements OnInit {
   filteredProducts() {
     const query = this.searchQuery.toLowerCase();
     if (!query) return this.products();
-    return this.products().filter(
-      (p) =>
-        p.nameFr.toLowerCase().includes(query) ||
-        p.nameEn.toLowerCase().includes(query) ||
-        p.sku.toLowerCase().includes(query),
-    );
+    return this.products().filter((p) => {
+      const nameFr = (p.nameFr ?? '').toLowerCase();
+      const nameEn = (p.nameEn ?? '').toLowerCase();
+      const sku = (p.sku ?? '').toLowerCase();
+      return nameFr.includes(query) || nameEn.includes(query) || sku.includes(query);
+    });
   }
 
   onSearch() {
