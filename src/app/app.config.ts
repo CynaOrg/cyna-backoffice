@@ -14,6 +14,7 @@ import { routes } from './app.routes';
 import { authInterceptor } from './core/auth/interceptors/auth.interceptor';
 import { errorInterceptor } from './core/auth/interceptors/error.interceptor';
 import { AdminAuthService } from './core/auth/services/admin-auth.service';
+import { LanguageService } from './core/services/language.service';
 
 export function HttpLoaderFactory(http: HttpClient): TranslateHttpLoader {
   return new TranslateHttpLoader(http, './assets/i18n/', '.json');
@@ -37,6 +38,14 @@ export const appConfig: ApplicationConfig = {
         },
       }),
     ),
+    {
+      provide: APP_INITIALIZER,
+      useFactory: (languageService: LanguageService) => () => {
+        languageService.init();
+      },
+      deps: [LanguageService],
+      multi: true,
+    },
     {
       provide: APP_INITIALIZER,
       useFactory: (authService: AdminAuthService) => () =>
