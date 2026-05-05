@@ -230,6 +230,7 @@
     "VIEW": "Voir",
     "NO_ORDERS": "Aucune commande trouvée",
     "LOAD_FAILED": "Échec du chargement des commandes",
+    "LOAD_ERROR": "Échec du chargement des commandes",
     "ITEMS": "Articles",
     "QTY": "Qté :",
     "SUMMARY": "Résumé",

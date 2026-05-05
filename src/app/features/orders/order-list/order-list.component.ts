@@ -1,7 +1,9 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 import { ApiService } from '../../../core/services/api.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { Order, OrderStatus } from '../../../core/models/order.model';
@@ -28,7 +30,7 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
             type="text"
             [placeholder]="'ORDERS.SEARCH_PLACEHOLDER' | translate"
             [(ngModel)]="search"
-            (input)="loadOrders()"
+            (ngModelChange)="onSearchChange($event)"
             class="px-4 py-2 rounded-lg border border-border bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary w-64"
           />
           <select
@@ -179,7 +181,7 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
     </div>
   `,
 })
-export class OrderListComponent implements OnInit {
+export class OrderListComponent implements OnInit, OnDestroy {
   private readonly api = inject(ApiService);
   private readonly notifications = inject(NotificationService);
   private readonly translate = inject(TranslateService);
@@ -194,8 +196,28 @@ export class OrderListComponent implements OnInit {
   dateTo = '';
   typeFilter = '';
 
+  private readonly searchSubject = new Subject<string>();
+  private readonly destroy$ = new Subject<void>();
+
   ngOnInit(): void {
+    this.searchSubject
+      .pipe(debounceTime(300), distinctUntilChanged(), takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.page.set(1);
+        this.loadOrders();
+      });
     this.loadOrders();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+    this.searchSubject.complete();
+  }
+
+  onSearchChange(value: string): void {
+    this.search = value;
+    this.searchSubject.next(value);
   }
 
   loadOrders(): void {
@@ -214,7 +236,7 @@ export class OrderListComponent implements OnInit {
         this.loading.set(false);
       },
       error: () => {
-        this.notifications.error('Failed to load orders');
+        this.notifications.error(this.translate.instant('ORDERS.LOAD_ERROR'));
         this.loading.set(false);
       },
     });

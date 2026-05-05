@@ -230,6 +230,7 @@
     "VIEW": "View",
     "NO_ORDERS": "No orders found",
     "LOAD_FAILED": "Failed to load orders",
+    "LOAD_ERROR": "Failed to load orders",
     "ITEMS": "Order Items",
     "QTY": "Qty:",
     "SUMMARY": "Summary",

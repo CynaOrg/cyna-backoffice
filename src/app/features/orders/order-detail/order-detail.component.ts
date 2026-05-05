@@ -2,6 +2,7 @@ import { Component, inject, signal, OnInit } from '@angular/core';
 import { ActivatedRoute, RouterLink, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { finalize } from 'rxjs/operators';
 import { ApiService } from '../../../core/services/api.service';
 import { AdminAuthService } from '../../../core/auth/services/admin-auth.service';
 import { NotificationService } from '../../../core/services/notification.service';
@@ -325,20 +326,23 @@ export class OrderDetailComponent implements OnInit {
   }
 
   loadOrder(id: string): void {
-    this.api.get<Order>(`admin/orders/${id}`).subscribe({
-      next: (order) => {
-        this.order.set(order);
-        this.newStatus.set(order.status);
-        this.trackingNumber.set(order.trackingNumber ?? '');
-        this.trackingUrl.set(order.trackingUrl ?? '');
-        this.notes.set(order.notes ?? '');
-        this.loading.set(false);
-      },
-      error: () => {
-        this.notifications.error(this.translate.instant('ORDERS.NOT_FOUND'));
-        this.router.navigate(['/orders']);
-      },
-    });
+    this.loading.set(true);
+    this.api
+      .get<Order>(`admin/orders/${id}`)
+      .pipe(finalize(() => this.loading.set(false)))
+      .subscribe({
+        next: (order) => {
+          this.order.set(order);
+          this.newStatus.set(order.status);
+          this.trackingNumber.set(order.trackingNumber ?? '');
+          this.trackingUrl.set(order.trackingUrl ?? '');
+          this.notes.set(order.notes ?? '');
+        },
+        error: () => {
+          this.notifications.error(this.translate.instant('ORDERS.NOT_FOUND'));
+          this.router.navigate(['/orders']);
+        },
+      });
   }
 
   updateStatus(): void {
