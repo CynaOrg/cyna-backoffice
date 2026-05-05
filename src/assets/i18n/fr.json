@@ -625,6 +625,12 @@
     "PREV": "Précédent",
     "NEXT": "Suivant"
   },
+  "PAGINATION": {
+    "SHOWING": "Affichage",
+    "OF": "sur",
+    "PREVIOUS": "Précédent",
+    "NEXT": "Suivant"
+  },
   "PAGES": {
     "DASHBOARD": "Tableau de bord",
     "PRODUCTS": "Produits",
@@ -642,7 +648,21 @@
   },
   "ACCOUNT": {
     "TITLE": "Mon compte",
-    "COMING_SOON": "La gestion du compte sera disponible prochainement."
+    "SUBTITLE": "Votre profil administrateur",
+    "COMING_SOON": "La gestion du compte sera disponible prochainement.",
+    "PROFILE": "Profil",
+    "FULL_NAME": "Nom complet",
+    "EMAIL": "Email",
+    "ROLE": "Rôle",
+    "ROLE_SUPER_ADMIN": "Super admin",
+    "ROLE_COMMERCIAL": "Commercial",
+    "STATUS": "Statut",
+    "MEMBER_SINCE": "Membre depuis",
+    "LAST_LOGIN": "Dernière connexion",
+    "NEVER": "Jamais",
+    "SECURITY": "Sécurité",
+    "SECURITY_TODO": "Le changement de mot de passe et les réglages 2FA seront disponibles prochainement.",
+    "SIGN_OUT": "Déconnexion"
   },
   "ERRORS": {
     "NETWORK": "Impossible de joindre le serveur. Vérifiez votre connexion.",
