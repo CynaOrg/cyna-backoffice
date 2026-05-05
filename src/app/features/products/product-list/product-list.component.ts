@@ -1,8 +1,8 @@
 import { Component, inject, signal, computed, OnInit, OnDestroy } from '@angular/core';
-import { RouterLink, ActivatedRoute, Router, NavigationEnd } from '@angular/router';
+import { RouterLink, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { Subscription, filter } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { ApiService } from '../../../core/services/api.service';
 import { AdminAuthService } from '../../../core/auth/services/admin-auth.service';
 import { NotificationService } from '../../../core/services/notification.service';
@@ -741,19 +741,18 @@ export class ProductListComponent implements OnInit, OnDestroy {
     this.loadCategories();
     this.loadProducts();
 
-    // PROD-3: re-fetch on route changes (the same component instance is reused
-    // when navigating between /products, /services, /licences).
-    this.routerSubscription = this.router.events
-      .pipe(filter((e) => e instanceof NavigationEnd))
-      .subscribe(() => {
-        const previousType = this.fixedType;
-        this.applyRouteData();
-        if (previousType !== this.fixedType) {
-          this.page.set(1);
-          this.resetFiltersState();
-          this.loadProducts();
-        }
-      });
+    // PROD-3: re-fetch on route changes via this component's own ActivatedRoute
+    // data stream (only fires when the route data for this component instance
+    // changes — never on unrelated navigations elsewhere in the app).
+    this.routerSubscription = this.route.data.subscribe(() => {
+      const previousType = this.fixedType;
+      this.applyRouteData();
+      if (previousType !== this.fixedType) {
+        this.page.set(1);
+        this.resetFiltersState();
+        this.loadProducts();
+      }
+    });
   }
 
   ngOnDestroy(): void {

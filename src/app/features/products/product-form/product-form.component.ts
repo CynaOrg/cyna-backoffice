@@ -692,6 +692,7 @@ export class ProductFormComponent implements OnInit {
         keyEn: [''],
         valueFr: [''],
         valueEn: [''],
+        displayOrder: [this.characteristics.length],
       }),
     );
   }
@@ -760,13 +761,14 @@ export class ProductFormComponent implements OnInit {
         // Load characteristics into FormArray
         this.characteristics.clear();
         if (p.characteristics?.length) {
-          for (const char of p.characteristics) {
+          for (const [index, char] of p.characteristics.entries()) {
             this.characteristics.push(
               this.fb.group({
                 keyFr: [char.keyFr || ''],
                 keyEn: [char.keyEn || ''],
                 valueFr: [char.valueFr || ''],
                 valueEn: [char.valueEn || ''],
+                displayOrder: [char.displayOrder ?? index],
               }),
             );
           }

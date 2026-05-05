@@ -33,7 +33,11 @@ export const productTypeMatchGuard: CanActivateFn = (route) => {
 
   return api.get<Product>(`admin/catalog/products/${id}`).pipe(
     map((product) => {
-      if (product?.productType === expectedType) {
+      if (!product || !product.productType || !product.id) {
+        // Malformed payload — let the detail component handle the 404/redirect.
+        return true;
+      }
+      if (product.productType === expectedType) {
         return true;
       }
       const correctBase = TYPE_TO_BASE_PATH[product.productType] ?? '/products';
@@ -44,8 +48,10 @@ export const productTypeMatchGuard: CanActivateFn = (route) => {
       return router.createUrlTree(target);
     }),
     catchError(() => {
-      // If the product cannot be fetched, fall back to letting the component handle 404s.
-      return of(true);
+      // Fail-closed: a fetch error during route activation must not allow access
+      // through the wrong section. Send the user back to the index of this section.
+      const fallback = expectedType ? TYPE_TO_BASE_PATH[expectedType] : '/products';
+      return of(router.createUrlTree([fallback]));
     }),
   );
 };
