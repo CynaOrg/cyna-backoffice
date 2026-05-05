@@ -615,6 +615,8 @@
     "SAVE": "Enregistrer",
     "CANCEL": "Annuler",
     "CONFIRM": "Confirmer",
+    "CONFIRM_TITLE": "Confirmer",
+    "CONFIRM_MESSAGE": "Êtes-vous sûr ?",
     "CLOSE": "Fermer",
     "YES": "Oui",
     "NO": "Non",
@@ -624,6 +626,43 @@
     "NA": "N/A",
     "PREV": "Précédent",
     "NEXT": "Suivant"
+  },
+  "IMAGE_UPLOAD": {
+    "IMAGES_LABEL": "images",
+    "DROP_OR_CLICK": "Glissez vos images ici ou cliquez pour sélectionner",
+    "ACCEPTED_FORMATS": "JPEG, PNG, WebP - Max 5 Mo",
+    "UPLOADING": "Upload en cours...",
+    "PRODUCT_IMAGE_ALT": "Image du produit",
+    "SET_PRIMARY": "Définir comme image principale",
+    "DELETE_IMAGE": "Supprimer l'image",
+    "PRIMARY": "Principale",
+    "FILE_TOO_LARGE": "Fichier trop volumineux (max 5 Mo)",
+    "INVALID_TYPE": "Format non supporté"
+  },
+  "STATUS": {
+    "ACTIVE": "Actif",
+    "INACTIVE": "Inactif",
+    "PENDING": "En attente",
+    "PAID": "Payée",
+    "PROCESSING": "En cours",
+    "SHIPPED": "Expédiée",
+    "DELIVERED": "Livrée",
+    "COMPLETED": "Terminée",
+    "CANCELLED": "Annulée",
+    "REFUNDED": "Remboursée",
+    "PAST_DUE": "En retard",
+    "UNPAID": "Impayé",
+    "PAUSED": "En pause",
+    "VERIFIED": "Vérifié",
+    "OUT_OF_STOCK": "Rupture de stock",
+    "LOW": "Stock bas",
+    "CRITICAL": "Critique",
+    "OK": "OK"
+  },
+  "LANGUAGE": {
+    "FR_LABEL": "Français",
+    "EN_LABEL": "English",
+    "SWITCH": "Changer de langue"
   },
   "PAGINATION": {
     "SHOWING": "Affichage",
