@@ -635,10 +635,8 @@ interface AdminProductListResponse {
     <app-confirm-modal
       [open]="showDeleteModal()"
       [title]="'PRODUCTS.DELETE_TITLE' | translate"
-      [message]="
-        ('PRODUCTS.DELETE_WARNING' | translate) + ' ' + (productToDelete()?.nameFr || '') + '?'
-      "
-      [confirmLabel]="'PRODUCTS.DELETE_CONFIRM' | translate"
+      [message]="deleteMessage()"
+      [confirmLabel]="'PRODUCTS.DELETE' | translate"
       variant="danger"
       (confirm)="deleteProduct()"
       (cancel)="showDeleteModal.set(false)"
@@ -709,6 +707,15 @@ export class ProductListComponent implements OnInit, OnDestroy {
       default:
         return 'PRODUCTS.NO_PRODUCTS';
     }
+  });
+
+  // PROD-11: build the delete-confirm message via translateParams so {{name}}
+  // is interpolated with the product's name instead of being shown literally.
+  deleteMessage = computed<string>(() => {
+    const product = this.productToDelete();
+    if (!product) return this.translate.instant('PRODUCTS.DELETE_WARNING');
+    const name = product.nameFr || product.nameEn || product.sku || '';
+    return this.translate.instant('PRODUCTS.DELETE_CONFIRM', { name });
   });
 
   allSelected = computed<boolean>(() => {

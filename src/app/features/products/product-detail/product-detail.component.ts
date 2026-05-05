@@ -526,8 +526,8 @@ interface StockUpdatePayload {
     <app-confirm-modal
       [open]="showDeleteModal()"
       [title]="'PRODUCTS.DELETE_TITLE' | translate"
-      [message]="'PRODUCTS.DELETE_WARNING' | translate"
-      [confirmLabel]="'PRODUCTS.DELETE_CONFIRM' | translate"
+      [message]="deleteMessage()"
+      [confirmLabel]="'PRODUCTS.DELETE' | translate"
       variant="danger"
       (confirm)="deleteProduct()"
       (cancel)="showDeleteModal.set(false)"
@@ -668,6 +668,15 @@ export class ProductDetailComponent implements OnInit {
     const p = this.product();
     if (!p) return 0;
     return (p.priceMonthly ? 1 : 0) + (p.priceYearly ? 1 : 0) + (p.priceUnit ? 1 : 0);
+  });
+
+  // PROD-11: interpolate {{name}} via ngx-translate params instead of relying
+  // on Angular template interpolation inside translated strings.
+  deleteMessage = computed<string>(() => {
+    const p = this.product();
+    if (!p) return this.translate.instant('PRODUCTS.DELETE_WARNING');
+    const name = p.nameFr || p.nameEn || p.sku || '';
+    return this.translate.instant('PRODUCTS.DELETE_CONFIRM', { name });
   });
 
   ngOnInit() {
