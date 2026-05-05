@@ -631,6 +631,7 @@
     "TOO_MANY_REQUESTS": "Trop de requêtes. Patientez un instant avant de réessayer.",
     "SERVER": "Erreur serveur. Veuillez réessayer plus tard.",
     "SERVICE_UNAVAILABLE": "Service temporairement indisponible. Veuillez réessayer plus tard.",
-    "GENERIC": "Une erreur inattendue s'est produite."
+    "GENERIC": "Une erreur inattendue s'est produite.",
+    "AUTH_INVALID": "Identifiants invalides ou code de vérification incorrect."
   }
 }

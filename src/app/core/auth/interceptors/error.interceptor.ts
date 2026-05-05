@@ -33,8 +33,11 @@ function resolveMessage(
   translate: TranslateService,
 ): string | null {
   const isRefreshToken = req.url.includes('/auth/admin/refresh-token');
+  // Auth endpoints often return raw English messages (e.g. "Invalid credentials",
+  // "Too many requests"). Prefer the localized i18n key over the server text.
+  const isAuthEndpoint = /\/auth\/admin\/(login|verify-2fa|resend-2fa)/.test(req.url);
   // Server-supplied message (preferred when present and a string)
-  const serverMessage = extractServerMessage(error);
+  const serverMessage = isAuthEndpoint ? null : extractServerMessage(error);
 
   switch (error.status) {
     case 0:
@@ -43,10 +46,13 @@ function resolveMessage(
       return isRefreshToken ? null : translate.instant('ERRORS.NETWORK');
 
     case 400:
+      if (isAuthEndpoint) return translate.instant('ERRORS.AUTH_INVALID');
       return serverMessage ?? translate.instant('ERRORS.BAD_REQUEST');
 
     case 401:
-      // Handled by authInterceptor (refresh + redirect). Stay silent.
+      // Login returns 401 on bad creds; surface a localized message.
+      if (isAuthEndpoint) return translate.instant('ERRORS.AUTH_INVALID');
+      // Other 401s are handled by authInterceptor (refresh + redirect).
       return null;
 
     case 403:

@@ -631,6 +631,7 @@
     "TOO_MANY_REQUESTS": "Too many requests. Please wait a moment and try again.",
     "SERVER": "Server error. Please try again later.",
     "SERVICE_UNAVAILABLE": "Service temporarily unavailable. Please try again later.",
-    "GENERIC": "An unexpected error occurred."
+    "GENERIC": "An unexpected error occurred.",
+    "AUTH_INVALID": "Invalid credentials or verification code."
   }
 }
