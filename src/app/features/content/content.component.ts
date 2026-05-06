@@ -461,31 +461,33 @@ const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
               <div class="grid grid-cols-2 gap-4">
                 <div>
                   <label class="block text-sm font-medium text-text-primary mb-1">
-                    {{ 'CONTENT.BUTTON_TEXT_FR' | translate }}
+                    {{ 'CONTENT.LINK_TEXT_FR' | translate }}
                   </label>
                   <input
-                    formControlName="buttonTextFr"
+                    formControlName="linkTextFr"
                     class="w-full px-3 py-2 border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary"
                   />
                 </div>
                 <div>
                   <label class="block text-sm font-medium text-text-primary mb-1">
-                    {{ 'CONTENT.BUTTON_TEXT_EN' | translate }}
+                    {{ 'CONTENT.LINK_TEXT_EN' | translate }}
                   </label>
                   <input
-                    formControlName="buttonTextEn"
+                    formControlName="linkTextEn"
                     class="w-full px-3 py-2 border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary"
                   />
                 </div>
               </div>
+              <!-- TODO(CONT-5): backend rejects relative URLs (e.g. "/products");
+                   keep absolute URLs for now until the backend allows them. -->
               <div>
                 <label class="block text-sm font-medium text-text-primary mb-1">{{
-                  'CONTENT.BUTTON_LINK' | translate
+                  'CONTENT.LINK_URL' | translate
                 }}</label>
                 <input
-                  formControlName="buttonLink"
+                  formControlName="linkUrl"
                   class="w-full px-3 py-2 border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                  [placeholder]="'CONTENT.BUTTON_LINK_PLACEHOLDER' | translate"
+                  [placeholder]="'CONTENT.LINK_URL_PLACEHOLDER' | translate"
                 />
               </div>
               <div class="flex items-center gap-3">
@@ -586,9 +588,9 @@ export class ContentComponent implements OnInit {
     subtitleFr: [''],
     subtitleEn: [''],
     imageUrl: ['', Validators.required],
-    buttonTextFr: [''],
-    buttonTextEn: [''],
-    buttonLink: [''],
+    linkTextFr: [''],
+    linkTextEn: [''],
+    linkUrl: [''],
     isActive: [true],
   });
 
@@ -641,9 +643,9 @@ export class ContentComponent implements OnInit {
         subtitleFr: slide.subtitleFr,
         subtitleEn: slide.subtitleEn,
         imageUrl: slide.imageUrl,
-        buttonTextFr: slide.buttonTextFr,
-        buttonTextEn: slide.buttonTextEn,
-        buttonLink: slide.buttonLink,
+        linkTextFr: slide.linkTextFr,
+        linkTextEn: slide.linkTextEn,
+        linkUrl: slide.linkUrl,
         isActive: slide.isActive,
       });
     } else {

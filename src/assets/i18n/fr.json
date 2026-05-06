@@ -409,10 +409,10 @@
     "NEW_SLIDE": "Nouvelle slide",
     "IMAGE_URL": "URL de l'image",
     "IMAGE_URL_PLACEHOLDER": "https://...",
-    "BUTTON_TEXT_FR": "Texte du bouton (FR)",
-    "BUTTON_TEXT_EN": "Texte du bouton (EN)",
-    "BUTTON_LINK": "Lien du bouton",
-    "BUTTON_LINK_PLACEHOLDER": "/products ou https://...",
+    "LINK_TEXT_FR": "Texte du lien (FR)",
+    "LINK_TEXT_EN": "Texte du lien (EN)",
+    "LINK_URL": "URL du lien",
+    "LINK_URL_PLACEHOLDER": "https://...",
     "ACTIVE": "Actif",
     "CANCEL": "Annuler",
     "SAVE": "Enregistrer",
@@ -620,5 +620,18 @@
   "ACCOUNT": {
     "TITLE": "Mon compte",
     "COMING_SOON": "La gestion du compte sera disponible prochainement."
+  },
+  "ERRORS": {
+    "NETWORK": "Impossible de joindre le serveur. Vérifiez votre connexion.",
+    "BAD_REQUEST": "Requête invalide. Vérifiez les données et réessayez.",
+    "FORBIDDEN": "Vous n'avez pas l'autorisation d'effectuer cette action.",
+    "NOT_FOUND": "La ressource demandée est introuvable.",
+    "CONFLICT": "Cette action entre en conflit avec l'état actuel.",
+    "VALIDATION": "Certains champs sont invalides. Veuillez vérifier et réessayer.",
+    "TOO_MANY_REQUESTS": "Trop de requêtes. Patientez un instant avant de réessayer.",
+    "SERVER": "Erreur serveur. Veuillez réessayer plus tard.",
+    "SERVICE_UNAVAILABLE": "Service temporairement indisponible. Veuillez réessayer plus tard.",
+    "GENERIC": "Une erreur inattendue s'est produite.",
+    "AUTH_INVALID": "Identifiants invalides ou code de vérification incorrect."
   }
 }
