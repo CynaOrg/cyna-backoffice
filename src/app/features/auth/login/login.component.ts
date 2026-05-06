@@ -1,7 +1,7 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, OnInit } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { Router, ActivatedRoute } from '@angular/router';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AdminAuthService } from '../../../core/auth/services/admin-auth.service';
 
 @Component({
@@ -104,10 +104,12 @@ import { AdminAuthService } from '../../../core/auth/services/admin-auth.service
     </div>
   `,
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly authService = inject(AdminAuthService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
+  private readonly translate = inject(TranslateService);
 
   loading = signal(false);
   errorMessage = signal('');
@@ -117,7 +119,16 @@ export class LoginComponent {
     password: ['', Validators.required],
   });
 
-  onSubmit() {
+  ngOnInit(): void {
+    // AUTH-9: explain why the user landed here when verify-2fa kicked them out
+    // because the in-memory tempToken vanished after a refresh.
+    const reason = this.route.snapshot.queryParamMap.get('reason');
+    if (reason === 'session_expired') {
+      this.errorMessage.set(this.translate.instant('AUTH.SESSION_EXPIRED'));
+    }
+  }
+
+  onSubmit(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
@@ -133,7 +144,9 @@ export class LoginComponent {
       },
       error: (err) => {
         this.loading.set(false);
-        this.errorMessage.set(err.error?.message || 'Invalid credentials');
+        this.errorMessage.set(
+          err.error?.message || this.translate.instant('AUTH.INVALID_CREDENTIALS'),
+        );
       },
     });
   }

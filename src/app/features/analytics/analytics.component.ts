@@ -2,6 +2,7 @@ import {
   Component,
   inject,
   signal,
+  computed,
   OnInit,
   OnDestroy,
   ElementRef,
@@ -387,7 +388,7 @@ Chart.defaults.plugins.tooltip.usePointStyle = true;
                 <input
                   type="date"
                   class="px-2.5 py-1.5 border border-border rounded-lg text-xs bg-input-bg focus:border-border-focus focus:outline-none transition-colors"
-                  [value]="exportDateFrom()"
+                  [value]="effectiveDateFrom()"
                   (change)="onExportDateFromChange($event)"
                 />
               </div>
@@ -398,7 +399,7 @@ Chart.defaults.plugins.tooltip.usePointStyle = true;
                 <input
                   type="date"
                   class="px-2.5 py-1.5 border border-border rounded-lg text-xs bg-input-bg focus:border-border-focus focus:outline-none transition-colors"
-                  [value]="exportDateTo()"
+                  [value]="effectiveDateTo()"
                   (change)="onExportDateToChange($event)"
                 />
               </div>
@@ -459,8 +460,14 @@ export class AnalyticsComponent implements OnInit, AfterViewInit, OnDestroy {
   salesByCategoryData = signal<CategorySalesEntry[]>([]);
   averageCartByTypeData = signal<AverageCartByTypeEntry[]>([]);
 
-  exportDateFrom = signal<string>(this.getDefaultDateFrom());
-  exportDateTo = signal<string>(this.getDefaultDateTo());
+  // ANA-7: defaults are computed lazily so they don't drift when the page
+  // stays open for days. The signals hold the user-entered value (or empty
+  // when untouched); the effectiveDate* computed reads the current date on
+  // every access and feeds the inputs and the export call.
+  exportDateFrom = signal<string>('');
+  exportDateTo = signal<string>('');
+  effectiveDateFrom = computed(() => this.exportDateFrom() || this.getDefaultDateFrom());
+  effectiveDateTo = computed(() => this.exportDateTo() || this.getDefaultDateTo());
   exporting = signal(false);
 
   private salesChart: Chart | null = null;
@@ -734,7 +741,8 @@ export class AnalyticsComponent implements OnInit, AfterViewInit, OnDestroy {
         labels: sales.map((s) => s.date),
         datasets: [
           {
-            label: 'Revenue',
+            // ANA-8: localized label so the legend/tooltip honor the active locale.
+            label: this.translate.instant('ANALYTICS.REVENUE'),
             data: sales.map((s) => s.revenue),
             backgroundColor: '#4f39f633',
             borderColor: '#4f39f6',
@@ -892,8 +900,10 @@ export class AnalyticsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   exportData(type: 'sales' | 'orders' | 'subscriptions'): void {
-    const dateFrom = this.exportDateFrom();
-    const dateTo = this.exportDateTo();
+    // ANA-7: read through the lazy effective date computed so a tab left
+    // open overnight exports today's range, not the day-the-page-loaded.
+    const dateFrom = this.effectiveDateFrom();
+    const dateTo = this.effectiveDateTo();
 
     if (!dateFrom || !dateTo) {
       this.notifications.error(this.translate.instant('ANALYTICS.SELECT_DATE_RANGE'));

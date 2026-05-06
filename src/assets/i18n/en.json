@@ -40,7 +40,8 @@
     "WELCOME": "Welcome to CYNA Backoffice",
     "INVALID_CODE": "Invalid verification code",
     "CODE_SENT": "New code sent",
-    "RESEND_FAILED": "Failed to resend code"
+    "RESEND_FAILED": "Failed to resend code",
+    "SESSION_EXPIRED": "Your session has expired, please sign in again."
   },
   "DASHBOARD": {
     "WELCOME_BACK": "Welcome back, {{name}}",
@@ -474,6 +475,9 @@
     "PASTE_URL": "Paste URL",
     "UPLOAD_IN_PROGRESS": "Uploading...",
     "UPLOAD_FAILED": "Upload failed",
+    "UPLOAD_TOO_LARGE": "File too large (max 5 MB)",
+    "UPLOAD_INVALID_TYPE": "Unsupported file format (JPEG, PNG or WebP only)",
+    "UPLOAD_NETWORK": "Upload failed: cannot reach server. Please retry.",
     "IMAGE_PREVIEW": "Preview",
     "PICK_PRODUCTS": "Select products",
     "PICK_SERVICES": "Select services",
@@ -615,6 +619,8 @@
     "SAVE": "Save",
     "CANCEL": "Cancel",
     "CONFIRM": "Confirm",
+    "CONFIRM_TITLE": "Confirm",
+    "CONFIRM_MESSAGE": "Are you sure?",
     "CLOSE": "Close",
     "YES": "Yes",
     "NO": "No",
@@ -624,6 +630,43 @@
     "NA": "N/A",
     "PREV": "Previous",
     "NEXT": "Next"
+  },
+  "IMAGE_UPLOAD": {
+    "IMAGES_LABEL": "images",
+    "DROP_OR_CLICK": "Drop your images here or click to select",
+    "ACCEPTED_FORMATS": "JPEG, PNG, WebP - Max 5 MB",
+    "UPLOADING": "Uploading...",
+    "PRODUCT_IMAGE_ALT": "Product image",
+    "SET_PRIMARY": "Set as primary image",
+    "DELETE_IMAGE": "Delete image",
+    "PRIMARY": "Primary",
+    "FILE_TOO_LARGE": "File too large (max 5 MB)",
+    "INVALID_TYPE": "Unsupported file format"
+  },
+  "STATUS": {
+    "ACTIVE": "Active",
+    "INACTIVE": "Inactive",
+    "PENDING": "Pending",
+    "PAID": "Paid",
+    "PROCESSING": "Processing",
+    "SHIPPED": "Shipped",
+    "DELIVERED": "Delivered",
+    "COMPLETED": "Completed",
+    "CANCELLED": "Cancelled",
+    "REFUNDED": "Refunded",
+    "PAST_DUE": "Past due",
+    "UNPAID": "Unpaid",
+    "PAUSED": "Paused",
+    "VERIFIED": "Verified",
+    "OUT_OF_STOCK": "Out of stock",
+    "LOW": "Low stock",
+    "CRITICAL": "Critical",
+    "OK": "OK"
+  },
+  "LANGUAGE": {
+    "FR_LABEL": "Français",
+    "EN_LABEL": "English",
+    "SWITCH": "Switch language"
   },
   "PAGINATION": {
     "SHOWING": "Showing",

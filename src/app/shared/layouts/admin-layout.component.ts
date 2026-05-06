@@ -3,8 +3,9 @@ import { RouterOutlet, RouterLink, RouterLinkActive, Router, NavigationEnd } fro
 import { filter, Subscription } from 'rxjs';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
-import { phosphorSignOut, phosphorUser } from '@ng-icons/phosphor-icons/regular';
+import { phosphorSignOut, phosphorUser, phosphorTranslate } from '@ng-icons/phosphor-icons/regular';
 import { AdminAuthService } from '../../core/auth/services/admin-auth.service';
+import { LanguageService, SupportedLanguage } from '../../core/services/language.service';
 interface NavItem {
   route: string;
   labelKey: string;
@@ -22,7 +23,7 @@ interface NavSection {
   selector: 'app-admin-layout',
   standalone: true,
   imports: [RouterOutlet, RouterLink, RouterLinkActive, TranslateModule, NgIconComponent],
-  viewProviders: [provideIcons({ phosphorSignOut, phosphorUser })],
+  viewProviders: [provideIcons({ phosphorSignOut, phosphorUser, phosphorTranslate })],
   template: `
     <!-- ========== SIDEBAR (fixed left, 256px) ========== -->
     <aside
@@ -130,9 +131,30 @@ interface NavSection {
               <p class="m-0 text-sm text-text-secondary truncate">{{ sub | translate }}</p>
             }
           </div>
-          <span class="text-sm text-text-secondary whitespace-nowrap ml-4">
-            {{ auth.admin()?.firstName }} {{ auth.admin()?.lastName }}
-          </span>
+          <div class="flex items-center gap-3 ml-4">
+            <!-- Language switcher (AUTH-7) -->
+            <div class="flex items-center gap-1 rounded-lg border border-border-light p-0.5">
+              @for (opt of languageOptions; track opt.value) {
+                <button
+                  type="button"
+                  (click)="setLanguage(opt.value)"
+                  [attr.aria-label]="'LANGUAGE.SWITCH' | translate"
+                  [attr.aria-pressed]="language.current() === opt.value"
+                  class="px-2.5 py-1 text-xs font-semibold uppercase rounded-md transition-colors cursor-pointer border-0"
+                  [class.bg-primary]="language.current() === opt.value"
+                  [class.text-text-inverse]="language.current() === opt.value"
+                  [class.bg-transparent]="language.current() !== opt.value"
+                  [class.text-text-secondary]="language.current() !== opt.value"
+                  [class.hover:bg-background]="language.current() !== opt.value"
+                >
+                  {{ opt.value }}
+                </button>
+              }
+            </div>
+            <span class="text-sm text-text-secondary whitespace-nowrap">
+              {{ auth.admin()?.firstName }} {{ auth.admin()?.lastName }}
+            </span>
+          </div>
         </div>
       </div>
 
@@ -145,9 +167,19 @@ interface NavSection {
 })
 export class AdminLayoutComponent implements OnInit, OnDestroy {
   readonly auth = inject(AdminAuthService);
+  readonly language = inject(LanguageService);
   private readonly router = inject(Router);
   private readonly translate = inject(TranslateService);
   private routerSub?: Subscription;
+
+  readonly languageOptions: ReadonlyArray<{ value: SupportedLanguage; labelKey: string }> = [
+    { value: 'fr', labelKey: 'LANGUAGE.FR_LABEL' },
+    { value: 'en', labelKey: 'LANGUAGE.EN_LABEL' },
+  ];
+
+  setLanguage(lang: SupportedLanguage): void {
+    this.language.use(lang);
+  }
 
   private readonly currentUrl = signal(this.router.url);
 

@@ -1,4 +1,5 @@
-import { Component, input, output, signal, effect } from '@angular/core';
+import { Component, input, output, signal, effect, inject, computed } from '@angular/core';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-confirm-modal',
@@ -64,10 +65,10 @@ import { Component, input, output, signal, effect } from '@angular/core';
               }
               <div class="min-w-0">
                 <h3 class="text-sm font-semibold text-text-primary leading-snug">
-                  {{ title() }}
+                  {{ resolvedTitle() }}
                 </h3>
                 <p class="mt-1 text-[13px] text-text-secondary leading-relaxed">
-                  {{ message() }}
+                  {{ resolvedMessage() }}
                 </p>
               </div>
             </div>
@@ -81,7 +82,7 @@ import { Component, input, output, signal, effect } from '@angular/core';
               (click)="onCancel()"
               class="px-3.5 py-1.5 text-[13px] font-medium text-text-secondary bg-surface border border-border rounded-lg hover:bg-background transition-colors cursor-pointer"
             >
-              {{ cancelLabel() }}
+              {{ resolvedCancelLabel() }}
             </button>
             <button
               (click)="confirm.emit()"
@@ -91,7 +92,7 @@ import { Component, input, output, signal, effect } from '@angular/core';
               [class.bg-primary]="variant() !== 'danger'"
               [class.hover:bg-primary-hover]="variant() !== 'danger'"
             >
-              {{ confirmLabel() }}
+              {{ resolvedConfirmLabel() }}
             </button>
           </div>
         </div>
@@ -100,17 +101,32 @@ import { Component, input, output, signal, effect } from '@angular/core';
   `,
 })
 export class ConfirmModalComponent {
+  private readonly translate = inject(TranslateService);
+
   open = input.required<boolean>();
-  title = input<string>('Confirmer');
-  message = input<string>('Etes-vous sur ?');
-  confirmLabel = input<string>('Confirmer');
-  cancelLabel = input<string>('Annuler');
+  // Inputs accept undefined so consumers can either pass a translated string,
+  // an i18n key, or rely on the COMMON.* defaults below.
+  title = input<string | undefined>(undefined);
+  message = input<string | undefined>(undefined);
+  confirmLabel = input<string | undefined>(undefined);
+  cancelLabel = input<string | undefined>(undefined);
   variant = input<'primary' | 'danger'>('primary');
   confirm = output<void>();
   cancel = output<void>();
 
   visible = signal(false);
   animateIn = signal(false);
+
+  resolvedTitle = computed(() => this.title() ?? this.translate.instant('COMMON.CONFIRM_TITLE'));
+  resolvedMessage = computed(
+    () => this.message() ?? this.translate.instant('COMMON.CONFIRM_MESSAGE'),
+  );
+  resolvedConfirmLabel = computed(
+    () => this.confirmLabel() ?? this.translate.instant('COMMON.CONFIRM'),
+  );
+  resolvedCancelLabel = computed(
+    () => this.cancelLabel() ?? this.translate.instant('COMMON.CANCEL'),
+  );
 
   constructor() {
     effect(() => {

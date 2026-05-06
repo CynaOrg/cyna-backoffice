@@ -1,14 +1,16 @@
-import { Component, input, output, signal, ElementRef, viewChild } from '@angular/core';
+import { Component, input, output, signal, ElementRef, viewChild, inject } from '@angular/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ProductImage } from '../../../core/models/product.model';
 
 @Component({
   selector: 'app-image-upload',
   standalone: true,
+  imports: [TranslateModule],
   template: `
     <!-- Counter -->
     <div class="flex items-center justify-between mb-4">
       <span class="text-xs text-text-muted">
-        {{ images().length }} / {{ maxImages() }} images
+        {{ images().length }} / {{ maxImages() }} {{ 'IMAGE_UPLOAD.IMAGES_LABEL' | translate }}
       </span>
     </div>
 
@@ -52,9 +54,11 @@ import { ProductImage } from '../../../core/models/product.model';
           </div>
           <div>
             <p class="text-sm text-text-primary font-medium !m-0">
-              Glissez vos images ici ou cliquez pour selectionner
+              {{ 'IMAGE_UPLOAD.DROP_OR_CLICK' | translate }}
             </p>
-            <p class="text-xs text-text-muted mt-1 !mb-0">JPEG, PNG, WebP - Max 5 Mo</p>
+            <p class="text-xs text-text-muted mt-1 !mb-0">
+              {{ 'IMAGE_UPLOAD.ACCEPTED_FORMATS' | translate }}
+            </p>
           </div>
         </div>
       </div>
@@ -64,7 +68,7 @@ import { ProductImage } from '../../../core/models/product.model';
     @if (isUploading()) {
       <div class="mt-4 space-y-2">
         <div class="flex items-center justify-between text-xs text-text-muted">
-          <span>Upload en cours...</span>
+          <span>{{ 'IMAGE_UPLOAD.UPLOADING' | translate }}</span>
           <span>{{ uploadProgress() ?? 0 }}%</span>
         </div>
         <div class="w-full h-2 bg-background rounded-full overflow-hidden">
@@ -96,7 +100,11 @@ import { ProductImage } from '../../../core/models/product.model';
             <!-- Image preview -->
             <img
               [src]="image.imageUrl"
-              [alt]="image.altTextFr || image.altTextEn || 'Product image'"
+              [alt]="
+                image.altTextFr ||
+                image.altTextEn ||
+                ('IMAGE_UPLOAD.PRODUCT_IMAGE_ALT' | translate)
+              "
               class="w-full h-full object-cover"
             />
 
@@ -110,7 +118,7 @@ import { ProductImage } from '../../../core/models/product.model';
                   type="button"
                   (click)="onSetPrimary($event, image.id)"
                   class="flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-text-primary hover:bg-white transition-colors border-0 cursor-pointer"
-                  title="Definir comme image principale"
+                  [title]="'IMAGE_UPLOAD.SET_PRIMARY' | translate"
                 >
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
@@ -128,7 +136,7 @@ import { ProductImage } from '../../../core/models/product.model';
                 type="button"
                 (click)="onDelete($event, image.id)"
                 class="flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-error hover:bg-white transition-colors border-0 cursor-pointer"
-                title="Supprimer l'image"
+                [title]="'IMAGE_UPLOAD.DELETE_IMAGE' | translate"
               >
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
@@ -146,7 +154,7 @@ import { ProductImage } from '../../../core/models/product.model';
               <div
                 class="absolute top-2 left-2 px-2 py-0.5 rounded-md bg-primary text-white text-[10px] font-semibold uppercase tracking-wider"
               >
-                Principale
+                {{ 'IMAGE_UPLOAD.PRIMARY' | translate }}
               </div>
             }
 
@@ -167,6 +175,10 @@ import { ProductImage } from '../../../core/models/product.model';
   `,
 })
 export class ImageUploadComponent {
+  // Available for callers needing programmatic access to localized labels
+  // (e.g. file size error messages emitted via filesSelected handlers).
+  protected readonly translate = inject(TranslateService);
+
   images = input<ProductImage[]>([]);
   maxImages = input<number>(10);
   isUploading = input<boolean>(false);

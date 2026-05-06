@@ -534,7 +534,7 @@ const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
         [open]="showDeleteSlideModal()"
         [title]="'CONTENT.DELETE_SLIDE_TITLE' | translate"
         [message]="'CONTENT.DELETE_SLIDE_CONFIRM' | translate"
-        confirmLabel="Delete"
+        [confirmLabel]="'COMMON.DELETE' | translate"
         variant="danger"
         (confirm)="deleteSlide()"
         (cancel)="showDeleteSlideModal.set(false)"
@@ -818,13 +818,15 @@ export class ContentComponent implements OnInit {
     const file = target.files?.[0];
     if (!file) return;
 
+    // CONT-8: differentiate upload errors so the user knows whether the file
+    // is too big, the wrong type, or the server is down.
     if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
-      this.notifications.error(this.translate.instant('CONTENT.UPLOAD_FAILED'));
+      this.notifications.error(this.translate.instant('CONTENT.UPLOAD_INVALID_TYPE'));
       target.value = '';
       return;
     }
     if (file.size > MAX_IMAGE_SIZE) {
-      this.notifications.error(this.translate.instant('CONTENT.UPLOAD_FAILED'));
+      this.notifications.error(this.translate.instant('CONTENT.UPLOAD_TOO_LARGE'));
       target.value = '';
       return;
     }
@@ -846,12 +848,27 @@ export class ContentComponent implements OnInit {
           this.carouselUploading.set(false);
           target.value = '';
         },
-        error: () => {
-          this.notifications.error(this.translate.instant('CONTENT.UPLOAD_FAILED'));
+        error: (err: { status?: number } | undefined) => {
+          // CONT-8: surface the real reason — payload too large, unsupported
+          // media type, server error — instead of a single generic message.
+          this.notifications.error(this.uploadErrorKey(err?.status));
           this.carouselUploading.set(false);
           target.value = '';
         },
       });
+  }
+
+  private uploadErrorKey(status: number | undefined): string {
+    switch (status) {
+      case 413:
+        return this.translate.instant('CONTENT.UPLOAD_TOO_LARGE');
+      case 415:
+        return this.translate.instant('CONTENT.UPLOAD_INVALID_TYPE');
+      case 0:
+        return this.translate.instant('CONTENT.UPLOAD_NETWORK');
+      default:
+        return this.translate.instant('CONTENT.UPLOAD_FAILED');
+    }
   }
 
   // --- Hero Text ---

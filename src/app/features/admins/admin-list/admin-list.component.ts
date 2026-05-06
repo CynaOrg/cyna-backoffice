@@ -13,6 +13,7 @@ import {
   phosphorToggleRight,
 } from '@ng-icons/phosphor-icons/regular';
 import { AdminManagementService } from '../../../core/services/admin-management.service';
+import { AdminAuthService } from '../../../core/auth/services/admin-auth.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { Admin, CreateAdminDto, UpdateAdminDto } from '../../../core/models/admin.model';
 import { StatusBadgeComponent } from '../../../shared/components/status-badge/status-badge.component';
@@ -274,13 +275,15 @@ import { KpiCardComponent } from '../../../shared/components/kpi-card/kpi-card.c
                         >
                           <ng-icon name="phosphorPencilSimple" size="18" />
                         </button>
-                        <button
-                          (click)="confirmDelete(admin)"
-                          class="p-2 rounded-lg text-text-muted hover:text-error hover:bg-error-light transition-colors"
-                          [title]="'ADMINS.DELETE' | translate"
-                        >
-                          <ng-icon name="phosphorTrash" size="18" />
-                        </button>
+                        @if (admin.id !== currentAdminId()) {
+                          <button
+                            (click)="confirmDelete(admin)"
+                            class="p-2 rounded-lg text-text-muted hover:text-error hover:bg-error-light transition-colors"
+                            [title]="'ADMINS.DELETE' | translate"
+                          >
+                            <ng-icon name="phosphorTrash" size="18" />
+                          </button>
+                        }
                       </div>
                     </td>
                   </tr>
@@ -379,6 +382,11 @@ import { KpiCardComponent } from '../../../shared/components/kpi-card/kpi-card.c
                   <option value="commercial">{{ 'ADMINS.COMMERCIAL' | translate }}</option>
                 </select>
               </div>
+              @if (createError()) {
+                <p class="text-sm text-error bg-error-light border border-error/20 rounded-lg px-3 py-2">
+                  {{ createError() }}
+                </p>
+              }
               <div class="flex justify-end gap-3 pt-2">
                 <button
                   type="button"
@@ -466,6 +474,20 @@ import { KpiCardComponent } from '../../../shared/components/kpi-card/kpi-card.c
                   <option value="commercial">{{ 'ADMINS.COMMERCIAL' | translate }}</option>
                 </select>
               </div>
+              <!-- ADM-4: expose isActive in the edit form -->
+              <label class="flex items-center gap-2 text-sm text-text-primary">
+                <input
+                  type="checkbox"
+                  formControlName="isActive"
+                  class="h-4 w-4 rounded border-border text-primary focus:ring-primary/30"
+                />
+                <span>{{ 'ADMINS.ACTIVE' | translate }}</span>
+              </label>
+              @if (editError()) {
+                <p class="text-sm text-error bg-error-light border border-error/20 rounded-lg px-3 py-2">
+                  {{ editError() }}
+                </p>
+              }
               <div class="flex justify-end gap-3 pt-2">
                 <button
                   type="button"
@@ -508,6 +530,7 @@ import { KpiCardComponent } from '../../../shared/components/kpi-card/kpi-card.c
 })
 export class AdminListComponent implements OnInit {
   private readonly adminService = inject(AdminManagementService);
+  private readonly authService = inject(AdminAuthService);
   private readonly notifications = inject(NotificationService);
   private readonly fb = inject(FormBuilder);
   readonly translate = inject(TranslateService);
@@ -523,6 +546,14 @@ export class AdminListComponent implements OnInit {
   showFilter = signal(false);
   searchTerm = signal('');
   roleFilter = signal('');
+  // Inline error surfaces ADM-2: 409 (email taken) and 400 (delete self)
+  // were previously swallowed because the modal closed unconditionally.
+  createError = signal('');
+  editError = signal('');
+  deleteError = signal('');
+
+  // ADM-1: hide self-delete button by reading the currently authenticated admin id.
+  currentAdminId = computed(() => this.authService.admin()?.id ?? null);
 
   totalAdmins = computed(() => this.admins().length);
   superAdminCount = computed(() => this.admins().filter((a) => a.role === 'super_admin').length);
@@ -586,6 +617,9 @@ export class AdminListComponent implements OnInit {
     firstName: ['', Validators.required],
     lastName: ['', Validators.required],
     role: ['super_admin' as 'super_admin' | 'commercial', Validators.required],
+    // ADM-4: include isActive so super-admins can reactivate via the edit form,
+    // not just the row toggle.
+    isActive: [true, Validators.required],
   });
 
   ngOnInit() {
@@ -642,6 +676,7 @@ export class AdminListComponent implements OnInit {
       lastName: '',
       role: 'super_admin',
     });
+    this.createError.set('');
     this.showCreateModal.set(true);
   }
 
@@ -651,13 +686,16 @@ export class AdminListComponent implements OnInit {
       firstName: admin.firstName,
       lastName: admin.lastName,
       role: admin.role,
+      isActive: admin.isActive,
     });
+    this.editError.set('');
     this.showEditModal.set(true);
   }
 
   createAdmin() {
     if (this.createForm.invalid) return;
     this.saving.set(true);
+    this.createError.set('');
 
     const dto: CreateAdminDto = this.createForm.getRawValue();
 
@@ -669,9 +707,11 @@ export class AdminListComponent implements OnInit {
         this.loadAdmins();
       },
       error: (err) => {
-        this.notifications.error(
-          err.error?.message || this.translate.instant('ADMINS.CREATE_FAILED'),
-        );
+        // ADM-2: keep the modal open and show the actual server reason (e.g.
+        // 409 "email already taken") inline rather than only as a toast.
+        const message =
+          err?.error?.message || this.translate.instant('ADMINS.CREATE_FAILED');
+        this.createError.set(message);
         this.saving.set(false);
       },
     });
@@ -681,6 +721,7 @@ export class AdminListComponent implements OnInit {
     const admin = this.editingAdmin();
     if (!admin || this.editForm.invalid) return;
     this.saving.set(true);
+    this.editError.set('');
 
     const dto: UpdateAdminDto = this.editForm.getRawValue();
 
@@ -692,9 +733,9 @@ export class AdminListComponent implements OnInit {
         this.loadAdmins();
       },
       error: (err) => {
-        this.notifications.error(
-          err.error?.message || this.translate.instant('ADMINS.UPDATE_FAILED'),
-        );
+        const message =
+          err?.error?.message || this.translate.instant('ADMINS.UPDATE_FAILED');
+        this.editError.set(message);
         this.saving.set(false);
       },
     });
@@ -723,6 +764,7 @@ export class AdminListComponent implements OnInit {
 
   confirmDelete(admin: Admin) {
     this.adminToDelete.set(admin);
+    this.deleteError.set('');
     this.showDeleteModal.set(true);
   }
 
@@ -737,10 +779,12 @@ export class AdminListComponent implements OnInit {
         this.showDeleteModal.set(false);
       },
       error: (err) => {
-        this.notifications.error(
-          err.error?.message || this.translate.instant('ADMINS.DELETE_FAILED'),
-        );
-        this.showDeleteModal.set(false);
+        // ADM-2: keep the modal open on 400 (e.g. "cannot delete self") /
+        // 409 so the user actually sees what went wrong.
+        const message =
+          err?.error?.message || this.translate.instant('ADMINS.DELETE_FAILED');
+        this.deleteError.set(message);
+        this.notifications.error(message);
       },
     });
   }
