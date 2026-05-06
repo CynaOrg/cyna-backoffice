@@ -349,7 +349,7 @@ export class MessagesComponent implements OnInit {
   readonly showDeleteModal = signal<boolean>(false);
   readonly messageToDelete = signal<ContactMessage | null>(null);
   /** MSG-4: per-action in-flight set, e.g. "read:<id>", "delete:<id>". */
-  readonly busy = signal<ReadonlySet<MessageActionKey>>(new Set());
+  readonly busy = signal<ReadonlySet<string>>(new Set());
 
   readonly inboxMessages = computed(() =>
     this.all()
@@ -394,7 +394,7 @@ export class MessagesComponent implements OnInit {
     this.expandedId.update((current) => (current === messageId ? null : messageId));
   }
 
-  isBusy(key: MessageActionKey): boolean {
+  isBusy(key: string): boolean {
     return this.busy().has(key);
   }
 
