@@ -18,7 +18,9 @@
     "USER_MANAGEMENT": "Gestion des utilisateurs",
     "ADMINS": "Administrateurs",
     "ACCOUNT": "Compte",
-    "SIGN_OUT": "Déconnexion"
+    "SIGN_OUT": "Déconnexion",
+    "OPEN_MENU": "Ouvrir le menu",
+    "CLOSE_MENU": "Fermer le menu"
   },
   "AUTH": {
     "SIGN_IN": "Connectez-vous",
@@ -695,10 +697,14 @@
   "ACCOUNT": {
     "TITLE": "Mon compte",
     "SUBTITLE": "Votre profil administrateur",
-    "COMING_SOON": "La gestion du compte sera disponible prochainement.",
     "PROFILE": "Profil",
     "FULL_NAME": "Nom complet",
+    "FIRST_NAME": "Prénom",
+    "LAST_NAME": "Nom",
+    "FIRST_NAME_REQUIRED": "Le prénom est requis",
+    "LAST_NAME_REQUIRED": "Le nom est requis",
     "EMAIL": "Email",
+    "EMAIL_READONLY": "L'adresse email ne peut pas être modifiée ici.",
     "ROLE": "Rôle",
     "ROLE_SUPER_ADMIN": "Super admin",
     "ROLE_COMMERCIAL": "Commercial",
@@ -706,9 +712,19 @@
     "MEMBER_SINCE": "Membre depuis",
     "LAST_LOGIN": "Dernière connexion",
     "NEVER": "Jamais",
+    "ACTIVITY": "Activité",
+    "EDIT": "Modifier",
+    "CANCEL": "Annuler",
+    "SAVE": "Enregistrer",
+    "SAVING": "Enregistrement...",
+    "ACTIVATE": "Activer",
+    "UPDATED_SUCCESS": "Profil mis à jour",
+    "UPDATE_FAILED": "Échec de la mise à jour du profil",
     "SECURITY": "Sécurité",
-    "SECURITY_TODO": "Le changement de mot de passe et les réglages 2FA seront disponibles prochainement.",
-    "SIGN_OUT": "Déconnexion"
+    "SECURITY_PASSWORD": "Mot de passe",
+    "SECURITY_2FA": "Authentification à deux facteurs",
+    "SECURITY_2FA_DISABLED": "Désactivée",
+    "COMING_SOON_BADGE": "Bientôt"
   },
   "ERRORS": {
     "NETWORK": "Impossible de joindre le serveur. Vérifiez votre connexion.",
