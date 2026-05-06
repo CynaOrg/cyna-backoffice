@@ -1,4 +1,4 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, isDevMode, signal } from '@angular/core';
 
 export interface Toast {
   id: string;
@@ -6,6 +6,8 @@ export interface Toast {
   type: 'success' | 'error' | 'warning' | 'info';
   duration: number;
 }
+
+const UNRESOLVED_PLACEHOLDER = /\{\{\s*[\w.]+\s*\}\}/;
 
 @Injectable({ providedIn: 'root' })
 export class NotificationService {
@@ -38,6 +40,11 @@ export class NotificationService {
   }
 
   private push(type: Toast['type'], message: string, duration: number): string {
+    if (isDevMode() && UNRESOLVED_PLACEHOLDER.test(message)) {
+      // Surface i18n interpolation regressions early: a {{var}} that survives
+      // to the toast means a translate.instant(...) call is missing its params.
+      console.warn('[NotificationService] Toast contains unresolved placeholder:', message);
+    }
     const id = crypto.randomUUID();
     const toast: Toast = { id, type, message, duration };
     this.toasts.update((toasts) => [...toasts, toast]);
