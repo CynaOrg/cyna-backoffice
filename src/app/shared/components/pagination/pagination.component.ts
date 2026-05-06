@@ -1,13 +1,16 @@
 import { Component, input, output, computed } from '@angular/core';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-pagination',
   standalone: true,
+  imports: [TranslateModule],
   template: `
     @if (totalPages() > 1) {
       <div class="flex items-center justify-between px-4 py-3">
         <div class="text-sm text-text-secondary">
-          Showing {{ startItem() }}-{{ endItem() }} of {{ total() }}
+          {{ 'PAGINATION.SHOWING' | translate }} {{ startItem() }}-{{ endItem() }}
+          {{ 'PAGINATION.OF' | translate }} {{ total() }}
         </div>
         <div class="flex items-center gap-1">
           <button
@@ -15,7 +18,7 @@ import { Component, input, output, computed } from '@angular/core';
             [disabled]="currentPage() <= 1"
             class="px-3 py-1.5 text-sm rounded-lg border border-border hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            Previous
+            {{ 'PAGINATION.PREVIOUS' | translate }}
           </button>
           @for (p of pages(); track p) {
             @if (p === -1) {
@@ -39,7 +42,7 @@ import { Component, input, output, computed } from '@angular/core';
             [disabled]="currentPage() >= totalPages()"
             class="px-3 py-1.5 text-sm rounded-lg border border-border hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            Next
+            {{ 'PAGINATION.NEXT' | translate }}
           </button>
         </div>
       </div>
@@ -70,7 +73,7 @@ export class PaginationComponent {
     return pages;
   });
 
-  goTo(page: number) {
+  goTo(page: number): void {
     if (page >= 1 && page <= this.totalPages()) {
       this.pageChange.emit(page);
     }

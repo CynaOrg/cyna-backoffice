@@ -267,7 +267,7 @@ export class CustomerListComponent implements OnInit {
   search = '';
   showFilter = signal(false);
   statusFilter = signal('');
-  private searchTimeout: any;
+  private searchTimeout: ReturnType<typeof setTimeout> | null = null;
 
   activeCount = computed(() => this.users().filter((u) => u.isActive).length);
   inactiveCount = computed(() => this.users().filter((u) => !u.isActive).length);
@@ -300,53 +300,58 @@ export class CustomerListComponent implements OnInit {
     '#3b82f6',
   ];
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.loadUsers();
   }
 
-  loadUsers() {
+  loadUsers(): void {
     this.loading.set(true);
     const params: Record<string, string | number> = { page: this.page(), limit: 20 };
     if (this.search) params['search'] = this.search;
+    // CUS-2: backend (Sprint 3) accepts ?status=active|inactive natively.
     if (this.statusFilter()) params['status'] = this.statusFilter();
 
-    this.api.get<any>('admin/users', params).subscribe({
-      next: (res) => {
-        this.users.set(res?.items || []);
-        this.total.set(res?.total || 0);
-        this.loading.set(false);
-      },
-      error: () => {
-        this.notifications.error(this.translate.instant('CUSTOMERS.LOAD_FAILED'));
-        this.loading.set(false);
-      },
-    });
+    this.api
+      .get<{ items?: User[]; data?: User[]; total?: number }>('admin/users', params)
+      .subscribe({
+        next: (res) => {
+          this.users.set(res?.items ?? res?.data ?? []);
+          this.total.set(res?.total ?? 0);
+          this.loading.set(false);
+        },
+        error: () => {
+          this.notifications.error(this.translate.instant('CUSTOMERS.LOAD_FAILED'));
+          this.loading.set(false);
+        },
+      });
   }
 
-  onSearch() {
-    clearTimeout(this.searchTimeout);
+  onSearch(): void {
+    if (this.searchTimeout !== null) {
+      clearTimeout(this.searchTimeout);
+    }
     this.searchTimeout = setTimeout(() => {
       this.page.set(1);
       this.loadUsers();
     }, 400);
   }
 
-  onPageChange(p: number) {
+  onPageChange(p: number): void {
     this.page.set(p);
     this.loadUsers();
   }
 
-  toggleFilter() {
+  toggleFilter(): void {
     this.showFilter.update((v) => !v);
   }
 
-  filterByStatus(status: string) {
+  filterByStatus(status: string): void {
     this.statusFilter.set(status);
     this.page.set(1);
     this.loadUsers();
   }
 
-  refresh() {
+  refresh(): void {
     this.loadUsers();
   }
 
@@ -366,7 +371,7 @@ export class CustomerListComponent implements OnInit {
     return this.avatarColors[Math.abs(hash) % this.avatarColors.length];
   }
 
-  formatDate(d: string) {
+  formatDate(d: string): string {
     return new Date(d).toLocaleDateString('fr-FR', {
       day: '2-digit',
       month: 'short',

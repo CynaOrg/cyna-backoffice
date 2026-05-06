@@ -230,6 +230,7 @@
     "VIEW": "View",
     "NO_ORDERS": "No orders found",
     "LOAD_FAILED": "Failed to load orders",
+    "LOAD_ERROR": "Failed to load orders",
     "ITEMS": "Order Items",
     "QTY": "Qty:",
     "SUMMARY": "Summary",
@@ -491,6 +492,8 @@
     "ARCHIVED": "Archived",
     "MARK_READ": "Mark as read",
     "MARK_UNREAD": "Mark as unread",
+    "MARK_PROCESSED": "Toggle processed",
+    "PROCESSED": "Processed",
     "ARCHIVE": "Archive",
     "RESTORE": "Restore",
     "DELETE": "Delete",
@@ -599,7 +602,8 @@
     "MOVE_DOWN": "Move down",
     "REORDER_FAILED": "Failed to reorder",
     "IMAGE": "Image",
-    "IMAGE_PREVIEW": "Image preview"
+    "IMAGE_PREVIEW": "Image preview",
+    "VALIDATION_FAILED": "Please provide a name and a valid slug (lowercase letters, digits, hyphens)."
   },
   "COMMON": {
     "LOADING": "Loading...",
@@ -621,6 +625,12 @@
     "PREV": "Previous",
     "NEXT": "Next"
   },
+  "PAGINATION": {
+    "SHOWING": "Showing",
+    "OF": "of",
+    "PREVIOUS": "Previous",
+    "NEXT": "Next"
+  },
   "PAGES": {
     "DASHBOARD": "Dashboard",
     "PRODUCTS": "Products",
@@ -638,7 +648,21 @@
   },
   "ACCOUNT": {
     "TITLE": "My Account",
-    "COMING_SOON": "Account management will be available soon."
+    "SUBTITLE": "Your administrator profile",
+    "COMING_SOON": "Account management will be available soon.",
+    "PROFILE": "Profile",
+    "FULL_NAME": "Full name",
+    "EMAIL": "Email",
+    "ROLE": "Role",
+    "ROLE_SUPER_ADMIN": "Super admin",
+    "ROLE_COMMERCIAL": "Commercial",
+    "STATUS": "Status",
+    "MEMBER_SINCE": "Member since",
+    "LAST_LOGIN": "Last sign-in",
+    "NEVER": "Never",
+    "SECURITY": "Security",
+    "SECURITY_TODO": "Password change and 2FA settings will be available soon.",
+    "SIGN_OUT": "Sign out"
   },
   "ERRORS": {
     "NETWORK": "Unable to reach the server. Check your connection.",

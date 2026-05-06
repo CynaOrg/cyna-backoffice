@@ -6,6 +6,7 @@ import {
   QueryList,
   ElementRef,
   AfterViewInit,
+  OnDestroy,
 } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -115,7 +116,7 @@ import { AdminAuthService } from '../../../core/auth/services/admin-auth.service
     </div>
   `,
 })
-export class Verify2FAComponent implements AfterViewInit {
+export class Verify2FAComponent implements AfterViewInit, OnDestroy {
   @ViewChildren('digitInput') digitInputs!: QueryList<ElementRef<HTMLInputElement>>;
 
   private readonly authService = inject(AdminAuthService);
@@ -129,9 +130,9 @@ export class Verify2FAComponent implements AfterViewInit {
   successMessage = signal('');
   resendCooldown = signal(0);
 
-  private cooldownInterval: any;
+  private cooldownInterval: ReturnType<typeof setInterval> | null = null;
 
-  ngAfterViewInit() {
+  ngAfterViewInit(): void {
     if (!this.authService.tempToken()) {
       this.router.navigate(['/login']);
       return;
@@ -139,7 +140,14 @@ export class Verify2FAComponent implements AfterViewInit {
     setTimeout(() => this.digitInputs.first?.nativeElement.focus());
   }
 
-  onDigitInput(event: Event, index: number) {
+  ngOnDestroy(): void {
+    if (this.cooldownInterval !== null) {
+      clearInterval(this.cooldownInterval);
+      this.cooldownInterval = null;
+    }
+  }
+
+  onDigitInput(event: Event, index: number): void {
     const input = event.target as HTMLInputElement;
     const value = input.value.replace(/\D/g, '');
     input.value = value;
@@ -160,14 +168,14 @@ export class Verify2FAComponent implements AfterViewInit {
     }
   }
 
-  onKeyDown(event: KeyboardEvent, index: number) {
+  onKeyDown(event: KeyboardEvent, index: number): void {
     if (event.key === 'Backspace' && !this.code()[index] && index > 0) {
       const inputs = this.digitInputs.toArray();
       inputs[index - 1]?.nativeElement.focus();
     }
   }
 
-  onPaste(event: ClipboardEvent) {
+  onPaste(event: ClipboardEvent): void {
     event.preventDefault();
     const pasted = event.clipboardData?.getData('text')?.replace(/\D/g, '').slice(0, 6);
     if (!pasted) return;
@@ -187,7 +195,7 @@ export class Verify2FAComponent implements AfterViewInit {
     }
   }
 
-  verify() {
+  verify(): void {
     const codeStr = this.code().join('');
     if (codeStr.length !== 6) return;
 
@@ -208,7 +216,7 @@ export class Verify2FAComponent implements AfterViewInit {
     });
   }
 
-  resend() {
+  resend(): void {
     this.errorMessage.set('');
     this.successMessage.set('');
 
@@ -223,18 +231,23 @@ export class Verify2FAComponent implements AfterViewInit {
     });
   }
 
-  backToLogin() {
+  backToLogin(): void {
     this.authService.clearSession();
     this.router.navigate(['/login']);
   }
 
-  private startCooldown() {
+  private startCooldown(): void {
     this.resendCooldown.set(60);
-    clearInterval(this.cooldownInterval);
+    if (this.cooldownInterval !== null) {
+      clearInterval(this.cooldownInterval);
+    }
     this.cooldownInterval = setInterval(() => {
       this.resendCooldown.update((v) => {
         if (v <= 1) {
-          clearInterval(this.cooldownInterval);
+          if (this.cooldownInterval !== null) {
+            clearInterval(this.cooldownInterval);
+            this.cooldownInterval = null;
+          }
           return 0;
         }
         return v - 1;
