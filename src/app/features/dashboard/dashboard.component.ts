@@ -347,9 +347,12 @@ export class DashboardComponent implements OnInit {
     // dashboards that won't display it.
     const showCartConversion = this.authService.isCommercial();
 
+    // The API gateway TransformInterceptor returns admin/orders as
+    // `{ data: items, pagination: {...}, meta }`; ApiService.get would strip the
+    // envelope and hand back only the items array. Use getRaw to keep the shape.
     forkJoin({
       dashboard: this.analyticsService.getDashboard(),
-      recentOrders: this.api.get<{ data: Order[]; total: number }>('admin/orders', {
+      recentOrders: this.api.getRaw<{ data?: Order[] } | Order[]>('admin/orders', {
         page: 1,
         limit: 5,
       }),
@@ -368,7 +371,10 @@ export class DashboardComponent implements OnInit {
             avgCartValue: showCartConversion ? (apiData?.averageOrderValue ?? 0) : 0,
             conversionRate: showCartConversion ? apiData?.conversionRate : undefined,
           },
-          recentOrders: (recentOrders?.data ?? []).map((o) => ({
+          recentOrders: (Array.isArray(recentOrders)
+            ? recentOrders
+            : (recentOrders?.data ?? [])
+          ).map((o) => ({
             id: o.id,
             orderNumber: o.orderNumber,
             status: o.status,
