@@ -911,6 +911,7 @@ export class AnalyticsComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     this.exporting.set(true);
+    const typeLabel = this.translate.instant(`ANALYTICS.EXPORT_TYPE_${type.toUpperCase()}`);
     this.analyticsService.exportData(type, dateFrom, dateTo, 'csv').subscribe({
       next: (blob) => {
         const url = URL.createObjectURL(blob);
@@ -920,10 +921,14 @@ export class AnalyticsComponent implements OnInit, AfterViewInit, OnDestroy {
         a.click();
         URL.revokeObjectURL(url);
         this.exporting.set(false);
-        this.notifications.success(this.translate.instant('ANALYTICS.EXPORT_SUCCESS'));
+        this.notifications.success(
+          this.translate.instant('ANALYTICS.EXPORT_SUCCESS', { type: typeLabel }),
+        );
       },
       error: () => {
-        this.notifications.error(this.translate.instant('ANALYTICS.EXPORT_FAILED'));
+        this.notifications.error(
+          this.translate.instant('ANALYTICS.EXPORT_FAILED', { type: typeLabel }),
+        );
         this.exporting.set(false);
       },
     });
