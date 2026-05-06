@@ -5,9 +5,9 @@ export interface CarouselSlide {
   subtitleFr: string;
   subtitleEn: string;
   imageUrl: string;
-  buttonTextFr: string;
-  buttonTextEn: string;
-  buttonLink: string;
+  linkTextFr: string;
+  linkTextEn: string;
+  linkUrl: string;
   isActive: boolean;
   displayOrder: number;
   createdAt: string;
@@ -48,9 +48,9 @@ export interface CreateSlideDto {
   subtitleFr: string;
   subtitleEn: string;
   imageUrl: string;
-  buttonTextFr: string;
-  buttonTextEn: string;
-  buttonLink: string;
+  linkTextFr: string;
+  linkTextEn: string;
+  linkUrl: string;
   isActive?: boolean;
 }
 

@@ -5,7 +5,6 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { phosphorSignOut, phosphorUser } from '@ng-icons/phosphor-icons/regular';
 import { AdminAuthService } from '../../core/auth/services/admin-auth.service';
-
 interface NavItem {
   route: string;
   labelKey: string;

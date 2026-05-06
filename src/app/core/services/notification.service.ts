@@ -1,7 +1,7 @@
 import { Injectable, signal } from '@angular/core';
 
 export interface Toast {
-  id: number;
+  id: string;
   message: string;
   type: 'success' | 'error' | 'warning' | 'info';
   duration: number;
@@ -10,10 +10,41 @@ export interface Toast {
 @Injectable({ providedIn: 'root' })
 export class NotificationService {
   readonly toasts = signal<Toast[]>([]);
+  private readonly timers = new Map<string, ReturnType<typeof setTimeout>>();
 
-  success(_message: string, _duration = 3000) {}
-  error(_message: string, _duration = 5000) {}
-  warning(_message: string, _duration = 4000) {}
-  info(_message: string, _duration = 3000) {}
-  dismiss(_id: number) {}
+  success(message: string, duration = 3000): string {
+    return this.push('success', message, duration);
+  }
+
+  error(message: string, duration = 5000): string {
+    return this.push('error', message, duration);
+  }
+
+  warning(message: string, duration = 4000): string {
+    return this.push('warning', message, duration);
+  }
+
+  info(message: string, duration = 3000): string {
+    return this.push('info', message, duration);
+  }
+
+  dismiss(id: string): void {
+    const timer = this.timers.get(id);
+    if (timer !== undefined) {
+      clearTimeout(timer);
+      this.timers.delete(id);
+    }
+    this.toasts.update((toasts) => toasts.filter((t) => t.id !== id));
+  }
+
+  private push(type: Toast['type'], message: string, duration: number): string {
+    const id = crypto.randomUUID();
+    const toast: Toast = { id, type, message, duration };
+    this.toasts.update((toasts) => [...toasts, toast]);
+    if (duration > 0) {
+      const timer = setTimeout(() => this.dismiss(id), duration);
+      this.timers.set(id, timer);
+    }
+    return id;
+  }
 }
