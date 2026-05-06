@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ComponentRef } from '@angular/core';
+import { TranslateModule } from '@ngx-translate/core';
 import { ImageUploadComponent } from './image-upload.component';
 import { ProductImage } from '../../../core/models/product.model';
 
@@ -20,7 +21,7 @@ describe('ImageUploadComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ImageUploadComponent],
+      imports: [ImageUploadComponent, TranslateModule.forRoot()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ImageUploadComponent);
