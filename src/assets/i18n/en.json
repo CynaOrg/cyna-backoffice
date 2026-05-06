@@ -18,7 +18,9 @@
     "USER_MANAGEMENT": "User Management",
     "ADMINS": "Admins",
     "ACCOUNT": "Account",
-    "SIGN_OUT": "Sign out"
+    "SIGN_OUT": "Sign out",
+    "OPEN_MENU": "Open menu",
+    "CLOSE_MENU": "Close menu"
   },
   "AUTH": {
     "SIGN_IN": "Sign in",
@@ -695,10 +697,14 @@
   "ACCOUNT": {
     "TITLE": "My Account",
     "SUBTITLE": "Your administrator profile",
-    "COMING_SOON": "Account management will be available soon.",
     "PROFILE": "Profile",
     "FULL_NAME": "Full name",
+    "FIRST_NAME": "First name",
+    "LAST_NAME": "Last name",
+    "FIRST_NAME_REQUIRED": "First name is required",
+    "LAST_NAME_REQUIRED": "Last name is required",
     "EMAIL": "Email",
+    "EMAIL_READONLY": "Email cannot be changed here.",
     "ROLE": "Role",
     "ROLE_SUPER_ADMIN": "Super admin",
     "ROLE_COMMERCIAL": "Commercial",
@@ -706,9 +712,19 @@
     "MEMBER_SINCE": "Member since",
     "LAST_LOGIN": "Last sign-in",
     "NEVER": "Never",
+    "ACTIVITY": "Activity",
+    "EDIT": "Edit",
+    "CANCEL": "Cancel",
+    "SAVE": "Save",
+    "SAVING": "Saving...",
+    "ACTIVATE": "Activate",
+    "UPDATED_SUCCESS": "Profile updated",
+    "UPDATE_FAILED": "Failed to update profile",
     "SECURITY": "Security",
-    "SECURITY_TODO": "Password change and 2FA settings will be available soon.",
-    "SIGN_OUT": "Sign out"
+    "SECURITY_PASSWORD": "Password",
+    "SECURITY_2FA": "Two-factor authentication",
+    "SECURITY_2FA_DISABLED": "Disabled",
+    "COMING_SOON_BADGE": "Soon"
   },
   "ERRORS": {
     "NETWORK": "Unable to reach the server. Check your connection.",

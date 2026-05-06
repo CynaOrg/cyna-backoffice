@@ -1,9 +1,15 @@
-import { Component, inject, computed, signal, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject, computed, signal, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive, Router, NavigationEnd } from '@angular/router';
 import { filter, Subscription } from 'rxjs';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
-import { phosphorSignOut, phosphorUser, phosphorTranslate } from '@ng-icons/phosphor-icons/regular';
+import {
+  phosphorSignOut,
+  phosphorUser,
+  phosphorTranslate,
+  phosphorList,
+  phosphorX,
+} from '@ng-icons/phosphor-icons/regular';
 import { AdminAuthService } from '../../core/auth/services/admin-auth.service';
 import { LanguageService, SupportedLanguage } from '../../core/services/language.service';
 interface NavItem {
@@ -23,17 +29,38 @@ interface NavSection {
   selector: 'app-admin-layout',
   standalone: true,
   imports: [RouterOutlet, RouterLink, RouterLinkActive, TranslateModule, NgIconComponent],
-  viewProviders: [provideIcons({ phosphorSignOut, phosphorUser, phosphorTranslate })],
+  viewProviders: [
+    provideIcons({ phosphorSignOut, phosphorUser, phosphorTranslate, phosphorList, phosphorX }),
+  ],
   template: `
-    <!-- ========== SIDEBAR (fixed left, 256px) ========== -->
+    <!-- ========== MOBILE OVERLAY (visible only when drawer is open on <lg) ========== -->
+    @if (mobileOpen()) {
+      <div
+        (click)="closeMobile()"
+        class="fixed inset-0 z-30 bg-black/40 lg:hidden"
+        aria-hidden="true"
+      ></div>
+    }
+
+    <!-- ========== SIDEBAR (fixed left, 256px; off-canvas drawer on <lg) ========== -->
     <aside
-      class="fixed left-0 top-0 z-40 h-screen w-64 flex flex-col border-r border-border-light bg-surface"
+      class="fixed left-0 top-0 z-40 h-screen w-64 flex flex-col border-r border-border-light bg-surface transition-transform duration-300 ease-out lg:translate-x-0"
+      [class.-translate-x-full]="!mobileOpen()"
+      [class.translate-x-0]="mobileOpen()"
     >
-      <!-- Logo -->
-      <div class="flex h-20 items-center px-6">
-        <a routerLink="/dashboard" class="no-underline">
+      <!-- Logo + close button (close visible only on <lg) -->
+      <div class="flex h-20 items-center justify-between px-6">
+        <a routerLink="/dashboard" (click)="closeMobile()" class="no-underline">
           <img src="assets/cyna-backoffice.svg" alt="CYNA" class="h-8 w-auto object-contain" />
         </a>
+        <button
+          type="button"
+          (click)="closeMobile()"
+          [attr.aria-label]="'SIDEBAR.CLOSE_MENU' | translate"
+          class="lg:hidden -mr-2 inline-flex h-9 w-9 items-center justify-center rounded-lg text-text-secondary hover:bg-background hover:text-text-primary transition-colors border-0 bg-transparent cursor-pointer"
+        >
+          <ng-icon name="phosphorX" size="20" />
+        </button>
       </div>
 
       <!-- Main nav -->
@@ -119,19 +146,32 @@ interface NavSection {
     </aside>
 
     <!-- ========== MAIN CONTENT ========== -->
-    <main class="ml-64 min-h-screen bg-background">
+    <main class="min-h-screen bg-background lg:ml-64">
       <!-- Topbar -->
-      <div class="fixed top-0 right-0 left-64 z-20 border-b border-border-light bg-surface">
-        <div class="flex items-center justify-between px-8 py-4">
-          <div class="min-w-0">
-            <h1 class="m-0 truncate text-xl font-bold text-text-primary">
+      <div class="fixed top-0 right-0 left-0 z-20 border-b border-border-light bg-surface lg:left-64">
+        <div class="flex items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-4 lg:px-8">
+          <!-- Burger (visible only on <lg) -->
+          <button
+            type="button"
+            (click)="openMobile()"
+            [attr.aria-label]="'SIDEBAR.OPEN_MENU' | translate"
+            [attr.aria-expanded]="mobileOpen()"
+            class="lg:hidden -ml-1 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-text-primary hover:bg-background transition-colors border-0 bg-transparent cursor-pointer"
+          >
+            <ng-icon name="phosphorList" size="22" />
+          </button>
+
+          <div class="min-w-0 flex-1">
+            <h1 class="m-0 truncate text-lg font-bold text-text-primary sm:text-xl">
               {{ pageTitleKey() | translate }}
             </h1>
             @if (pageSubtitleKey(); as sub) {
-              <p class="m-0 text-sm text-text-secondary truncate">{{ sub | translate }}</p>
+              <p class="m-0 hidden truncate text-sm text-text-secondary sm:block">
+                {{ sub | translate }}
+              </p>
             }
           </div>
-          <div class="flex items-center gap-3 ml-4">
+          <div class="flex items-center gap-2 sm:gap-3">
             <!-- Language switcher (AUTH-7) -->
             <div class="flex items-center gap-1 rounded-lg border border-border-light p-0.5">
               @for (opt of languageOptions; track opt.value) {
@@ -151,7 +191,7 @@ interface NavSection {
                 </button>
               }
             </div>
-            <span class="text-sm text-text-secondary whitespace-nowrap">
+            <span class="hidden text-sm text-text-secondary whitespace-nowrap md:inline">
               {{ auth.admin()?.firstName }} {{ auth.admin()?.lastName }}
             </span>
           </div>
@@ -159,7 +199,7 @@ interface NavSection {
       </div>
 
       <!-- Page content -->
-      <div class="p-8 pt-[96px]">
+      <div class="p-4 pt-[80px] sm:p-6 sm:pt-[96px] lg:p-8 lg:pt-[96px]">
         <router-outlet />
       </div>
     </main>
@@ -171,6 +211,22 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
   private readonly router = inject(Router);
   private readonly translate = inject(TranslateService);
   private routerSub?: Subscription;
+
+  /** Off-canvas drawer state (only meaningful on <lg). Desktop ignores it. */
+  readonly mobileOpen = signal(false);
+
+  openMobile(): void {
+    this.mobileOpen.set(true);
+  }
+  closeMobile(): void {
+    this.mobileOpen.set(false);
+  }
+
+  /** Close drawer on Escape so keyboard users can dismiss it without the X. */
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    if (this.mobileOpen()) this.closeMobile();
+  }
 
   readonly languageOptions: ReadonlyArray<{ value: SupportedLanguage; labelKey: string }> = [
     { value: 'fr', labelKey: 'LANGUAGE.FR_LABEL' },
@@ -221,6 +277,7 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
       '/content': 'CONTENT.SUBTITLE',
       '/messages': 'MESSAGES.SUBTITLE',
       '/admins': 'ADMINS.SUBTITLE',
+      '/account': 'ACCOUNT.SUBTITLE',
     };
     for (const [key, value] of Object.entries(subtitleKeys)) {
       if (path.startsWith(key)) return value;
@@ -231,7 +288,12 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.routerSub = this.router.events
       .pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd))
-      .subscribe((e) => this.currentUrl.set(e.urlAfterRedirects));
+      .subscribe((e) => {
+        this.currentUrl.set(e.urlAfterRedirects);
+        // Close the off-canvas drawer after navigation so the destination
+        // page is visible without an extra tap on mobile.
+        this.closeMobile();
+      });
   }
 
   ngOnDestroy() {
