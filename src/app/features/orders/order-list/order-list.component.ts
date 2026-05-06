@@ -229,17 +229,30 @@ export class OrderListComponent implements OnInit, OnDestroy {
     if (this.dateTo) params['dateTo'] = this.dateTo;
     if (this.typeFilter) params['orderType'] = this.typeFilter;
 
-    this.api.get<{ data: Order[]; total: number }>('admin/orders', params).subscribe({
-      next: (res) => {
-        this.orders.set(res?.data ?? []);
-        this.total.set(res?.total ?? 0);
-        this.loading.set(false);
-      },
-      error: () => {
-        this.notifications.error(this.translate.instant('ORDERS.LOAD_ERROR'));
-        this.loading.set(false);
-      },
-    });
+    // The API gateway TransformInterceptor unwraps a pre-paginated microservice
+    // response into `{ data: items, pagination: { total, page, limit, ... }, meta }`.
+    // Use getRaw so we can read `pagination.total`; ApiService.get would strip the
+    // outer envelope and hand back only the items array, losing the total.
+    this.api
+      .getRaw<{ data?: Order[]; pagination?: { total?: number }; total?: number }>(
+        'admin/orders',
+        params,
+      )
+      .subscribe({
+        next: (res) => {
+          const items = Array.isArray(res) ? (res as Order[]) : (res?.data ?? []);
+          const total = Array.isArray(res)
+            ? (res as Order[]).length
+            : (res?.pagination?.total ?? res?.total ?? items.length);
+          this.orders.set(items);
+          this.total.set(total);
+          this.loading.set(false);
+        },
+        error: () => {
+          this.notifications.error(this.translate.instant('ORDERS.LOAD_ERROR'));
+          this.loading.set(false);
+        },
+      });
   }
 
   onPageChange(page: number): void {

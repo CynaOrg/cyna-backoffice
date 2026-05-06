@@ -308,12 +308,27 @@ export class CustomerListComponent implements OnInit {
     // CUS-2: backend (Sprint 3) accepts ?status=active|inactive natively.
     if (this.statusFilter()) params['status'] = this.statusFilter();
 
+    // The API gateway TransformInterceptor unwraps a pre-paginated microservice
+    // response into `{ data: items, pagination: { total, page, limit, ... }, meta }`.
+    // Use getRaw so we can read `pagination.total`; ApiService.get would strip the
+    // outer envelope and hand back only the items array, losing the total.
     this.api
-      .get<{ items?: User[]; data?: User[]; total?: number }>('admin/users', params)
+      .getRaw<{
+        data?: User[];
+        items?: User[];
+        pagination?: { total?: number };
+        total?: number;
+      }>('admin/users', params)
       .subscribe({
         next: (res) => {
-          this.users.set(res?.items ?? res?.data ?? []);
-          this.total.set(res?.total ?? 0);
+          const items = Array.isArray(res)
+            ? (res as User[])
+            : (res?.data ?? res?.items ?? []);
+          const total = Array.isArray(res)
+            ? (res as User[]).length
+            : (res?.pagination?.total ?? res?.total ?? items.length);
+          this.users.set(items);
+          this.total.set(total);
           this.loading.set(false);
         },
         error: () => {
