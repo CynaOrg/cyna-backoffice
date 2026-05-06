@@ -659,7 +659,6 @@ export class ProductListComponent implements OnInit, OnDestroy {
   private readonly notifications = inject(NotificationService);
   private readonly translate = inject(TranslateService);
   private readonly route = inject(ActivatedRoute);
-  private readonly router = inject(Router);
 
   products = signal<Product[]>([]);
   categories = signal<Category[]>([]);
