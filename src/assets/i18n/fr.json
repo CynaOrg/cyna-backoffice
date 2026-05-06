@@ -230,6 +230,7 @@
     "VIEW": "Voir",
     "NO_ORDERS": "Aucune commande trouvée",
     "LOAD_FAILED": "Échec du chargement des commandes",
+    "LOAD_ERROR": "Échec du chargement des commandes",
     "ITEMS": "Articles",
     "QTY": "Qté :",
     "SUMMARY": "Résumé",
@@ -491,6 +492,8 @@
     "ARCHIVED": "Archivés",
     "MARK_READ": "Marquer comme lu",
     "MARK_UNREAD": "Marquer comme non lu",
+    "MARK_PROCESSED": "Basculer traité",
+    "PROCESSED": "Traité",
     "ARCHIVE": "Archiver",
     "RESTORE": "Restaurer",
     "DELETE": "Supprimer",
@@ -599,7 +602,8 @@
     "MOVE_DOWN": "Descendre",
     "REORDER_FAILED": "Échec de la réorganisation",
     "IMAGE": "Image",
-    "IMAGE_PREVIEW": "Aperçu de l'image"
+    "IMAGE_PREVIEW": "Aperçu de l'image",
+    "VALIDATION_FAILED": "Veuillez renseigner un nom et un slug valide (lettres minuscules, chiffres, tirets)."
   },
   "COMMON": {
     "LOADING": "Chargement...",
@@ -621,6 +625,12 @@
     "PREV": "Précédent",
     "NEXT": "Suivant"
   },
+  "PAGINATION": {
+    "SHOWING": "Affichage",
+    "OF": "sur",
+    "PREVIOUS": "Précédent",
+    "NEXT": "Suivant"
+  },
   "PAGES": {
     "DASHBOARD": "Tableau de bord",
     "PRODUCTS": "Produits",
@@ -638,7 +648,21 @@
   },
   "ACCOUNT": {
     "TITLE": "Mon compte",
-    "COMING_SOON": "La gestion du compte sera disponible prochainement."
+    "SUBTITLE": "Votre profil administrateur",
+    "COMING_SOON": "La gestion du compte sera disponible prochainement.",
+    "PROFILE": "Profil",
+    "FULL_NAME": "Nom complet",
+    "EMAIL": "Email",
+    "ROLE": "Rôle",
+    "ROLE_SUPER_ADMIN": "Super admin",
+    "ROLE_COMMERCIAL": "Commercial",
+    "STATUS": "Statut",
+    "MEMBER_SINCE": "Membre depuis",
+    "LAST_LOGIN": "Dernière connexion",
+    "NEVER": "Jamais",
+    "SECURITY": "Sécurité",
+    "SECURITY_TODO": "Le changement de mot de passe et les réglages 2FA seront disponibles prochainement.",
+    "SIGN_OUT": "Déconnexion"
   },
   "ERRORS": {
     "NETWORK": "Impossible de joindre le serveur. Vérifiez votre connexion.",
