@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { adminAuthGuard } from './core/auth/guards/admin-auth.guard';
 import { superAdminGuard } from './core/auth/guards/super-admin.guard';
+import { productTypeMatchGuard } from './core/products/guards/product-type-match.guard';
 
 export const routes: Routes = [
   {
@@ -47,7 +48,11 @@ export const routes: Routes = [
             (m) => m.ProductFormComponent,
           ),
         canActivate: [superAdminGuard],
-        data: { basePath: '/products', newTitleKey: 'PRODUCTS.NEW_PRODUCT' },
+        data: {
+          basePath: '/products',
+          newTitleKey: 'PRODUCTS.NEW_PRODUCT',
+          productType: 'physical',
+        },
       },
       {
         path: 'products/:id/edit',
@@ -55,8 +60,8 @@ export const routes: Routes = [
           import('./features/products/product-form/product-form.component').then(
             (m) => m.ProductFormComponent,
           ),
-        canActivate: [superAdminGuard],
-        data: { basePath: '/products' },
+        canActivate: [superAdminGuard, productTypeMatchGuard],
+        data: { basePath: '/products', productType: 'physical' },
       },
       {
         path: 'products/:id',
@@ -64,8 +69,8 @@ export const routes: Routes = [
           import('./features/products/product-detail/product-detail.component').then(
             (m) => m.ProductDetailComponent,
           ),
-        canActivate: [superAdminGuard],
-        data: { basePath: '/products' },
+        canActivate: [superAdminGuard, productTypeMatchGuard],
+        data: { basePath: '/products', productType: 'physical' },
       },
       {
         path: 'services',
@@ -89,7 +94,7 @@ export const routes: Routes = [
             (m) => m.ProductFormComponent,
           ),
         canActivate: [superAdminGuard],
-        data: { basePath: '/services', newTitleKey: 'SERVICES.NEW_SERVICE' },
+        data: { basePath: '/services', newTitleKey: 'SERVICES.NEW_SERVICE', productType: 'saas' },
       },
       {
         path: 'services/:id/edit',
@@ -97,8 +102,8 @@ export const routes: Routes = [
           import('./features/products/product-form/product-form.component').then(
             (m) => m.ProductFormComponent,
           ),
-        canActivate: [superAdminGuard],
-        data: { basePath: '/services' },
+        canActivate: [superAdminGuard, productTypeMatchGuard],
+        data: { basePath: '/services', productType: 'saas' },
       },
       {
         path: 'services/:id',
@@ -106,8 +111,8 @@ export const routes: Routes = [
           import('./features/products/product-detail/product-detail.component').then(
             (m) => m.ProductDetailComponent,
           ),
-        canActivate: [superAdminGuard],
-        data: { basePath: '/services' },
+        canActivate: [superAdminGuard, productTypeMatchGuard],
+        data: { basePath: '/services', productType: 'saas' },
       },
       {
         path: 'licences',
@@ -131,7 +136,11 @@ export const routes: Routes = [
             (m) => m.ProductFormComponent,
           ),
         canActivate: [superAdminGuard],
-        data: { basePath: '/licences', newTitleKey: 'LICENCES.NEW_LICENCE' },
+        data: {
+          basePath: '/licences',
+          newTitleKey: 'LICENCES.NEW_LICENCE',
+          productType: 'license',
+        },
       },
       {
         path: 'licences/:id/edit',
@@ -139,8 +148,8 @@ export const routes: Routes = [
           import('./features/products/product-form/product-form.component').then(
             (m) => m.ProductFormComponent,
           ),
-        canActivate: [superAdminGuard],
-        data: { basePath: '/licences' },
+        canActivate: [superAdminGuard, productTypeMatchGuard],
+        data: { basePath: '/licences', productType: 'license' },
       },
       {
         path: 'licences/:id',
@@ -148,8 +157,8 @@ export const routes: Routes = [
           import('./features/products/product-detail/product-detail.component').then(
             (m) => m.ProductDetailComponent,
           ),
-        canActivate: [superAdminGuard],
-        data: { basePath: '/licences' },
+        canActivate: [superAdminGuard, productTypeMatchGuard],
+        data: { basePath: '/licences', productType: 'license' },
       },
       {
         path: 'categories',

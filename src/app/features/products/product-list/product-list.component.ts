@@ -1,18 +1,35 @@
-import { Component, inject, signal, computed, OnInit } from '@angular/core';
+import { Component, inject, signal, computed, OnInit, OnDestroy } from '@angular/core';
 import { RouterLink, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { Subscription } from 'rxjs';
 import { ApiService } from '../../../core/services/api.service';
 import { AdminAuthService } from '../../../core/auth/services/admin-auth.service';
 import { NotificationService } from '../../../core/services/notification.service';
-import { Product } from '../../../core/models/product.model';
+import { Product, Category } from '../../../core/models/product.model';
 import { StatusBadgeComponent } from '../../../shared/components/status-badge/status-badge.component';
 import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/confirm-modal.component';
+import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
+
+interface AdminProductListResponse {
+  data: Product[];
+  total?: number;
+  page?: number;
+  limit?: number;
+  totalPages?: number;
+}
 
 @Component({
   selector: 'app-product-list',
   standalone: true,
-  imports: [RouterLink, FormsModule, TranslateModule, StatusBadgeComponent, ConfirmModalComponent],
+  imports: [
+    RouterLink,
+    FormsModule,
+    TranslateModule,
+    StatusBadgeComponent,
+    ConfirmModalComponent,
+    PaginationComponent,
+  ],
   template: `
     <div style="animation: fadeInUp 0.45s ease-out both">
       <!-- Summary cards -->
@@ -147,7 +164,7 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
 
       <!-- Toolbar: search + actions -->
       <div
-        class="flex items-center justify-between gap-4 mb-5"
+        class="flex items-center justify-between gap-4 mb-3"
         style="animation: fadeInUp 0.45s ease-out 0.08s both"
       >
         <div class="relative">
@@ -177,7 +194,7 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
           @if (!fixedType) {
             <select
               [(ngModel)]="typeFilter"
-              (change)="loadProducts()"
+              (change)="onFilterChange()"
               class="px-3 py-2 rounded-lg border border-border-light bg-surface text-sm text-text-secondary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all cursor-pointer"
             >
               <option value="">{{ 'PRODUCTS.ALL_TYPES' | translate }}</option>
@@ -203,6 +220,75 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
             </a>
           }
         </div>
+      </div>
+
+      <!-- Filters row -->
+      <div
+        class="flex flex-wrap items-end gap-3 mb-5 p-3 rounded-xl border border-border-light bg-surface"
+        style="animation: fadeInUp 0.45s ease-out 0.1s both"
+      >
+        <div class="flex flex-col gap-1">
+          <label class="text-[11px] font-medium text-text-muted">{{
+            'PRODUCTS.FILTER_CATEGORY' | translate
+          }}</label>
+          <select
+            [(ngModel)]="categoryFilter"
+            (change)="onFilterChange()"
+            class="px-3 py-1.5 rounded-lg border border-border-light bg-white text-sm text-text-secondary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all cursor-pointer"
+          >
+            <option value="">{{ 'PRODUCTS.FILTER_ALL_CATEGORIES' | translate }}</option>
+            @for (cat of categories(); track cat.id) {
+              <option [value]="cat.id">{{ cat.nameFr }}</option>
+            }
+          </select>
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="text-[11px] font-medium text-text-muted">{{
+            'PRODUCTS.FILTER_STATUS' | translate
+          }}</label>
+          <select
+            [(ngModel)]="statusFilter"
+            (change)="onFilterChange()"
+            class="px-3 py-1.5 rounded-lg border border-border-light bg-white text-sm text-text-secondary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all cursor-pointer"
+          >
+            <option value="">{{ 'PRODUCTS.FILTER_ALL_STATUSES' | translate }}</option>
+            <option value="active">{{ 'PRODUCTS.FILTER_ACTIVE' | translate }}</option>
+            <option value="inactive">{{ 'PRODUCTS.FILTER_INACTIVE' | translate }}</option>
+          </select>
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="text-[11px] font-medium text-text-muted">{{
+            'PRODUCTS.FILTER_PRICE_MIN' | translate
+          }}</label>
+          <input
+            type="number"
+            min="0"
+            step="0.01"
+            [(ngModel)]="priceMin"
+            (change)="onFilterChange()"
+            class="w-28 px-3 py-1.5 rounded-lg border border-border-light bg-white text-sm text-text-secondary font-mono focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+          />
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="text-[11px] font-medium text-text-muted">{{
+            'PRODUCTS.FILTER_PRICE_MAX' | translate
+          }}</label>
+          <input
+            type="number"
+            min="0"
+            step="0.01"
+            [(ngModel)]="priceMax"
+            (change)="onFilterChange()"
+            class="w-28 px-3 py-1.5 rounded-lg border border-border-light bg-white text-sm text-text-secondary font-mono focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+          />
+        </div>
+        <button
+          type="button"
+          (click)="resetFilters()"
+          class="px-3 py-1.5 text-[13px] font-medium text-text-secondary bg-white border border-border-light rounded-lg hover:bg-background transition-colors cursor-pointer"
+        >
+          {{ 'PRODUCTS.FILTER_RESET' | translate }}
+        </button>
       </div>
 
       <!-- Bulk action bar -->
@@ -264,8 +350,8 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
               </div>
             }
           </div>
-        } @else if (filteredProducts().length === 0) {
-          <!-- Empty state -->
+        } @else if (products().length === 0) {
+          <!-- Empty state (PROD-14: message depends on productType) -->
           <div class="flex flex-col items-center justify-center gap-3 py-16">
             <div class="w-12 h-12 rounded-full bg-primary-light flex items-center justify-center">
               <svg
@@ -284,7 +370,7 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
             </div>
             <div class="flex flex-col items-center gap-1 text-center">
               <span class="text-sm font-medium text-text-secondary">{{
-                'PRODUCTS.NO_PRODUCTS' | translate
+                emptyTitleKey() | translate
               }}</span>
               <span class="text-xs text-text-muted">{{
                 'PRODUCTS.NO_PRODUCTS_DESC' | translate
@@ -358,7 +444,7 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
                 </tr>
               </thead>
               <tbody class="divide-y divide-border-light">
-                @for (product of filteredProducts(); track product.id) {
+                @for (product of products(); track product.id) {
                   <tr class="group hover:bg-background transition-colors">
                     @if (auth.isSuperAdmin()) {
                       <td class="px-4 py-4 w-10">
@@ -380,7 +466,7 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
                         @if (product.images?.[0]?.imageUrl) {
                           <img
                             [src]="product.images[0].imageUrl"
-                            [alt]="product.nameFr"
+                            [alt]="product.nameFr || product.nameEn || product.sku"
                             class="w-10 h-10 rounded-lg object-cover border border-border-light shrink-0"
                           />
                         } @else {
@@ -406,7 +492,7 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
                           <span
                             class="text-sm font-medium text-text-primary group-hover:text-primary transition-colors truncate block"
                           >
-                            {{ product.nameFr }}
+                            {{ product.nameFr || product.nameEn || product.sku }}
                           </span>
                           <span class="text-xs text-text-muted truncate block">{{
                             product.nameEn
@@ -525,11 +611,22 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
             </table>
           </div>
 
-          <!-- Results count -->
-          <div class="px-6 py-3 border-t border-border-light">
+          <!-- Results count + pagination (PROD-12, PROD-13) -->
+          <div
+            class="flex items-center justify-between gap-3 px-6 py-3 border-t border-border-light flex-wrap"
+          >
             <span class="text-xs text-text-muted">
-              {{ filteredProducts().length }} {{ 'PRODUCTS.RESULTS' | translate }}
+              {{
+                (total() === 1 ? 'PRODUCTS.RESULT_ONE' : 'PRODUCTS.RESULT_MANY')
+                  | translate: { count: total() }
+              }}
             </span>
+            <app-pagination
+              [currentPage]="page()"
+              [total]="total()"
+              [limit]="limit()"
+              (pageChange)="onPageChange($event)"
+            />
           </div>
         }
       </div>
@@ -538,10 +635,8 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
     <app-confirm-modal
       [open]="showDeleteModal()"
       [title]="'PRODUCTS.DELETE_TITLE' | translate"
-      [message]="
-        ('PRODUCTS.DELETE_WARNING' | translate) + ' ' + (productToDelete()?.nameFr || '') + '?'
-      "
-      [confirmLabel]="'PRODUCTS.DELETE_CONFIRM' | translate"
+      [message]="deleteMessage()"
+      [confirmLabel]="'PRODUCTS.DELETE' | translate"
       variant="danger"
       (confirm)="deleteProduct()"
       (cancel)="showDeleteModal.set(false)"
@@ -558,23 +653,34 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
     />
   `,
 })
-export class ProductListComponent implements OnInit {
+export class ProductListComponent implements OnInit, OnDestroy {
   private readonly api = inject(ApiService);
   readonly auth = inject(AdminAuthService);
   private readonly notifications = inject(NotificationService);
   private readonly translate = inject(TranslateService);
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
 
   products = signal<Product[]>([]);
+  categories = signal<Category[]>([]);
   loading = signal(true);
   searchQuery = '';
   typeFilter = '';
+  categoryFilter = '';
+  statusFilter: '' | 'active' | 'inactive' = '';
+  priceMin: number | null = null;
+  priceMax: number | null = null;
   fixedType = '';
   showDeleteModal = signal(false);
   productToDelete = signal<Product | null>(null);
   selectedIds = signal<Set<string>>(new Set<string>());
   bulkDeleting = signal<boolean>(false);
   showBulkDeleteModal = signal<boolean>(false);
+
+  // Pagination
+  page = signal<number>(1);
+  limit = signal<number>(20);
+  total = signal<number>(0);
 
   titleKey = 'PRODUCTS.TITLE';
   subtitleKey = 'PRODUCTS.SUBTITLE';
@@ -584,32 +690,86 @@ export class ProductListComponent implements OnInit {
 
   readonly skeletonRows = Array.from({ length: 6 }, (_, i) => i);
 
-  totalCount = computed(() => this.products().length);
+  // Counts come from total + currently displayed page (only used for cosmetic header chips).
+  totalCount = computed(() => this.total());
   availableCount = computed(() => this.products().filter((p) => p.isAvailable).length);
   unavailableCount = computed(() => this.products().filter((p) => !p.isAvailable).length);
   featuredCount = computed(() => this.products().filter((p) => p.isFeatured).length);
 
+  emptyTitleKey = computed<string>(() => {
+    switch (this.fixedType) {
+      case 'saas':
+        return 'PRODUCTS.EMPTY_SAAS';
+      case 'license':
+        return 'PRODUCTS.EMPTY_LICENSE';
+      case 'physical':
+        return 'PRODUCTS.EMPTY_PHYSICAL';
+      default:
+        return 'PRODUCTS.NO_PRODUCTS';
+    }
+  });
+
+  // PROD-11: build the delete-confirm message via translateParams so {{name}}
+  // is interpolated with the product's name instead of being shown literally.
+  deleteMessage = computed<string>(() => {
+    const product = this.productToDelete();
+    if (!product) return this.translate.instant('PRODUCTS.DELETE_WARNING');
+    const name = product.nameFr || product.nameEn || product.sku || '';
+    return this.translate.instant('PRODUCTS.DELETE_CONFIRM', { name });
+  });
+
   allSelected = computed<boolean>(() => {
-    const filtered = this.filteredProducts();
-    if (filtered.length === 0) return false;
+    const list = this.products();
+    if (list.length === 0) return false;
     const selected = this.selectedIds();
-    return filtered.every((p) => selected.has(p.id));
+    return list.every((p) => selected.has(p.id));
   });
 
   someSelected = computed<boolean>(() => {
-    const filtered = this.filteredProducts();
+    const list = this.products();
     const selected = this.selectedIds();
-    const selectedInFiltered = filtered.filter((p) => selected.has(p.id)).length;
-    return selectedInFiltered > 0 && selectedInFiltered < filtered.length;
+    const selectedInList = list.filter((p) => selected.has(p.id)).length;
+    return selectedInList > 0 && selectedInList < list.length;
   });
 
-  private searchTimeout: any;
+  // PROD-16: properly typed timeout handle (no `any`).
+  private searchTimeout: ReturnType<typeof setTimeout> | null = null;
+  private routerSubscription: Subscription | null = null;
 
-  ngOnInit() {
+  ngOnInit(): void {
+    this.applyRouteData();
+    this.loadCategories();
+    this.loadProducts();
+
+    // PROD-3: re-fetch on route changes via this component's own ActivatedRoute
+    // data stream (only fires when the route data for this component instance
+    // changes — never on unrelated navigations elsewhere in the app).
+    this.routerSubscription = this.route.data.subscribe(() => {
+      const previousType = this.fixedType;
+      this.applyRouteData();
+      if (previousType !== this.fixedType) {
+        this.page.set(1);
+        this.resetFiltersState();
+        this.loadProducts();
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    if (this.searchTimeout !== null) {
+      clearTimeout(this.searchTimeout);
+      this.searchTimeout = null;
+    }
+    this.routerSubscription?.unsubscribe();
+  }
+
+  private applyRouteData(): void {
     const data = this.route.snapshot.data;
     if (data['productType']) {
       this.fixedType = data['productType'];
       this.typeFilter = this.fixedType;
+    } else {
+      this.fixedType = '';
     }
     if (data['titleKey']) this.titleKey = data['titleKey'];
     if (data['subtitleKey']) this.subtitleKey = data['subtitleKey'];
@@ -618,47 +778,94 @@ export class ProductListComponent implements OnInit {
       this.basePath = data['basePath'];
       this.newProductLink = data['basePath'] + '/new';
     }
-    this.loadProducts();
   }
 
-  loadProducts() {
-    this.loading.set(true);
-    const params: Record<string, string | number | boolean> = {};
-    if (this.typeFilter) params['productType'] = this.typeFilter;
-
-    this.api.get<any>('admin/catalog/products', params).subscribe({
+  private loadCategories(): void {
+    this.api.get<Category[]>('admin/catalog/categories').subscribe({
       next: (res) => {
-        const products = Array.isArray(res) ? res : res?.data || [];
-        this.products.set(products);
-        this.loading.set(false);
-      },
-      error: () => {
-        this.notifications.error(this.translate.instant('PRODUCTS.LOAD_ERROR'));
-        this.loading.set(false);
+        const cats = Array.isArray(res) ? res : [];
+        this.categories.set(cats);
       },
     });
   }
 
-  filteredProducts() {
-    const query = this.searchQuery.toLowerCase();
-    if (!query) return this.products();
-    return this.products().filter(
-      (p) =>
-        p.nameFr.toLowerCase().includes(query) ||
-        p.nameEn.toLowerCase().includes(query) ||
-        p.sku.toLowerCase().includes(query),
-    );
+  loadProducts(): void {
+    this.loading.set(true);
+    const params: Record<string, string | number | boolean> = {
+      page: this.page(),
+      limit: this.limit(),
+    };
+    if (this.typeFilter) params['productType'] = this.typeFilter;
+    if (this.categoryFilter) params['categoryId'] = this.categoryFilter;
+    if (this.statusFilter === 'active') params['isAvailable'] = true;
+    if (this.statusFilter === 'inactive') params['isAvailable'] = false;
+    if (this.priceMin !== null && !Number.isNaN(this.priceMin)) params['priceMin'] = this.priceMin;
+    if (this.priceMax !== null && !Number.isNaN(this.priceMax)) params['priceMax'] = this.priceMax;
+    if (this.searchQuery.trim()) params['search'] = this.searchQuery.trim();
+
+    // ApiService.get<T>() unwraps the outer { data: T, meta } envelope, so when the
+    // backend returns a paginated response { data: Product[], total, page, limit }, we get
+    // that object directly here. Plain arrays are also tolerated for legacy endpoints.
+    this.api
+      .get<AdminProductListResponse | Product[]>('admin/catalog/products', params)
+      .subscribe({
+        next: (res) => {
+          if (Array.isArray(res)) {
+            this.products.set(res);
+            this.total.set(res.length);
+          } else if (Array.isArray(res?.data)) {
+            this.products.set(res.data);
+            this.total.set(res.total ?? res.data.length);
+          } else {
+            this.products.set([]);
+            this.total.set(0);
+          }
+          this.loading.set(false);
+        },
+        error: () => {
+          this.notifications.error(this.translate.instant('PRODUCTS.LOAD_ERROR'));
+          this.loading.set(false);
+        },
+      });
   }
 
-  onSearch() {
-    clearTimeout(this.searchTimeout);
+  onSearch(): void {
+    if (this.searchTimeout !== null) {
+      clearTimeout(this.searchTimeout);
+    }
     this.searchTimeout = setTimeout(() => {
+      this.page.set(1);
       this.loadProducts();
     }, 300);
   }
 
+  onFilterChange(): void {
+    this.page.set(1);
+    this.loadProducts();
+  }
+
+  onPageChange(page: number): void {
+    this.page.set(page);
+    this.loadProducts();
+  }
+
+  resetFilters(): void {
+    this.resetFiltersState();
+    this.loadProducts();
+  }
+
+  private resetFiltersState(): void {
+    this.searchQuery = '';
+    this.categoryFilter = '';
+    this.statusFilter = '';
+    this.priceMin = null;
+    this.priceMax = null;
+    if (!this.fixedType) this.typeFilter = '';
+    this.page.set(1);
+  }
+
   getPrice(product: Product): string {
-    const fmt = (v: number) =>
+    const fmt = (v: number): string =>
       new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(v);
     if (product.priceMonthly) return `${fmt(product.priceMonthly)}/mo`;
     if (product.priceYearly) return `${fmt(product.priceYearly)}/yr`;
@@ -692,18 +899,19 @@ export class ProductListComponent implements OnInit {
     }
   }
 
-  confirmDelete(product: Product) {
+  confirmDelete(product: Product): void {
     this.productToDelete.set(product);
     this.showDeleteModal.set(true);
   }
 
-  deleteProduct() {
+  deleteProduct(): void {
     const product = this.productToDelete();
     if (!product) return;
     this.api.delete(`admin/catalog/products/${product.id}`).subscribe({
       next: () => {
         this.notifications.success(this.translate.instant('PRODUCTS.DELETED'));
         this.products.update((list) => list.filter((p) => p.id !== product.id));
+        this.total.update((t) => Math.max(0, t - 1));
         this.showDeleteModal.set(false);
       },
       error: () => {
@@ -726,14 +934,14 @@ export class ProductListComponent implements OnInit {
   }
 
   toggleSelectAll(): void {
-    const filtered = this.filteredProducts();
+    const list = this.products();
     const allCurrentlySelected = this.allSelected();
     this.selectedIds.update((current) => {
       const next = new Set(current);
       if (allCurrentlySelected) {
-        for (const p of filtered) next.delete(p.id);
+        for (const p of list) next.delete(p.id);
       } else {
-        for (const p of filtered) next.add(p.id);
+        for (const p of list) next.add(p.id);
       }
       return next;
     });

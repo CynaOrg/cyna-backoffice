@@ -47,6 +47,7 @@ export interface ProductCharacteristic {
   keyEn: string;
   valueFr: string;
   valueEn: string;
+  displayOrder?: number;
 }
 
 export interface Category {
@@ -82,5 +83,11 @@ export interface CreateProductDto {
   isAvailable?: boolean;
   isFeatured?: boolean;
   displayOrder?: number;
-  characteristics?: { keyFr: string; keyEn: string; valueFr: string; valueEn: string }[];
+  characteristics?: {
+    keyFr: string;
+    keyEn: string;
+    valueFr: string;
+    valueEn: string;
+    displayOrder?: number;
+  }[];
 }

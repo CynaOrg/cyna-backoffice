@@ -218,19 +218,21 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
                         }
                       </select>
                     </div>
-                    <div>
-                      <label class="block text-xs font-medium text-text-muted mb-1.5">{{
-                        'PRODUCTS.PRODUCT_TYPE' | translate
-                      }}</label>
-                      <select
-                        formControlName="productType"
-                        class="w-full px-3 py-2 rounded-lg border border-border-light bg-white text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
-                      >
-                        <option value="saas">{{ 'PRODUCTS.SAAS' | translate }}</option>
-                        <option value="physical">{{ 'PRODUCTS.PHYSICAL' | translate }}</option>
-                        <option value="license">{{ 'PRODUCTS.LICENSE' | translate }}</option>
-                      </select>
-                    </div>
+                    @if (!fixedProductType) {
+                      <div>
+                        <label class="block text-xs font-medium text-text-muted mb-1.5">{{
+                          'PRODUCTS.PRODUCT_TYPE' | translate
+                        }}</label>
+                        <select
+                          formControlName="productType"
+                          class="w-full px-3 py-2 rounded-lg border border-border-light bg-white text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
+                        >
+                          <option value="saas">{{ 'PRODUCTS.SAAS' | translate }}</option>
+                          <option value="physical">{{ 'PRODUCTS.PHYSICAL' | translate }}</option>
+                          <option value="license">{{ 'PRODUCTS.LICENSE' | translate }}</option>
+                        </select>
+                      </div>
+                    }
                   </div>
                 </div>
               </div>
@@ -566,13 +568,15 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
             }
           </div>
 
-          <!-- Images (only in edit mode) -->
-          @if (isEdit()) {
-            <div class="rounded-xl border border-border-light bg-surface shadow-sm overflow-hidden">
-              <div class="px-6 py-4 border-b border-border-light">
-                <h3 class="text-sm font-semibold text-text-primary !m-0">Images</h3>
-              </div>
-              <div class="p-6">
+          <!-- Images -->
+          <div class="rounded-xl border border-border-light bg-surface shadow-sm overflow-hidden">
+            <div class="px-6 py-4 border-b border-border-light">
+              <h3 class="text-sm font-semibold text-text-primary !m-0">
+                {{ 'PRODUCTS.IMAGES' | translate }}
+              </h3>
+            </div>
+            <div class="p-6">
+              @if (isEdit()) {
                 <app-image-upload
                   [images]="product()?.images ?? []"
                   [maxImages]="10"
@@ -584,9 +588,34 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
                   (imageDeleted)="onImageDeleted($event)"
                   (altTextChanged)="onAltTextChanged($event)"
                 />
-              </div>
+              } @else {
+                <!-- TODO(PROD-9): polished 2-step UX (queue files in memory then upload after create). -->
+                <!-- For now, save the product first, then user is redirected to edit where they can upload images. -->
+                <div class="flex flex-col items-center gap-3 py-8 text-center">
+                  <div
+                    class="w-12 h-12 rounded-full bg-primary-light flex items-center justify-center"
+                  >
+                    <svg
+                      class="w-6 h-6 text-primary"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="1.5"
+                        d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0 0 22.5 18.75V5.25A2.25 2.25 0 0 0 20.25 3H3.75A2.25 2.25 0 0 0 1.5 5.25v13.5A2.25 2.25 0 0 0 3.75 21Z"
+                      />
+                    </svg>
+                  </div>
+                  <span class="text-sm text-text-secondary max-w-md">
+                    {{ 'PRODUCTS.IMAGES_AFTER_CREATE' | translate }}
+                  </span>
+                </div>
+              }
             </div>
-          }
+          </div>
         </form>
       </div>
     }
@@ -624,6 +653,7 @@ export class ProductFormComponent implements OnInit {
   productId = '';
   basePath = '/products';
   newTitleKey = 'PRODUCTS.NEW_PRODUCT';
+  fixedProductType: '' | 'physical' | 'saas' | 'license' = '';
 
   form = this.fb.group({
     nameFr: ['', Validators.required],
@@ -662,6 +692,7 @@ export class ProductFormComponent implements OnInit {
         keyEn: [''],
         valueFr: [''],
         valueEn: [''],
+        displayOrder: [this.characteristics.length],
       }),
     );
   }
@@ -670,10 +701,20 @@ export class ProductFormComponent implements OnInit {
     this.characteristics.removeAt(index);
   }
 
-  ngOnInit() {
+  ngOnInit(): void {
     const data = this.route.snapshot.data;
     if (data['basePath']) this.basePath = data['basePath'];
     if (data['newTitleKey']) this.newTitleKey = data['newTitleKey'];
+
+    // PROD-6: when the route fixes a productType ('physical' / 'saas' / 'license'),
+    // pre-select it on the form and disable/hide the selector.
+    const routeProductType = data['productType'] as 'physical' | 'saas' | 'license' | undefined;
+    if (routeProductType) {
+      this.fixedProductType = routeProductType;
+      this.form.patchValue({ productType: routeProductType });
+      this.form.get('productType')?.disable({ emitEvent: false });
+    }
+
     this.loadCategories();
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
@@ -720,13 +761,14 @@ export class ProductFormComponent implements OnInit {
         // Load characteristics into FormArray
         this.characteristics.clear();
         if (p.characteristics?.length) {
-          for (const char of p.characteristics) {
+          for (const [index, char] of p.characteristics.entries()) {
             this.characteristics.push(
               this.fb.group({
                 keyFr: [char.keyFr || ''],
                 keyEn: [char.keyEn || ''],
                 valueFr: [char.valueFr || ''],
                 valueEn: [char.valueEn || ''],
+                displayOrder: [char.displayOrder ?? index],
               }),
             );
           }
@@ -740,34 +782,96 @@ export class ProductFormComponent implements OnInit {
     });
   }
 
-  onSubmit() {
+  onSubmit(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
     }
     this.saving.set(true);
-    const data = this.form.value;
 
-    const request = this.isEdit()
-      ? this.api.patch<any, Product>(`admin/catalog/products/${this.productId}`, data)
-      : this.api.post<any, Product>('admin/catalog/products', data);
+    const isEditing = this.isEdit();
+    // getRawValue() includes disabled fields (e.g. productType locked by route).
+    const payload = isEditing ? this.buildPatchPayload() : this.form.getRawValue();
+
+    // PROD-8: in edit mode, if nothing changed, skip the API call.
+    if (isEditing && Object.keys(payload).length === 0) {
+      this.saving.set(false);
+      this.notifications.info(this.translate.instant('PRODUCTS.NO_CHANGES'));
+      this.router.navigate([this.basePath, this.productId]);
+      return;
+    }
+
+    const request = isEditing
+      ? this.api.patch<Partial<Product>, Product>(
+          `admin/catalog/products/${this.productId}`,
+          payload as Partial<Product>,
+        )
+      : this.api.post<unknown, Product>('admin/catalog/products', payload);
 
     request.subscribe({
       next: (product) => {
+        // PROD-15: backend now returns full admin shape — refresh local state
+        this.product.set(product);
+        this.form.markAsPristine();
         this.notifications.success(
-          this.isEdit()
+          isEditing
             ? this.translate.instant('PRODUCTS.UPDATED')
             : this.translate.instant('PRODUCTS.CREATED'),
         );
-        this.router.navigate([this.basePath, product.id || this.productId]);
+
+        if (!isEditing) {
+          // PROD-9: after creation, redirect to edit page so the user can upload images.
+          this.router.navigate([this.basePath, product.id, 'edit']);
+        } else {
+          this.saving.set(false);
+          this.router.navigate([this.basePath, product.id || this.productId]);
+        }
       },
-      error: (err) => {
+      error: (err: { error?: { message?: string } }) => {
         this.saving.set(false);
         this.notifications.error(
           err.error?.message || this.translate.instant('PRODUCTS.SAVE_ERROR'),
         );
       },
     });
+  }
+
+  /**
+   * PROD-8: build a PATCH payload containing only fields that actually changed
+   * compared to the loaded product. This keeps requests minimal and prevents
+   * accidentally overwriting fields untouched by the user.
+   */
+  private buildPatchPayload(): Partial<Product> {
+    const original = this.product();
+    if (!original) return this.form.value as Partial<Product>;
+
+    const payload: Record<string, unknown> = {};
+    const formValue = this.form.value as Record<string, unknown>;
+
+    for (const [key, value] of Object.entries(formValue)) {
+      if (key === 'characteristics') continue; // handled separately
+      const control = this.form.get(key);
+      if (!control || !control.dirty) continue;
+      const originalValue = (original as unknown as Record<string, unknown>)[key];
+      if (!this.valuesEqual(value, originalValue)) {
+        payload[key] = value;
+      }
+    }
+
+    // Characteristics: send the entire array if any control inside is dirty.
+    if (this.characteristics.dirty) {
+      payload['characteristics'] = this.form.value.characteristics;
+    }
+
+    return payload as Partial<Product>;
+  }
+
+  private valuesEqual(a: unknown, b: unknown): boolean {
+    if (a === b) return true;
+    if (a == null && b == null) return true;
+    if (a === '' && b == null) return true;
+    if (b === '' && a == null) return true;
+    return false;
   }
 
   // --- Image handlers ---
