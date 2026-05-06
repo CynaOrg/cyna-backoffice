@@ -4,9 +4,9 @@ export interface Admin {
   firstName: string;
   lastName: string;
   role: 'super_admin' | 'commercial';
-  isActive: boolean;
-  lastLoginAt?: string;
-  createdAt: string;
+  isActive?: boolean;
+  createdAt?: string;
+  lastLoginAt?: string | null;
 }
 
 export interface AdminLoginResponse {
