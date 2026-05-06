@@ -322,12 +322,17 @@ export class DashboardComponent implements OnInit {
   lowStockCount = signal(0);
   unreadMessages = signal(0);
 
+  // DASH-2: extracted from a magic number in revenueProgress(). Eventually
+  // this should come from a backend `/admin/config/revenue-target` endpoint
+  // (or env config) so non-engineers can tune it.
+  // TODO(DASH-2): replace with a value coming from the backend config service.
+  private readonly REVENUE_TARGET_EUR = 100000;
+
   adminFirstName = computed(() => this.authService.admin()?.firstName || 'Admin');
 
   revenueProgress = computed(() => {
     const revenue = this.data()?.kpis?.totalRevenue || 0;
-    const target = 100000;
-    return Math.min((revenue / target) * 100, 100);
+    return Math.min((revenue / this.REVENUE_TARGET_EUR) * 100, 100);
   });
 
   ngOnInit() {
@@ -336,6 +341,11 @@ export class DashboardComponent implements OnInit {
 
   loadDashboard() {
     this.loading.set(true);
+
+    // DASH-3: avgCart/conversionRate are only rendered in the commercial
+    // view; gate populating them so we don't surface unused data on
+    // dashboards that won't display it.
+    const showCartConversion = this.authService.isCommercial();
 
     forkJoin({
       dashboard: this.analyticsService.getDashboard(),
@@ -355,8 +365,8 @@ export class DashboardComponent implements OnInit {
             ordersVariation: apiData?.orders?.changePercent,
             activeSubscriptions: apiData?.subscriptions?.active ?? 0,
             subscriptionsVariation: apiData?.subscriptions?.changePercent,
-            avgCartValue: apiData?.averageOrderValue ?? 0,
-            conversionRate: apiData?.conversionRate,
+            avgCartValue: showCartConversion ? (apiData?.averageOrderValue ?? 0) : 0,
+            conversionRate: showCartConversion ? apiData?.conversionRate : undefined,
           },
           recentOrders: (recentOrders?.data ?? []).map((o) => ({
             id: o.id,

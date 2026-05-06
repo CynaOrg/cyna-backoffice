@@ -1,4 +1,5 @@
-import { Component, input, computed } from '@angular/core';
+import { Component, input, computed, inject } from '@angular/core';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-status-badge',
@@ -14,10 +15,23 @@ import { Component, input, computed } from '@angular/core';
   `,
 })
 export class StatusBadgeComponent {
+  private readonly translate = inject(TranslateService);
+
   status = input.required<string>();
   label = input<string>();
 
-  displayLabel = computed(() => this.label() || this.status().replace(/_/g, ' '));
+  displayLabel = computed(() => {
+    const explicit = this.label();
+    if (explicit) return explicit;
+    const raw = this.status();
+    if (!raw) return '';
+    // Try to resolve a STATUS.* translation. ngx-translate returns the key
+    // verbatim when missing — fall back to a kebab-cased version of the raw
+    // status (e.g. `past_due` -> `past due`) in that case.
+    const key = `STATUS.${raw.toUpperCase()}`;
+    const translated = this.translate.instant(key);
+    return translated && translated !== key ? translated : raw.replace(/_/g, ' ');
+  });
 
   private readonly statusConfig: Record<string, { bg: string; text: string; dot: string }> = {
     active: { bg: 'bg-success-light', text: 'text-success', dot: 'bg-success' },

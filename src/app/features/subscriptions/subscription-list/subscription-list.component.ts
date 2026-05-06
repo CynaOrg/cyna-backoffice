@@ -126,7 +126,18 @@ interface UpdateTermsPayload {
                           >
                             {{ 'SUBSCRIPTIONS.EDIT_TERMS' | translate }}
                           </button>
-                          @if (sub.status === 'active') {
+                          @if (
+                            sub.status === 'active' ||
+                            sub.status === 'past_due' ||
+                            sub.status === 'unpaid'
+                          ) {
+                            <!--
+                              SUB-4: past_due / unpaid subscriptions can also be
+                              cancelled by the admin (e.g. if Stripe collection
+                              has been failing for a while and we want to stop
+                              re-trying). The same /status endpoint accepts the
+                              cancel action regardless of the source status.
+                            -->
                             <button
                               (click)="confirmAction(sub, 'cancel')"
                               class="text-sm text-error hover:text-red-700"
@@ -292,6 +303,14 @@ export class SubscriptionListComponent implements OnInit {
   executeAction(): void {
     const sub = this.selectedSub();
     if (!sub) return;
+    // SUB-7: today the backend /status endpoint only supports immediate
+    // cancellation (cancelAtPeriodEnd: false hardcoded server-side).
+    // The cancel-at-period-end variant lives on the /terms endpoint
+    // exposed via openTermsModal() above. When the backend gains a
+    // proper "cancel at period end" flag on /status, surface a radio
+    // choice in this modal and forward it here.
+    // TODO(SUB-7): once backend accepts cancelAtPeriodEnd on /status,
+    // pass it from a cancel-mode picker rendered in the confirm modal.
     this.api
       .patch<
         { action: 'cancel' | 'reactivate' },
