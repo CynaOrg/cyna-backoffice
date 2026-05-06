@@ -238,7 +238,7 @@ interface AdminProductListResponse {
           >
             <option value="">{{ 'PRODUCTS.FILTER_ALL_CATEGORIES' | translate }}</option>
             @for (cat of categories(); track cat.id) {
-              <option [value]="cat.id">{{ cat.nameFr }}</option>
+              <option [value]="cat.slug">{{ cat.nameFr }}</option>
             }
           </select>
         </div>
@@ -795,11 +795,11 @@ export class ProductListComponent implements OnInit, OnDestroy {
       limit: this.limit(),
     };
     if (this.typeFilter) params['productType'] = this.typeFilter;
-    if (this.categoryFilter) params['categoryId'] = this.categoryFilter;
+    if (this.categoryFilter) params['categorySlug'] = this.categoryFilter;
     if (this.statusFilter === 'active') params['isAvailable'] = true;
     if (this.statusFilter === 'inactive') params['isAvailable'] = false;
-    if (this.priceMin !== null && !Number.isNaN(this.priceMin)) params['priceMin'] = this.priceMin;
-    if (this.priceMax !== null && !Number.isNaN(this.priceMax)) params['priceMax'] = this.priceMax;
+    if (this.priceMin !== null && !Number.isNaN(this.priceMin)) params['minPrice'] = this.priceMin;
+    if (this.priceMax !== null && !Number.isNaN(this.priceMax)) params['maxPrice'] = this.priceMax;
     if (this.searchQuery.trim()) params['search'] = this.searchQuery.trim();
 
     // ApiService.get<T>() unwraps the outer { data: T, meta } envelope, so when the
