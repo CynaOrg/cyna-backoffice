@@ -1,7 +1,7 @@
 import { Injectable, inject, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Observable, tap, map, catchError, throwError } from 'rxjs';
+import { Observable, tap, map, catchError, throwError, switchMap, of, timeout } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { Admin, AdminLoginResponse, AdminAuthResponse } from '../../models/admin.model';
 
@@ -101,7 +101,46 @@ export class AdminAuthService {
     this._tempToken.set(null);
   }
 
-  tryRestoreSession(): Observable<AdminAuthResponse> {
-    return this.refreshToken();
+  /**
+   * Fetch the freshly authenticated admin's profile from `GET /auth/admin/me`.
+   * Updates the same admin signal that `verify2FA`/`refreshToken` populate so
+   * the Account page can display server-authoritative `isActive`, `createdAt`
+   * and `lastLoginAt` even when the cached JWT payload was missing them.
+   */
+  fetchMe(): Observable<Admin> {
+    return this.http.get<ApiResponse<Admin>>(`${this.baseUrl}/me`).pipe(
+      timeout(5000),
+      map((r) => normalizeAdminTimestamps(r.data)),
+      tap((admin) => this._admin.set(admin)),
+    );
   }
+
+  /**
+   * Coerce empty-string timestamps (a defensive fallback if any legacy server
+   * payload slips through with `""`) into `null` for `lastLoginAt` and
+   * `undefined` for `createdAt`, so the Account page can branch cleanly
+   * between "Never" and the em-dash placeholder.
+   */
+  // (helper kept module-private at the bottom of the file)
+  tryRestoreSession(): Observable<AdminAuthResponse> {
+    return this.refreshToken().pipe(
+      switchMap((response) =>
+        this.fetchMe().pipe(
+          // Hydrate the session with the enriched profile, but don't fail the
+          // restore if /me hiccups — the refresh-token payload is enough to
+          // keep the admin logged in.
+          catchError(() => of(null)),
+          map(() => response),
+        ),
+      ),
+    );
+  }
+}
+
+function normalizeAdminTimestamps(admin: Admin): Admin {
+  return {
+    ...admin,
+    createdAt: admin.createdAt === '' ? undefined : admin.createdAt,
+    lastLoginAt: admin.lastLoginAt === '' ? null : admin.lastLoginAt,
+  };
 }

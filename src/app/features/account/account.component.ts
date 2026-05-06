@@ -2,7 +2,10 @@ import { Component, computed, inject } from '@angular/core';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AdminAuthService } from '../../core/auth/services/admin-auth.service';
 import { Admin } from '../../core/models/admin.model';
+import { LanguageService } from '../../core/services/language.service';
 import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
+
+const EM_DASH = '—';
 
 @Component({
   selector: 'app-account',
@@ -54,18 +57,20 @@ import { StatusBadgeComponent } from '../../shared/components/status-badge/statu
             <div class="flex justify-between gap-4 items-center">
               <dt class="text-text-muted">{{ 'ACCOUNT.STATUS' | translate }}</dt>
               <dd>
-                <app-status-badge [status]="a.isActive ? 'active' : 'inactive'" />
+                @if (a.isActive === undefined) {
+                  <span class="text-text-muted">{{ emDash }}</span>
+                } @else {
+                  <app-status-badge [status]="a.isActive ? 'active' : 'inactive'" />
+                }
               </dd>
             </div>
             <div class="flex justify-between gap-4">
               <dt class="text-text-muted">{{ 'ACCOUNT.MEMBER_SINCE' | translate }}</dt>
-              <dd class="text-text-primary text-right">{{ formatDate(a.createdAt) }}</dd>
+              <dd class="text-text-primary text-right">{{ memberSince() }}</dd>
             </div>
             <div class="flex justify-between gap-4">
               <dt class="text-text-muted">{{ 'ACCOUNT.LAST_LOGIN' | translate }}</dt>
-              <dd class="text-text-primary text-right">
-                {{ a.lastLoginAt ? formatDate(a.lastLoginAt) : ('ACCOUNT.NEVER' | translate) }}
-              </dd>
+              <dd class="text-text-primary text-right">{{ lastLogin() }}</dd>
             </div>
           </dl>
         </div>
@@ -93,8 +98,26 @@ import { StatusBadgeComponent } from '../../shared/components/status-badge/statu
 export class AccountComponent {
   private readonly auth = inject(AdminAuthService);
   private readonly translate = inject(TranslateService);
+  private readonly language = inject(LanguageService);
 
+  readonly emDash = EM_DASH;
   readonly admin = computed<Admin | null>(() => this.auth.admin());
+
+  /** Locale-aware "long date" string for `createdAt`, em-dash when missing. */
+  readonly memberSince = computed<string>(() => {
+    const created = this.admin()?.createdAt;
+    if (!created) return EM_DASH;
+    return this.formatLongDate(created);
+  });
+
+  /** Locale-aware "long date + short time" for `lastLoginAt`. */
+  readonly lastLogin = computed<string>(() => {
+    const a = this.admin();
+    if (!a) return EM_DASH;
+    if (a.lastLoginAt === undefined) return EM_DASH;
+    if (a.lastLoginAt === null) return this.translate.instant('ACCOUNT.NEVER');
+    return this.formatLongDateTime(a.lastLoginAt);
+  });
 
   signOut(): void {
     this.auth.logout();
@@ -110,13 +133,18 @@ export class AccountComponent {
       : this.translate.instant('ACCOUNT.ROLE_COMMERCIAL');
   }
 
-  formatDate(d: string): string {
-    return new Date(d).toLocaleDateString('fr-FR', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+  private formatLongDate(iso: string): string {
+    const date = new Date(iso);
+    if (Number.isNaN(date.getTime())) return EM_DASH;
+    return new Intl.DateTimeFormat(this.language.current(), { dateStyle: 'long' }).format(date);
+  }
+
+  private formatLongDateTime(iso: string): string {
+    const date = new Date(iso);
+    if (Number.isNaN(date.getTime())) return EM_DASH;
+    return new Intl.DateTimeFormat(this.language.current(), {
+      dateStyle: 'long',
+      timeStyle: 'short',
+    }).format(date);
   }
 }
