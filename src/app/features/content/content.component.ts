@@ -30,12 +30,9 @@ const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
     <div class="space-y-8">
       <!-- Section: Application mobile -->
       <section>
-        <div class="flex items-center gap-2 mb-3">
-          <span class="text-base">📱</span>
-          <h3 class="text-xs font-semibold uppercase tracking-wider text-text-muted">
-            {{ 'CONTENT.PLATFORM_MOBILE' | translate }}
-          </h3>
-        </div>
+        <h3 class="text-xs font-semibold uppercase tracking-wider text-text-muted mb-3">
+          {{ 'CONTENT.PLATFORM_MOBILE' | translate }}
+        </h3>
 
         <div class="bg-surface rounded-xl border border-border-light shadow-sm p-6">
           <div class="flex items-start justify-between mb-1 gap-4">
@@ -161,12 +158,9 @@ const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
 
       <!-- Section: Site vitrine -->
       <section>
-        <div class="flex items-center gap-2 mb-3">
-          <span class="text-base">🌐</span>
-          <h3 class="text-xs font-semibold uppercase tracking-wider text-text-muted">
-            {{ 'CONTENT.PLATFORM_WEB' | translate }}
-          </h3>
-        </div>
+        <h3 class="text-xs font-semibold uppercase tracking-wider text-text-muted mb-3">
+          {{ 'CONTENT.PLATFORM_WEB' | translate }}
+        </h3>
 
         <div class="bg-surface rounded-xl border border-border-light shadow-sm p-6">
           <h2 class="text-lg font-semibold text-text-primary">
@@ -242,12 +236,9 @@ const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
 
       <!-- Section: Les deux plateformes -->
       <section>
-        <div class="flex items-center gap-2 mb-3">
-          <span class="text-base">🌐📱</span>
-          <h3 class="text-xs font-semibold uppercase tracking-wider text-text-muted">
-            {{ 'CONTENT.PLATFORM_BOTH' | translate }}
-          </h3>
-        </div>
+        <h3 class="text-xs font-semibold uppercase tracking-wider text-text-muted mb-3">
+          {{ 'CONTENT.PLATFORM_BOTH' | translate }}
+        </h3>
 
         <div class="bg-surface rounded-xl border border-border-light shadow-sm p-6">
           <h2 class="text-lg font-semibold text-text-primary">
