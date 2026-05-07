@@ -392,7 +392,6 @@
     "TYPE_LICENSE": "Licence"
   },
   "CONTENT": {
-    "TITLE": "Gestion du contenu",
     "SUBTITLE": "Personnalisez ce que vos utilisateurs voient sur le site vitrine et l'application mobile.",
     "CAROUSEL": "Carrousel d'accueil",
     "TOP_PRODUCTS": "Produits mis en avant",
@@ -405,7 +404,6 @@
     "TOP_PRODUCTS_DESCRIPTION": "Sélectionnez les services et produits qui apparaissent dans les vitrines \"produits phares\" du site et de l'app.",
     "TOP_PRODUCTS_PHYSICAL": "Produits physiques phares",
     "CONTACT_MESSAGES": "Messages contact",
-    "CAROUSEL_SLIDES": "Slides du carrousel",
     "ADD_SLIDE": "Ajouter une slide",
     "NO_SLIDES": "Aucune slide pour le moment",
     "ORDER_LABEL": "Ordre : {{order}}",
@@ -464,7 +462,7 @@
     "ORDER_UPDATED": "Ordre du carrousel mis à jour",
     "TOP_SERVICES_UPDATED": "Services phares mis à jour",
     "TOP_PRODUCTS_UPDATED": "Produits phares mis à jour",
-    "HERO_UPDATED": "Texte Hero mis à jour",
+    "HERO_UPDATED": "Bandeau d'accueil mis à jour",
     "CAROUSEL_LOAD_FAILED": "Échec du chargement du carrousel",
     "MESSAGES_LOAD_FAILED": "Échec du chargement des messages",
     "MESSAGE_UPDATE_FAILED": "Échec de la mise à jour du message",
@@ -479,7 +477,7 @@
     "CAROUSEL_ORDER_UPDATED": "Ordre du carrousel mis à jour",
     "CONFIG_UPDATED": "{{label}} mis à jour",
     "UPDATE_CONFIG_FAILED": "Échec de la mise à jour de la configuration",
-    "HERO_UPDATE_FAILED": "Échec de la mise à jour du texte Hero",
+    "HERO_UPDATE_FAILED": "Échec de la mise à jour du bandeau d'accueil",
     "LOAD_MESSAGES_FAILED": "Échec du chargement des messages",
     "UPDATE_MESSAGE_FAILED": "Échec de la mise à jour du message",
     "DELETE_MESSAGE_FAILED": "Échec de la suppression du message",
