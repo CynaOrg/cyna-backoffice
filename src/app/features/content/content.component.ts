@@ -458,38 +458,6 @@ const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
                   </div>
                 }
               </div>
-              <div class="grid grid-cols-2 gap-4">
-                <div>
-                  <label class="block text-sm font-medium text-text-primary mb-1">
-                    {{ 'CONTENT.LINK_TEXT_FR' | translate }}
-                  </label>
-                  <input
-                    formControlName="linkTextFr"
-                    class="w-full px-3 py-2 border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                  />
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-text-primary mb-1">
-                    {{ 'CONTENT.LINK_TEXT_EN' | translate }}
-                  </label>
-                  <input
-                    formControlName="linkTextEn"
-                    class="w-full px-3 py-2 border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                  />
-                </div>
-              </div>
-              <!-- TODO(CONT-5): backend rejects relative URLs (e.g. "/products");
-                   keep absolute URLs for now until the backend allows them. -->
-              <div>
-                <label class="block text-sm font-medium text-text-primary mb-1">{{
-                  'CONTENT.LINK_URL' | translate
-                }}</label>
-                <input
-                  formControlName="linkUrl"
-                  class="w-full px-3 py-2 border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                  [placeholder]="'CONTENT.LINK_URL_PLACEHOLDER' | translate"
-                />
-              </div>
               <div class="flex items-center gap-3">
                 <label class="block text-sm font-medium text-text-primary">{{
                   'CONTENT.ACTIVE' | translate
