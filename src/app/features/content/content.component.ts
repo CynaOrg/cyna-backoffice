@@ -27,54 +27,29 @@ const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
     ProductPickerComponent,
   ],
   template: `
-    <div>
-      <!-- Tab Bar -->
-      <div class="flex border-b border-border-light mb-6">
-        <button
-          (click)="switchTab('carousel')"
-          class="px-4 py-2 text-sm font-medium border-b-2 transition-colors"
-          [class]="
-            activeTab() === 'carousel'
-              ? 'border-primary text-primary'
-              : 'border-transparent text-text-secondary hover:text-text-primary'
-          "
-        >
-          {{ 'CONTENT.CAROUSEL' | translate }}
-        </button>
-        <button
-          (click)="switchTab('top-products')"
-          class="px-4 py-2 text-sm font-medium border-b-2 transition-colors"
-          [class]="
-            activeTab() === 'top-products'
-              ? 'border-primary text-primary'
-              : 'border-transparent text-text-secondary hover:text-text-primary'
-          "
-        >
-          {{ 'CONTENT.TOP_PRODUCTS' | translate }}
-        </button>
-        <button
-          (click)="switchTab('hero-text')"
-          class="px-4 py-2 text-sm font-medium border-b-2 transition-colors"
-          [class]="
-            activeTab() === 'hero-text'
-              ? 'border-primary text-primary'
-              : 'border-transparent text-text-secondary hover:text-text-primary'
-          "
-        >
-          {{ 'CONTENT.HERO_TEXT' | translate }}
-        </button>
-      </div>
+    <div class="space-y-8">
+      <!-- Section: Application mobile -->
+      <section>
+        <div class="flex items-center gap-2 mb-3">
+          <span class="text-base">📱</span>
+          <h3 class="text-xs font-semibold uppercase tracking-wider text-text-muted">
+            {{ 'CONTENT.PLATFORM_MOBILE' | translate }}
+          </h3>
+        </div>
 
-      <!-- Tab: Carousel -->
-      @if (activeTab() === 'carousel') {
-        <div>
-          <div class="flex items-center justify-between mb-4">
-            <h2 class="text-lg font-semibold text-text-primary">
-              {{ 'CONTENT.CAROUSEL_SLIDES' | translate }}
-            </h2>
+        <div class="bg-surface rounded-xl border border-border-light shadow-sm p-6">
+          <div class="flex items-start justify-between mb-1 gap-4">
+            <div>
+              <h2 class="text-lg font-semibold text-text-primary">
+                {{ 'CONTENT.CAROUSEL' | translate }}
+              </h2>
+              <p class="text-sm text-text-secondary mt-1">
+                {{ 'CONTENT.CAROUSEL_DESCRIPTION' | translate }}
+              </p>
+            </div>
             <button
               (click)="openSlideModal()"
-              class="bg-primary text-white hover:bg-primary-hover rounded-lg px-4 py-2 text-sm font-medium"
+              class="bg-primary text-white hover:bg-primary-hover rounded-lg px-4 py-2 text-sm font-medium whitespace-nowrap"
             >
               {{ 'CONTENT.ADD_SLIDE' | translate }}
             </button>
@@ -83,12 +58,11 @@ const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
           @if (loadingSlides()) {
             <app-loading-spinner />
           } @else {
-            <div class="grid gap-4">
+            <div class="grid gap-4 mt-4">
               @for (slide of slides(); track slide.id; let i = $index) {
                 <div
-                  class="bg-surface rounded-xl border border-border-light shadow-sm p-4 flex items-center gap-4"
+                  class="bg-white rounded-lg border border-border-light p-4 flex items-center gap-4"
                 >
-                  <!-- Image Preview -->
                   <div class="flex-shrink-0">
                     @if (slide.imageUrl) {
                       <img
@@ -117,7 +91,6 @@ const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
                     }
                   </div>
 
-                  <!-- Slide Info -->
                   <div class="flex-1 min-w-0">
                     <p class="text-sm font-medium text-text-primary truncate">
                       {{ slide.titleFr }}
@@ -128,7 +101,6 @@ const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
                     </div>
                   </div>
 
-                  <!-- Reorder Buttons -->
                   <div class="flex flex-col gap-1">
                     <button
                       (click)="moveSlide(i, 'up')"
@@ -162,7 +134,6 @@ const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
                     </button>
                   </div>
 
-                  <!-- Action Buttons -->
                   <div class="flex items-center gap-2">
                     <button
                       (click)="openSlideModal(slide)"
@@ -179,63 +150,160 @@ const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
                   </div>
                 </div>
               } @empty {
-                <div
-                  class="bg-surface rounded-xl border border-border-light shadow-sm p-12 text-center"
-                >
+                <div class="rounded-lg border border-dashed border-border-light p-8 text-center mt-4">
                   <p class="text-sm text-text-muted">{{ 'CONTENT.NO_SLIDES' | translate }}</p>
                 </div>
               }
             </div>
           }
         </div>
-      }
+      </section>
 
-      <!-- Tab: Top Products -->
-      @if (activeTab() === 'top-products') {
-        <div class="space-y-6">
+      <!-- Section: Site vitrine -->
+      <section>
+        <div class="flex items-center gap-2 mb-3">
+          <span class="text-base">🌐</span>
+          <h3 class="text-xs font-semibold uppercase tracking-wider text-text-muted">
+            {{ 'CONTENT.PLATFORM_WEB' | translate }}
+          </h3>
+        </div>
+
+        <div class="bg-surface rounded-xl border border-border-light shadow-sm p-6">
+          <h2 class="text-lg font-semibold text-text-primary">
+            {{ 'CONTENT.HERO_TEXT' | translate }}
+          </h2>
+          <p class="text-sm text-text-secondary mt-1 mb-4">
+            {{ 'CONTENT.HERO_DESCRIPTION' | translate }}
+          </p>
+
+          @if (loadingHero()) {
+            <app-loading-spinner />
+          } @else {
+            <form [formGroup]="heroForm" (ngSubmit)="saveHeroText()" class="space-y-4">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-text-primary mb-1">
+                    {{ 'CONTENT.TITLE_FR' | translate }}
+                  </label>
+                  <input
+                    formControlName="titleFr"
+                    class="w-full px-3 py-2 border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                  />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-text-primary mb-1">
+                    {{ 'CONTENT.TITLE_EN' | translate }}
+                  </label>
+                  <input
+                    formControlName="titleEn"
+                    class="w-full px-3 py-2 border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                  />
+                </div>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-text-primary mb-1">
+                    {{ 'CONTENT.SUBTITLE_FR' | translate }}
+                  </label>
+                  <textarea
+                    formControlName="subtitleFr"
+                    rows="3"
+                    class="w-full px-3 py-2 border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none"
+                  ></textarea>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-text-primary mb-1">
+                    {{ 'CONTENT.SUBTITLE_EN' | translate }}
+                  </label>
+                  <textarea
+                    formControlName="subtitleEn"
+                    rows="3"
+                    class="w-full px-3 py-2 border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none"
+                  ></textarea>
+                </div>
+              </div>
+              <div class="flex justify-end">
+                <button
+                  type="submit"
+                  [disabled]="savingHero()"
+                  class="bg-primary text-white hover:bg-primary-hover rounded-lg px-4 py-2 text-sm font-medium disabled:opacity-60"
+                >
+                  {{
+                    savingHero()
+                      ? ('CONTENT.SAVING' | translate)
+                      : ('CONTENT.SAVE_HERO' | translate)
+                  }}
+                </button>
+              </div>
+            </form>
+          }
+        </div>
+      </section>
+
+      <!-- Section: Les deux plateformes -->
+      <section>
+        <div class="flex items-center gap-2 mb-3">
+          <span class="text-base">🌐📱</span>
+          <h3 class="text-xs font-semibold uppercase tracking-wider text-text-muted">
+            {{ 'CONTENT.PLATFORM_BOTH' | translate }}
+          </h3>
+        </div>
+
+        <div class="bg-surface rounded-xl border border-border-light shadow-sm p-6">
+          <h2 class="text-lg font-semibold text-text-primary">
+            {{ 'CONTENT.TOP_PRODUCTS' | translate }}
+          </h2>
+          <p class="text-sm text-text-secondary mt-1 mb-4">
+            {{ 'CONTENT.TOP_PRODUCTS_DESCRIPTION' | translate }}
+          </p>
+
           @if (loadingTopConfig()) {
             <app-loading-spinner />
           } @else {
-            <!-- Top Services (SaaS) -->
-            <div class="bg-surface rounded-xl border border-border-light shadow-sm p-6">
-              <div class="flex items-center justify-between mb-4">
-                <h2 class="text-lg font-semibold text-text-primary">
-                  {{ 'CONTENT.TOP_SERVICES' | translate }}
-                </h2>
-                <button
-                  type="button"
-                  (click)="openPicker('top_services')"
-                  class="bg-primary text-white hover:bg-primary-hover rounded-lg px-4 py-2 text-sm font-medium"
-                >
-                  {{ 'CONTENT.CONFIGURE' | translate }}
-                </button>
+            <div class="space-y-4">
+              <div class="bg-white rounded-lg border border-border-light p-4">
+                <div class="flex items-center justify-between gap-4">
+                  <div>
+                    <h4 class="text-sm font-semibold text-text-primary">
+                      {{ 'CONTENT.TOP_SERVICES' | translate }}
+                    </h4>
+                    <p class="text-xs text-text-muted mt-1">
+                      {{ 'CONTENT.SELECTED_COUNT' | translate: { count: topServicesIds().length } }}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    (click)="openPicker('top_services')"
+                    class="bg-primary text-white hover:bg-primary-hover rounded-lg px-4 py-2 text-sm font-medium whitespace-nowrap"
+                  >
+                    {{ 'CONTENT.CONFIGURE' | translate }}
+                  </button>
+                </div>
               </div>
-              <p class="text-xs text-text-muted">
-                {{ 'CONTENT.SELECTED_COUNT' | translate: { count: topServicesIds().length } }}
-              </p>
-            </div>
 
-            <!-- Top Products (Physical) -->
-            <div class="bg-surface rounded-xl border border-border-light shadow-sm p-6">
-              <div class="flex items-center justify-between mb-4">
-                <h2 class="text-lg font-semibold text-text-primary">
-                  {{ 'CONTENT.TOP_PRODUCTS' | translate }}
-                </h2>
-                <button
-                  type="button"
-                  (click)="openPicker('top_products')"
-                  class="bg-primary text-white hover:bg-primary-hover rounded-lg px-4 py-2 text-sm font-medium"
-                >
-                  {{ 'CONTENT.CONFIGURE' | translate }}
-                </button>
+              <div class="bg-white rounded-lg border border-border-light p-4">
+                <div class="flex items-center justify-between gap-4">
+                  <div>
+                    <h4 class="text-sm font-semibold text-text-primary">
+                      {{ 'CONTENT.TOP_PRODUCTS_PHYSICAL' | translate }}
+                    </h4>
+                    <p class="text-xs text-text-muted mt-1">
+                      {{ 'CONTENT.SELECTED_COUNT' | translate: { count: topProductsIds().length } }}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    (click)="openPicker('top_products')"
+                    class="bg-primary text-white hover:bg-primary-hover rounded-lg px-4 py-2 text-sm font-medium whitespace-nowrap"
+                  >
+                    {{ 'CONTENT.CONFIGURE' | translate }}
+                  </button>
+                </div>
               </div>
-              <p class="text-xs text-text-muted">
-                {{ 'CONTENT.SELECTED_COUNT' | translate: { count: topProductsIds().length } }}
-              </p>
             </div>
           }
         </div>
-      }
+      </section>
 
       <!-- Product Picker Modal -->
       <app-product-picker
@@ -246,78 +314,6 @@ const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
         (close)="showPicker.set(false)"
         (saved)="onPickerSaved($event)"
       />
-
-      <!-- Tab: Hero Text -->
-      @if (activeTab() === 'hero-text') {
-        <div>
-          @if (loadingHero()) {
-            <app-loading-spinner />
-          } @else {
-            <div class="bg-surface rounded-xl border border-border-light shadow-sm p-6">
-              <h2 class="text-lg font-semibold text-text-primary mb-4">
-                {{ 'CONTENT.HERO_TEXT' | translate }}
-              </h2>
-              <form [formGroup]="heroForm" (ngSubmit)="saveHeroText()" class="space-y-4">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label class="block text-sm font-medium text-text-primary mb-1">
-                      {{ 'CONTENT.TITLE_FR' | translate }}
-                    </label>
-                    <input
-                      formControlName="titleFr"
-                      class="w-full px-3 py-2 border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                    />
-                  </div>
-                  <div>
-                    <label class="block text-sm font-medium text-text-primary mb-1">
-                      {{ 'CONTENT.TITLE_EN' | translate }}
-                    </label>
-                    <input
-                      formControlName="titleEn"
-                      class="w-full px-3 py-2 border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                    />
-                  </div>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label class="block text-sm font-medium text-text-primary mb-1">
-                      {{ 'CONTENT.SUBTITLE_FR' | translate }}
-                    </label>
-                    <textarea
-                      formControlName="subtitleFr"
-                      rows="3"
-                      class="w-full px-3 py-2 border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none"
-                    ></textarea>
-                  </div>
-                  <div>
-                    <label class="block text-sm font-medium text-text-primary mb-1">
-                      {{ 'CONTENT.SUBTITLE_EN' | translate }}
-                    </label>
-                    <textarea
-                      formControlName="subtitleEn"
-                      rows="3"
-                      class="w-full px-3 py-2 border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none"
-                    ></textarea>
-                  </div>
-                </div>
-                <div class="flex justify-end">
-                  <button
-                    type="submit"
-                    [disabled]="savingHero()"
-                    class="bg-primary text-white hover:bg-primary-hover rounded-lg px-4 py-2 text-sm font-medium disabled:opacity-60"
-                  >
-                    {{
-                      savingHero()
-                        ? ('CONTENT.SAVING' | translate)
-                        : ('CONTENT.SAVE_HERO' | translate)
-                    }}
-                  </button>
-                </div>
-              </form>
-            </div>
-          }
-        </div>
-      }
 
       <!-- Slide Modal -->
       @if (showSlideModal()) {
@@ -516,9 +512,6 @@ export class ContentComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly translate = inject(TranslateService);
 
-  // Tab state
-  activeTab = signal<'carousel' | 'top-products' | 'hero-text'>('carousel');
-
   // Carousel state
   slides = signal<CarouselSlide[]>([]);
   loadingSlides = signal(false);
@@ -571,19 +564,8 @@ export class ContentComponent implements OnInit {
 
   ngOnInit() {
     this.loadCarouselSlides();
-  }
-
-  // --- Tab Management ---
-
-  switchTab(tab: 'carousel' | 'top-products' | 'hero-text') {
-    this.activeTab.set(tab);
-    if (tab === 'carousel' && this.slides().length === 0) {
-      this.loadCarouselSlides();
-    } else if (tab === 'top-products') {
-      this.loadTopConfigs();
-    } else if (tab === 'hero-text') {
-      this.loadHeroText();
-    }
+    this.loadTopConfigs();
+    this.loadHeroText();
   }
 
   // --- Carousel ---
