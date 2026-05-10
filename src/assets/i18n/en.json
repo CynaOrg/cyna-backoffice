@@ -534,7 +534,6 @@
     "INACTIVE": "Inactive",
     "DEACTIVATE": "Deactivate",
     "ACTIVATE": "Activate",
-    "CANNOT_DEACTIVATE_SELF": "You cannot deactivate your own account",
     "EDIT": "Edit",
     "DELETE": "Delete",
     "NEVER": "Never",
