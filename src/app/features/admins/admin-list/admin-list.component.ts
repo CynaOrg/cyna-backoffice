@@ -269,15 +269,13 @@ import { KpiCardComponent } from '../../../shared/components/kpi-card/kpi-card.c
                               size="20"
                             />
                           </button>
-                        }
-                        <button
-                          (click)="openEditModal(admin)"
-                          class="p-2 rounded-lg text-text-muted hover:text-primary hover:bg-primary-light transition-colors"
-                          [title]="'ADMINS.EDIT' | translate"
-                        >
-                          <ng-icon name="phosphorPencilSimple" size="18" />
-                        </button>
-                        @if (admin.id !== currentAdminId()) {
+                          <button
+                            (click)="openEditModal(admin)"
+                            class="p-2 rounded-lg text-text-muted hover:text-primary hover:bg-primary-light transition-colors"
+                            [title]="'ADMINS.EDIT' | translate"
+                          >
+                            <ng-icon name="phosphorPencilSimple" size="18" />
+                          </button>
                           <button
                             (click)="confirmDelete(admin)"
                             class="p-2 rounded-lg text-text-muted hover:text-error hover:bg-error-light transition-colors"
@@ -479,19 +477,11 @@ import { KpiCardComponent } from '../../../shared/components/kpi-card/kpi-card.c
                 </select>
               </div>
               <!-- ADM-4: expose isActive in the edit form -->
-              <label
-                class="flex items-center gap-2 text-sm text-text-primary"
-                [class.opacity-60]="editingAdmin()?.id === currentAdminId()"
-                [title]="
-                  editingAdmin()?.id === currentAdminId()
-                    ? ('ADMINS.CANNOT_DEACTIVATE_SELF' | translate)
-                    : ''
-                "
-              >
+              <label class="flex items-center gap-2 text-sm text-text-primary">
                 <input
                   type="checkbox"
                   formControlName="isActive"
-                  class="h-4 w-4 rounded border-border text-primary focus:ring-primary/30 disabled:cursor-not-allowed"
+                  class="h-4 w-4 rounded border-border text-primary focus:ring-primary/30"
                 />
                 <span>{{ 'ADMINS.ACTIVE' | translate }}</span>
               </label>
@@ -702,11 +692,6 @@ export class AdminListComponent implements OnInit {
       role: admin.role,
       isActive: admin.isActive,
     });
-    if (admin.id === this.currentAdminId()) {
-      this.editForm.controls.isActive.disable();
-    } else {
-      this.editForm.controls.isActive.enable();
-    }
     this.editError.set('');
     this.showEditModal.set(true);
   }
