@@ -1,4 +1,12 @@
-import { Component, inject, computed, signal, OnInit, OnDestroy, HostListener } from '@angular/core';
+import {
+  Component,
+  inject,
+  computed,
+  signal,
+  OnInit,
+  OnDestroy,
+  HostListener,
+} from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive, Router, NavigationEnd } from '@angular/router';
 import { filter, Subscription } from 'rxjs';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -148,7 +156,9 @@ interface NavSection {
     <!-- ========== MAIN CONTENT ========== -->
     <main class="min-h-screen bg-background lg:ml-64">
       <!-- Topbar -->
-      <div class="fixed top-0 right-0 left-0 z-20 border-b border-border-light bg-surface lg:left-64">
+      <div
+        class="fixed top-0 right-0 left-0 z-20 border-b border-border-light bg-surface lg:left-64"
+      >
         <div class="flex items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-4 lg:px-8">
           <!-- Burger (visible only on <lg) -->
           <button
@@ -246,7 +256,6 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
       '/products': 'PAGES.PRODUCTS',
       '/services': 'PAGES.SERVICES',
       '/licences': 'PAGES.LICENCES',
-      '/categories': 'PAGES.CATEGORIES',
       '/orders': 'PAGES.ORDERS',
       '/subscriptions': 'PAGES.SUBSCRIPTIONS',
       '/customers': 'PAGES.CUSTOMERS',
@@ -269,7 +278,6 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
       '/products': 'PRODUCTS.SUBTITLE',
       '/services': 'SERVICES.SUBTITLE',
       '/licences': 'LICENCES.SUBTITLE',
-      '/categories': 'CATEGORIES.SUBTITLE',
       '/orders': 'ORDERS.SUBTITLE',
       '/subscriptions': 'SUBSCRIPTIONS.SUBTITLE',
       '/customers': 'CUSTOMERS.SUBTITLE',
@@ -319,12 +327,6 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
         route: '/licences',
         labelKey: 'SIDEBAR.LICENCES',
         icon: 'M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z',
-        superAdminOnly: true,
-      },
-      {
-        route: '/categories',
-        labelKey: 'SIDEBAR.CATEGORIES',
-        icon: 'M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z',
         superAdminOnly: true,
       },
     ],
