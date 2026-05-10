@@ -1,5 +1,4 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
-import { NgClass } from '@angular/common';
 import { ActivatedRoute, RouterLink, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -22,7 +21,6 @@ interface UpdateOrderStatusBody {
   selector: 'app-order-detail',
   standalone: true,
   imports: [
-    NgClass,
     RouterLink,
     FormsModule,
     TranslateModule,
@@ -132,14 +130,7 @@ interface UpdateOrderStatusBody {
                   <option value="refunded">{{ 'ORDERS.REFUNDED' | translate }}</option>
                 </select>
 
-                <div
-                  class="space-y-3 mb-3 rounded-lg p-3 border"
-                  [ngClass]="
-                    newStatus() === 'shipped'
-                      ? 'border-primary bg-primary/5'
-                      : 'border-border-light'
-                  "
-                >
+                <div class="space-y-3 mb-3 rounded-lg p-3 border border-border-light">
                   <div>
                     <label
                       class="block text-xs font-medium text-text-secondary mb-1"
