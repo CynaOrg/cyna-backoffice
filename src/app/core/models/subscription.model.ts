@@ -1,6 +1,7 @@
 export interface Subscription {
   id: string;
   userId: string;
+  customerEmail?: string | null;
   productId: string;
   productName?: string;
   status: SubscriptionStatus;
