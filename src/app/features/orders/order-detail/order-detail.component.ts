@@ -130,13 +130,7 @@ interface UpdateOrderStatusBody {
                   <option value="refunded">{{ 'ORDERS.REFUNDED' | translate }}</option>
                 </select>
 
-                <div
-                  class="space-y-3 mb-3 rounded-lg p-3 border"
-                  [class.border-primary]="newStatus() === 'shipped'"
-                  [class.bg-primary]="newStatus() === 'shipped'"
-                  [class.bg-opacity-5]="newStatus() === 'shipped'"
-                  [class.border-border-light]="newStatus() !== 'shipped'"
-                >
+                <div class="space-y-3 mb-3 rounded-lg p-3 border border-border-light">
                   <div>
                     <label
                       class="block text-xs font-medium text-text-secondary mb-1"

@@ -103,7 +103,7 @@ interface UpdateTermsPayload {
                       {{ sub.productName || sub.productId }}
                     </td>
                     <td class="px-6 py-4 text-sm text-text-secondary">
-                      {{ sub.userId }}
+                      {{ customerLabel(sub) }}
                     </td>
                     <td class="px-6 py-4 text-sm text-text-secondary capitalize">
                       {{ sub.billingPeriod?.toLowerCase() }}
@@ -400,6 +400,10 @@ export class SubscriptionListComponent implements OnInit {
 
   formatCurrency(v: number): string {
     return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(v);
+  }
+
+  customerLabel(sub: Subscription): string {
+    return sub.customerEmail || (sub.userId ? sub.userId.slice(0, 8) : '');
   }
 
   formatDate(d: string): string {
