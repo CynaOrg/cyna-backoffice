@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ComponentRef } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
 import { ImageUploadComponent } from './image-upload.component';
-import { ProductImage } from '../../../core/models/product.model';
+import { ProductImage, UploadItem, UploadItemStatus } from '../../../core/models/product.model';
 
 const createMockImage = (overrides: Partial<ProductImage> = {}): ProductImage => ({
   id: 'img-001',
@@ -13,6 +13,20 @@ const createMockImage = (overrides: Partial<ProductImage> = {}): ProductImage =>
   displayOrder: 0,
   ...overrides,
 });
+
+const createMockItem = (overrides: Partial<UploadItem> = {}): UploadItem => {
+  const status: UploadItemStatus = overrides.status ?? 'uploaded';
+  const baseImage = createMockImage({ id: overrides.id ?? 'img-001' });
+  return {
+    id: overrides.id ?? 'img-001',
+    status,
+    previewUrl: status === 'uploaded' ? baseImage.imageUrl : 'blob:http://localhost/abc',
+    isPrimary: false,
+    order: 0,
+    productImage: status === 'uploaded' ? baseImage : undefined,
+    ...overrides,
+  };
+};
 
 describe('ImageUploadComponent', () => {
   let component: ImageUploadComponent;
@@ -29,65 +43,47 @@ describe('ImageUploadComponent', () => {
     componentRef = fixture.componentRef;
   });
 
-  it('should render empty state with drop zone when no images', () => {
-    // Act
+  it('should render empty state with drop zone when no items', () => {
     fixture.detectChanges();
 
-    // Assert
     const el = fixture.nativeElement as HTMLElement;
     const dropZone = el.querySelector('[class*="border-dashed"]');
     expect(dropZone).toBeTruthy();
-    const grid = el.querySelector('[class*="grid"]');
+    const grid = el.querySelector('[class*="grid-cols-2"]');
     expect(grid).toBeFalsy();
   });
 
-  it('should render image grid when images are provided', () => {
-    // Arrange
-    const images = [
-      createMockImage({ id: 'img-001' }),
-      createMockImage({ id: 'img-002', displayOrder: 1 }),
-    ];
-    componentRef.setInput('images', images);
+  it('should render image grid when items are provided', () => {
+    const items = [createMockItem({ id: 'item-1' }), createMockItem({ id: 'item-2', order: 1 })];
+    componentRef.setInput('items', items);
 
-    // Act
     fixture.detectChanges();
 
-    // Assert
     const el = fixture.nativeElement as HTMLElement;
-    const grid = el.querySelector('[class*="grid"]');
-    expect(grid).toBeTruthy();
     const imgElements = el.querySelectorAll('img');
     expect(imgElements.length).toBe(2);
   });
 
   it('should emit filesSelected when files are selected via input', () => {
-    // Arrange
     fixture.detectChanges();
     const emitSpy = vi.spyOn(component.filesSelected, 'emit');
     const file = new File(['data'], 'test.jpg', { type: 'image/jpeg' });
 
-    // Act - call onFileSelected directly with a mock event
     const mockInput = { files: [file] as unknown as FileList, value: '' };
     component.onFileSelected({ target: mockInput } as unknown as Event);
 
-    // Assert
     expect(emitSpy).toHaveBeenCalledTimes(1);
     const emittedFiles = emitSpy.mock.calls[0][0];
     expect(emittedFiles.length).toBe(1);
     expect(emittedFiles[0].name).toBe('test.jpg');
   });
 
-  it('should emit imageReordered on drag and drop between images', () => {
-    // Arrange
-    const images = [
-      createMockImage({ id: 'img-001', displayOrder: 0 }),
-      createMockImage({ id: 'img-002', displayOrder: 1 }),
-    ];
-    componentRef.setInput('images', images);
+  it('should emit itemReordered on drag and drop between items', () => {
+    const items = [createMockItem({ id: 'item-1' }), createMockItem({ id: 'item-2', order: 1 })];
+    componentRef.setInput('items', items);
     fixture.detectChanges();
-    const emitSpy = vi.spyOn(component.imageReordered, 'emit');
+    const emitSpy = vi.spyOn(component.itemReordered, 'emit');
 
-    // Act - call drag handlers directly (DragEvent not available in jsdom)
     const mockDragEvent = {
       preventDefault: vi.fn(),
       stopPropagation: vi.fn(),
@@ -96,76 +92,120 @@ describe('ImageUploadComponent', () => {
     component.onImageDragStart(mockDragEvent, 0);
     component.onImageDrop(mockDragEvent, 1);
 
-    // Assert
     expect(emitSpy).toHaveBeenCalledWith({ fromIndex: 0, toIndex: 1 });
   });
 
-  it('should emit imageDeleted with correct ID when delete is clicked', () => {
-    // Arrange
-    const images = [createMockImage({ id: 'img-001' })];
-    componentRef.setInput('images', images);
+  it('should not start drag for an uploading item', () => {
+    const items = [createMockItem({ id: 'item-1', status: 'uploading', progress: 42 })];
+    componentRef.setInput('items', items);
     fixture.detectChanges();
-    const emitSpy = vi.spyOn(component.imageDeleted, 'emit');
+    const emitSpy = vi.spyOn(component.itemReordered, 'emit');
 
-    // Act
+    const preventDefault = vi.fn();
+    const mockDragEvent = {
+      preventDefault,
+      stopPropagation: vi.fn(),
+      dataTransfer: { effectAllowed: '', dropEffect: '' },
+    } as unknown as DragEvent;
+    component.onImageDragStart(mockDragEvent, 0);
+    component.onImageDrop(mockDragEvent, 0);
+
+    expect(preventDefault).toHaveBeenCalled();
+    expect(emitSpy).not.toHaveBeenCalled();
+  });
+
+  it('should emit itemDeleted with correct id when delete is clicked', () => {
+    const items = [createMockItem({ id: 'item-1' })];
+    componentRef.setInput('items', items);
+    fixture.detectChanges();
+    const emitSpy = vi.spyOn(component.itemDeleted, 'emit');
+
     const mockEvent = new Event('click');
     vi.spyOn(mockEvent, 'stopPropagation');
-    component.onDelete(mockEvent, 'img-001');
+    component.onDelete(mockEvent, 'item-1');
 
-    // Assert
-    expect(emitSpy).toHaveBeenCalledWith('img-001');
+    expect(emitSpy).toHaveBeenCalledWith('item-1');
     expect(mockEvent.stopPropagation).toHaveBeenCalled();
   });
 
-  it('should emit imagePrimaryChanged when set primary is clicked', () => {
-    // Arrange
-    const images = [createMockImage({ id: 'img-001', isPrimary: false })];
-    componentRef.setInput('images', images);
+  it('should emit itemPrimaryChanged when set primary is clicked', () => {
+    const items = [createMockItem({ id: 'item-1', isPrimary: false })];
+    componentRef.setInput('items', items);
     fixture.detectChanges();
-    const emitSpy = vi.spyOn(component.imagePrimaryChanged, 'emit');
+    const emitSpy = vi.spyOn(component.itemPrimaryChanged, 'emit');
 
-    // Act
     const mockEvent = new Event('click');
-    component.onSetPrimary(mockEvent, 'img-001');
+    component.onSetPrimary(mockEvent, 'item-1');
 
-    // Assert
-    expect(emitSpy).toHaveBeenCalledWith('img-001');
+    expect(emitSpy).toHaveBeenCalledWith('item-1');
+  });
+
+  it('should emit itemRetried when retry is clicked on an errored item', () => {
+    const items = [
+      createMockItem({ id: 'item-1', status: 'error', errorMessage: 'Network error' }),
+    ];
+    componentRef.setInput('items', items);
+    fixture.detectChanges();
+    const emitSpy = vi.spyOn(component.itemRetried, 'emit');
+
+    const mockEvent = new Event('click');
+    vi.spyOn(mockEvent, 'stopPropagation');
+    component.onRetry(mockEvent, 'item-1');
+
+    expect(emitSpy).toHaveBeenCalledWith('item-1');
+    expect(mockEvent.stopPropagation).toHaveBeenCalled();
   });
 
   it('should hide drop zone when max images reached', () => {
-    // Arrange
-    const images = Array.from({ length: 10 }, (_, i) =>
-      createMockImage({ id: `img-${i}`, displayOrder: i }),
+    const items = Array.from({ length: 10 }, (_, i) =>
+      createMockItem({ id: `item-${i}`, order: i }),
     );
-    componentRef.setInput('images', images);
+    componentRef.setInput('items', items);
     componentRef.setInput('maxImages', 10);
 
-    // Act
     fixture.detectChanges();
 
-    // Assert
+    const el = fixture.nativeElement as HTMLElement;
+    const dropZone = el.querySelector('[class*="border-dashed"]');
+    expect(dropZone).toBeFalsy();
+  });
+
+  it('should hide drop zone while any item is uploading', () => {
+    const items = [createMockItem({ id: 'item-1', status: 'uploading', progress: 30 })];
+    componentRef.setInput('items', items);
+    componentRef.setInput('maxImages', 10);
+
+    fixture.detectChanges();
+
     const el = fixture.nativeElement as HTMLElement;
     const dropZone = el.querySelector('[class*="border-dashed"]');
     expect(dropZone).toBeFalsy();
   });
 
   it('should display counter with correct format "X / 10"', () => {
-    // Arrange
-    const images = [
-      createMockImage({ id: 'img-001' }),
-      createMockImage({ id: 'img-002' }),
-      createMockImage({ id: 'img-003' }),
+    const items = [
+      createMockItem({ id: 'item-1' }),
+      createMockItem({ id: 'item-2' }),
+      createMockItem({ id: 'item-3' }),
     ];
-    componentRef.setInput('images', images);
+    componentRef.setInput('items', items);
     componentRef.setInput('maxImages', 10);
 
-    // Act
     fixture.detectChanges();
 
-    // Assert
     const el = fixture.nativeElement as HTMLElement;
     const counter = el.querySelector('[class*="text-xs"]');
     expect(counter?.textContent?.trim()).toContain('3');
     expect(counter?.textContent?.trim()).toContain('10');
+  });
+
+  it('should render per-tile progress for uploading items', () => {
+    const items = [createMockItem({ id: 'item-1', status: 'uploading', progress: 73 })];
+    componentRef.setInput('items', items);
+
+    fixture.detectChanges();
+
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.textContent).toContain('73%');
   });
 });

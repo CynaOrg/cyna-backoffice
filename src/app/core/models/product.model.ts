@@ -41,6 +41,20 @@ export interface ProductImage {
   mimeType?: string;
 }
 
+export type UploadItemStatus = 'pending' | 'uploading' | 'uploaded' | 'error';
+
+export interface UploadItem {
+  id: string;
+  status: UploadItemStatus;
+  previewUrl: string;
+  isPrimary: boolean;
+  order: number;
+  file?: File;
+  productImage?: ProductImage;
+  errorMessage?: string;
+  progress?: number;
+}
+
 export interface ProductCharacteristic {
   id: string;
   keyFr: string;
