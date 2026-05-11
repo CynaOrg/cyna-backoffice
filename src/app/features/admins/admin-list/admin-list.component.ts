@@ -249,33 +249,33 @@ import { KpiCardComponent } from '../../../shared/components/kpi-card/kpi-card.c
                     </td>
                     <td class="px-6 py-4">
                       <div class="flex items-center justify-end gap-1">
-                        <button
-                          (click)="toggleActive(admin)"
-                          class="p-2 rounded-lg transition-colors"
-                          [class]="
-                            admin.isActive
-                              ? 'text-success hover:text-red-500 hover:bg-red-50'
-                              : 'text-text-muted hover:text-success hover:bg-success-light'
-                          "
-                          [title]="
-                            admin.isActive
-                              ? ('ADMINS.DEACTIVATE' | translate)
-                              : ('ADMINS.ACTIVATE' | translate)
-                          "
-                        >
-                          <ng-icon
-                            [name]="admin.isActive ? 'phosphorToggleRight' : 'phosphorToggleLeft'"
-                            size="20"
-                          />
-                        </button>
-                        <button
-                          (click)="openEditModal(admin)"
-                          class="p-2 rounded-lg text-text-muted hover:text-primary hover:bg-primary-light transition-colors"
-                          [title]="'ADMINS.EDIT' | translate"
-                        >
-                          <ng-icon name="phosphorPencilSimple" size="18" />
-                        </button>
                         @if (admin.id !== currentAdminId()) {
+                          <button
+                            (click)="toggleActive(admin)"
+                            class="p-2 rounded-lg transition-colors"
+                            [class]="
+                              admin.isActive
+                                ? 'text-success hover:text-red-500 hover:bg-red-50'
+                                : 'text-text-muted hover:text-success hover:bg-success-light'
+                            "
+                            [title]="
+                              admin.isActive
+                                ? ('ADMINS.DEACTIVATE' | translate)
+                                : ('ADMINS.ACTIVATE' | translate)
+                            "
+                          >
+                            <ng-icon
+                              [name]="admin.isActive ? 'phosphorToggleRight' : 'phosphorToggleLeft'"
+                              size="20"
+                            />
+                          </button>
+                          <button
+                            (click)="openEditModal(admin)"
+                            class="p-2 rounded-lg text-text-muted hover:text-primary hover:bg-primary-light transition-colors"
+                            [title]="'ADMINS.EDIT' | translate"
+                          >
+                            <ng-icon name="phosphorPencilSimple" size="18" />
+                          </button>
                           <button
                             (click)="confirmDelete(admin)"
                             class="p-2 rounded-lg text-text-muted hover:text-error hover:bg-error-light transition-colors"
@@ -383,7 +383,9 @@ import { KpiCardComponent } from '../../../shared/components/kpi-card/kpi-card.c
                 </select>
               </div>
               @if (createError()) {
-                <p class="text-sm text-error bg-error-light border border-error/20 rounded-lg px-3 py-2">
+                <p
+                  class="text-sm text-error bg-error-light border border-error/20 rounded-lg px-3 py-2"
+                >
                   {{ createError() }}
                 </p>
               }
@@ -484,7 +486,9 @@ import { KpiCardComponent } from '../../../shared/components/kpi-card/kpi-card.c
                 <span>{{ 'ADMINS.ACTIVE' | translate }}</span>
               </label>
               @if (editError()) {
-                <p class="text-sm text-error bg-error-light border border-error/20 rounded-lg px-3 py-2">
+                <p
+                  class="text-sm text-error bg-error-light border border-error/20 rounded-lg px-3 py-2"
+                >
                   {{ editError() }}
                 </p>
               }
@@ -709,8 +713,7 @@ export class AdminListComponent implements OnInit {
       error: (err) => {
         // ADM-2: keep the modal open and show the actual server reason (e.g.
         // 409 "email already taken") inline rather than only as a toast.
-        const message =
-          err?.error?.message || this.translate.instant('ADMINS.CREATE_FAILED');
+        const message = err?.error?.message || this.translate.instant('ADMINS.CREATE_FAILED');
         this.createError.set(message);
         this.saving.set(false);
       },
@@ -733,8 +736,7 @@ export class AdminListComponent implements OnInit {
         this.loadAdmins();
       },
       error: (err) => {
-        const message =
-          err?.error?.message || this.translate.instant('ADMINS.UPDATE_FAILED');
+        const message = err?.error?.message || this.translate.instant('ADMINS.UPDATE_FAILED');
         this.editError.set(message);
         this.saving.set(false);
       },
@@ -742,6 +744,7 @@ export class AdminListComponent implements OnInit {
   }
 
   toggleActive(admin: Admin) {
+    if (admin.id === this.currentAdminId()) return;
     const dto: UpdateAdminDto = { isActive: !admin.isActive };
     this.adminService.updateAdmin(admin.id, dto).subscribe({
       next: () => {
@@ -781,8 +784,7 @@ export class AdminListComponent implements OnInit {
       error: (err) => {
         // ADM-2: keep the modal open on 400 (e.g. "cannot delete self") /
         // 409 so the user actually sees what went wrong.
-        const message =
-          err?.error?.message || this.translate.instant('ADMINS.DELETE_FAILED');
+        const message = err?.error?.message || this.translate.instant('ADMINS.DELETE_FAILED');
         this.deleteError.set(message);
         this.notifications.error(message);
       },
