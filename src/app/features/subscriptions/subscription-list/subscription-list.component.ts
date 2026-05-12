@@ -34,7 +34,6 @@ type SubscriptionAction = 'cancel' | 'reactivate' | 'cancel_at_end' | 'resume_pe
           <option value="past_due">{{ 'SUBSCRIPTIONS.PAST_DUE' | translate }}</option>
           <option value="cancelled">{{ 'SUBSCRIPTIONS.CANCELLED' | translate }}</option>
           <option value="unpaid">{{ 'SUBSCRIPTIONS.UNPAID' | translate }}</option>
-          <option value="paused">{{ 'SUBSCRIPTIONS.PAUSED' | translate }}</option>
         </select>
       </div>
 
