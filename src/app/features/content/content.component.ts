@@ -147,7 +147,9 @@ const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
                   </div>
                 </div>
               } @empty {
-                <div class="rounded-lg border border-dashed border-border-light p-8 text-center mt-4">
+                <div
+                  class="rounded-lg border border-dashed border-border-light p-8 text-center mt-4"
+                >
                   <p class="text-sm text-text-muted">{{ 'CONTENT.NO_SLIDES' | translate }}</p>
                 </div>
               }
@@ -285,6 +287,26 @@ const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
                   <button
                     type="button"
                     (click)="openPicker('top_products')"
+                    class="bg-primary text-white hover:bg-primary-hover rounded-lg px-4 py-2 text-sm font-medium whitespace-nowrap"
+                  >
+                    {{ 'CONTENT.CONFIGURE' | translate }}
+                  </button>
+                </div>
+              </div>
+
+              <div class="bg-white rounded-lg border border-border-light p-4">
+                <div class="flex items-center justify-between gap-4">
+                  <div>
+                    <h4 class="text-sm font-semibold text-text-primary">
+                      {{ 'CONTENT.TOP_LICENSES' | translate }}
+                    </h4>
+                    <p class="text-xs text-text-muted mt-1">
+                      {{ 'CONTENT.SELECTED_COUNT' | translate: { count: topLicensesIds().length } }}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    (click)="openPicker('top_licenses')"
                     class="bg-primary text-white hover:bg-primary-hover rounded-lg px-4 py-2 text-sm font-medium whitespace-nowrap"
                   >
                     {{ 'CONTENT.CONFIGURE' | translate }}
@@ -515,12 +537,13 @@ export class ContentComponent implements OnInit {
   // Top Products state
   topServicesIds = signal<string[]>([]);
   topProductsIds = signal<string[]>([]);
+  topLicensesIds = signal<string[]>([]);
   loadingTopConfig = signal(false);
   savingTopConfig = signal(false);
 
   // Picker state
   showPicker = signal(false);
-  pickerTarget = signal<'top_services' | 'top_products'>('top_services');
+  pickerTarget = signal<'top_services' | 'top_products' | 'top_licenses'>('top_services');
   pickerProductType = signal<'saas' | 'physical' | 'license'>('saas');
   pickerSelectedIds = signal<string[]>([]);
   pickerTitleKey = signal<string>('');
@@ -686,7 +709,7 @@ export class ContentComponent implements OnInit {
     let loaded = 0;
     const checkDone = (): void => {
       loaded++;
-      if (loaded === 2) this.loadingTopConfig.set(false);
+      if (loaded === 3) this.loadingTopConfig.set(false);
     };
 
     this.contentService.getTopConfig('top_services').subscribe({
@@ -708,18 +731,32 @@ export class ContentComponent implements OnInit {
         checkDone();
       },
     });
+
+    this.contentService.getTopConfig('top_licenses').subscribe({
+      next: (config) => {
+        this.topLicensesIds.set(config.productIds ?? []);
+        checkDone();
+      },
+      error: () => {
+        checkDone();
+      },
+    });
   }
 
-  openPicker(type: 'top_services' | 'top_products'): void {
+  openPicker(type: 'top_services' | 'top_products' | 'top_licenses'): void {
     this.pickerTarget.set(type);
     if (type === 'top_services') {
       this.pickerProductType.set('saas');
       this.pickerSelectedIds.set([...this.topServicesIds()]);
       this.pickerTitleKey.set('CONTENT.PICK_SERVICES');
-    } else {
+    } else if (type === 'top_products') {
       this.pickerProductType.set('physical');
       this.pickerSelectedIds.set([...this.topProductsIds()]);
       this.pickerTitleKey.set('CONTENT.PICK_PRODUCTS');
+    } else {
+      this.pickerProductType.set('license');
+      this.pickerSelectedIds.set([...this.topLicensesIds()]);
+      this.pickerTitleKey.set('CONTENT.PICK_LICENSES');
     }
     this.showPicker.set(true);
   }
@@ -733,13 +770,18 @@ export class ContentComponent implements OnInit {
       next: () => {
         if (type === 'top_services') {
           this.topServicesIds.set(productIds);
-        } else {
+        } else if (type === 'top_products') {
           this.topProductsIds.set(productIds);
+        } else {
+          this.topLicensesIds.set(productIds);
         }
-        const label =
+        const labelKey =
           type === 'top_services'
-            ? this.translate.instant('CONTENT.TOP_SERVICES')
-            : this.translate.instant('CONTENT.TOP_PRODUCTS');
+            ? 'CONTENT.TOP_SERVICES'
+            : type === 'top_products'
+              ? 'CONTENT.TOP_PRODUCTS'
+              : 'CONTENT.TOP_LICENSES';
+        const label = this.translate.instant(labelKey);
         this.notifications.success(this.translate.instant('CONTENT.CONFIG_UPDATED', { label }));
         this.savingTopConfig.set(false);
       },
