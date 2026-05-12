@@ -344,13 +344,15 @@ export class OrderDetailComponent implements OnInit {
     if (!o) return;
     this.updating.set(true);
 
-    const body: UpdateOrderStatusBody = { status: this.newStatus() };
-    const trimmedTrackingNumber = this.trackingNumber().trim();
-    const trimmedTrackingUrl = this.trackingUrl().trim();
-    const trimmedNotes = this.notes().trim();
-    if (trimmedTrackingNumber) body.trackingNumber = trimmedTrackingNumber;
-    if (trimmedTrackingUrl) body.trackingUrl = trimmedTrackingUrl;
-    if (trimmedNotes) body.notes = trimmedNotes;
+    // Always send tracking + notes (empty string when cleared) so the API
+    // receives the intent to clear; an omitted field would be ignored
+    // server-side and the previous value would stick.
+    const body: UpdateOrderStatusBody = {
+      status: this.newStatus(),
+      trackingNumber: this.trackingNumber().trim(),
+      trackingUrl: this.trackingUrl().trim(),
+      notes: this.notes().trim(),
+    };
 
     this.api.patch<UpdateOrderStatusBody, Order>(`admin/orders/${o.id}/status`, body).subscribe({
       next: (updated) => {
