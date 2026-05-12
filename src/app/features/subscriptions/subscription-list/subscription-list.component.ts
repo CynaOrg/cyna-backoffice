@@ -217,21 +217,6 @@ interface UpdateTermsPayload {
                 class="w-full px-3 py-2 rounded-lg border border-border bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
               />
             </div>
-
-            <div>
-              <button
-                type="button"
-                (click)="endTrialNow()"
-                class="text-sm text-primary hover:text-primary-hover underline"
-              >
-                {{ 'SUBSCRIPTIONS.END_TRIAL_NOW' | translate }}
-              </button>
-              @if (endTrialNowFlag()) {
-                <p class="mt-1 text-xs text-text-muted">
-                  {{ 'SUBSCRIPTIONS.END_TRIAL_NOW' | translate }}
-                </p>
-              }
-            </div>
           </div>
 
           <div class="mt-6 flex justify-end gap-3">
@@ -269,7 +254,6 @@ export class SubscriptionListComponent implements OnInit {
 
   showTermsModal = signal<boolean>(false);
   savingTerms = signal<boolean>(false);
-  endTrialNowFlag = signal<boolean>(false);
   termsForm: TermsFormData = { cancelAtPeriodEnd: false, trialEndDate: '' };
   private initialCancelAtPeriodEnd = false;
 
@@ -340,18 +324,11 @@ export class SubscriptionListComponent implements OnInit {
       cancelAtPeriodEnd: this.initialCancelAtPeriodEnd,
       trialEndDate: '',
     };
-    this.endTrialNowFlag.set(false);
     this.showTermsModal.set(true);
   }
 
   closeTermsModal(): void {
     this.showTermsModal.set(false);
-    this.endTrialNowFlag.set(false);
-  }
-
-  endTrialNow(): void {
-    this.endTrialNowFlag.set(true);
-    this.termsForm.trialEndDate = '';
   }
 
   saveTerms(): void {
@@ -364,9 +341,7 @@ export class SubscriptionListComponent implements OnInit {
       payload.cancelAtPeriodEnd = this.termsForm.cancelAtPeriodEnd;
     }
 
-    if (this.endTrialNowFlag()) {
-      payload.trialEnd = 'now';
-    } else if (this.termsForm.trialEndDate) {
+    if (this.termsForm.trialEndDate) {
       const ts = Math.floor(new Date(this.termsForm.trialEndDate).getTime() / 1000);
       if (!Number.isNaN(ts)) {
         payload.trialEnd = ts;
