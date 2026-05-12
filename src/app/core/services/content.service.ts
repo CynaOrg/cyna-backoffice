@@ -85,21 +85,31 @@ export class ContentService {
   }
 
   // Top Products
-  getTopConfig(type: 'top_services' | 'top_products'): Observable<TopProductConfig> {
-    return this.api.get<TopProductConfig>(
-      `${this.basePath}/${type === 'top_services' ? 'top-services' : 'top-products'}`,
-    );
+  getTopConfig(
+    type: 'top_services' | 'top_products' | 'top_licenses',
+  ): Observable<TopProductConfig> {
+    return this.api.get<TopProductConfig>(`${this.basePath}/${this.topEndpoint(type)}`);
   }
 
   updateTopConfig(
-    type: 'top_services' | 'top_products',
+    type: 'top_services' | 'top_products' | 'top_licenses',
     dto: UpdateTopConfigDto,
   ): Observable<TopProductConfig> {
-    const endpoint = type === 'top_services' ? 'top-services' : 'top-products';
     return this.api.patch<UpdateTopConfigDto, TopProductConfig>(
-      `${this.basePath}/${endpoint}`,
+      `${this.basePath}/${this.topEndpoint(type)}`,
       dto,
     );
+  }
+
+  private topEndpoint(type: 'top_services' | 'top_products' | 'top_licenses'): string {
+    switch (type) {
+      case 'top_services':
+        return 'top-services';
+      case 'top_products':
+        return 'top-products';
+      case 'top_licenses':
+        return 'top-licenses';
+    }
   }
 
   // Contact Messages
