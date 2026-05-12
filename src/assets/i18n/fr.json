@@ -290,13 +290,16 @@
     "REACTIVATED_SUCCESS": "Abonnement réactivé",
     "LOAD_FAILED": "Échec du chargement des abonnements",
     "UPDATE_FAILED": "Échec de la mise à jour de l'abonnement",
-    "EDIT_TERMS": "Modifier les termes",
-    "CANCEL_AT_PERIOD_END": "Annuler à la fin de la période",
-    "TRIAL_END": "Fin de l'essai",
-    "END_TRIAL_NOW": "Terminer l'essai maintenant",
-    "TERMS_UPDATED": "Termes mis à jour",
-    "TERMS_UPDATE_FAILED": "Échec de la mise à jour des termes",
-    "SAVE": "Enregistrer"
+    "CANCEL_AT_END": "Annuler en fin de période",
+    "CANCEL_AT_END_TITLE": "Annuler en fin de période",
+    "CANCEL_AT_END_CONFIRM": "L'abonnement restera actif jusqu'à la fin de la période en cours, puis sera annulé automatiquement. Confirmer ?",
+    "CANCEL_AT_END_BTN": "Annuler en fin de période",
+    "CANCEL_AT_END_SUCCESS": "Annulation programmée pour la fin de période",
+    "RESUME_PERIOD": "Reprendre l'abonnement",
+    "RESUME_PERIOD_TITLE": "Reprendre l'abonnement",
+    "RESUME_PERIOD_CONFIRM": "L'annulation programmée sera levée et l'abonnement continuera normalement. Confirmer ?",
+    "RESUME_PERIOD_BTN": "Reprendre",
+    "RESUME_PERIOD_SUCCESS": "Abonnement repris"
   },
   "CUSTOMERS": {
     "TITLE": "Clients",

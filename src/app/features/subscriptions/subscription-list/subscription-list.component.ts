@@ -9,15 +9,7 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge/st
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/confirm-modal.component';
 
-interface TermsFormData {
-  cancelAtPeriodEnd: boolean;
-  trialEndDate: string;
-}
-
-interface UpdateTermsPayload {
-  cancelAtPeriodEnd?: boolean;
-  trialEnd?: 'now' | number;
-}
+type SubscriptionAction = 'cancel' | 'reactivate' | 'cancel_at_end' | 'resume_period';
 
 @Component({
   selector: 'app-subscription-list',
@@ -120,17 +112,26 @@ interface UpdateTermsPayload {
                     @if (auth.isSuperAdmin()) {
                       <td class="px-6 py-4 text-right">
                         <div class="flex items-center justify-end gap-3">
-                          <button
-                            (click)="openTermsModal(sub)"
-                            class="text-sm text-primary hover:text-primary-hover"
-                          >
-                            {{ 'SUBSCRIPTIONS.EDIT_TERMS' | translate }}
-                          </button>
                           @if (
                             sub.status === 'active' ||
                             sub.status === 'past_due' ||
                             sub.status === 'unpaid'
                           ) {
+                            @if (sub.cancelAtPeriodEnd) {
+                              <button
+                                (click)="confirmAction(sub, 'resume_period')"
+                                class="text-sm text-primary hover:text-primary-hover"
+                              >
+                                {{ 'SUBSCRIPTIONS.RESUME_PERIOD' | translate }}
+                              </button>
+                            } @else {
+                              <button
+                                (click)="confirmAction(sub, 'cancel_at_end')"
+                                class="text-sm text-warning hover:text-orange-700"
+                              >
+                                {{ 'SUBSCRIPTIONS.CANCEL_AT_END' | translate }}
+                              </button>
+                            }
                             <!--
                               SUB-4: past_due / unpaid subscriptions can also be
                               cancelled by the admin (e.g. if Stripe collection
@@ -172,71 +173,13 @@ interface UpdateTermsPayload {
 
     <app-confirm-modal
       [open]="showModal()"
-      [title]="
-        modalAction() === 'cancel'
-          ? ('SUBSCRIPTIONS.CANCEL_TITLE' | translate)
-          : ('SUBSCRIPTIONS.REACTIVATE_TITLE' | translate)
-      "
-      [message]="
-        modalAction() === 'cancel'
-          ? ('SUBSCRIPTIONS.CANCEL_CONFIRM' | translate)
-          : ('SUBSCRIPTIONS.REACTIVATE_CONFIRM' | translate)
-      "
-      [confirmLabel]="
-        modalAction() === 'cancel'
-          ? ('SUBSCRIPTIONS.CANCEL_BTN' | translate)
-          : ('SUBSCRIPTIONS.REACTIVATE_BTN' | translate)
-      "
-      [variant]="modalAction() === 'cancel' ? 'danger' : 'primary'"
+      [title]="modalTitle()"
+      [message]="modalMessage()"
+      [confirmLabel]="modalConfirmLabel()"
+      [variant]="modalVariant()"
       (confirm)="executeAction()"
       (cancel)="showModal.set(false)"
     />
-
-    @if (showTermsModal()) {
-      <div class="fixed inset-0 z-50 flex items-center justify-center">
-        <div class="absolute inset-0 bg-black/40" (click)="closeTermsModal()"></div>
-        <div
-          class="relative bg-white rounded-xl shadow-xl p-6 max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto"
-        >
-          <h3 class="text-lg font-semibold mb-4">
-            {{ 'SUBSCRIPTIONS.EDIT_TERMS' | translate }}
-          </h3>
-          <div class="space-y-4">
-            <label class="flex items-center gap-2 text-sm">
-              <input type="checkbox" [(ngModel)]="termsForm.cancelAtPeriodEnd" class="rounded" />
-              {{ 'SUBSCRIPTIONS.CANCEL_AT_PERIOD_END' | translate }}
-            </label>
-
-            <div>
-              <label class="block text-sm font-medium text-text-secondary mb-1">{{
-                'SUBSCRIPTIONS.TRIAL_END' | translate
-              }}</label>
-              <input
-                type="date"
-                [(ngModel)]="termsForm.trialEndDate"
-                class="w-full px-3 py-2 rounded-lg border border-border bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-              />
-            </div>
-          </div>
-
-          <div class="mt-6 flex justify-end gap-3">
-            <button
-              (click)="closeTermsModal()"
-              class="px-4 py-2 text-sm border border-border rounded-lg hover:bg-gray-50"
-            >
-              {{ 'SUBSCRIPTIONS.CANCEL' | translate }}
-            </button>
-            <button
-              (click)="saveTerms()"
-              [disabled]="savingTerms()"
-              class="px-4 py-2 bg-primary text-white text-sm font-medium rounded-lg hover:bg-primary-hover disabled:opacity-60"
-            >
-              {{ 'SUBSCRIPTIONS.SAVE' | translate }}
-            </button>
-          </div>
-        </div>
-      </div>
-    }
   `,
 })
 export class SubscriptionListComponent implements OnInit {
@@ -249,13 +192,8 @@ export class SubscriptionListComponent implements OnInit {
   loading = signal<boolean>(true);
   statusFilter = '';
   showModal = signal<boolean>(false);
-  modalAction = signal<'cancel' | 'reactivate'>('cancel');
+  modalAction = signal<SubscriptionAction>('cancel');
   selectedSub = signal<Subscription | null>(null);
-
-  showTermsModal = signal<boolean>(false);
-  savingTerms = signal<boolean>(false);
-  termsForm: TermsFormData = { cancelAtPeriodEnd: false, trialEndDate: '' };
-  private initialCancelAtPeriodEnd = false;
 
   ngOnInit(): void {
     this.loadSubscriptions();
@@ -278,32 +216,80 @@ export class SubscriptionListComponent implements OnInit {
     });
   }
 
-  confirmAction(sub: Subscription, action: 'cancel' | 'reactivate'): void {
+  confirmAction(sub: Subscription, action: SubscriptionAction): void {
     this.selectedSub.set(sub);
     this.modalAction.set(action);
     this.showModal.set(true);
   }
 
+  modalTitle(): string {
+    return this.translate.instant(`SUBSCRIPTIONS.${this.actionKey()}_TITLE`);
+  }
+
+  modalMessage(): string {
+    return this.translate.instant(`SUBSCRIPTIONS.${this.actionKey()}_CONFIRM`);
+  }
+
+  modalConfirmLabel(): string {
+    return this.translate.instant(`SUBSCRIPTIONS.${this.actionKey()}_BTN`);
+  }
+
+  modalVariant(): 'danger' | 'primary' {
+    return this.modalAction() === 'cancel' ? 'danger' : 'primary';
+  }
+
+  private actionKey(): string {
+    switch (this.modalAction()) {
+      case 'cancel':
+        return 'CANCEL';
+      case 'reactivate':
+        return 'REACTIVATE';
+      case 'cancel_at_end':
+        return 'CANCEL_AT_END';
+      case 'resume_period':
+        return 'RESUME_PERIOD';
+    }
+  }
+
   executeAction(): void {
     const sub = this.selectedSub();
     if (!sub) return;
+    const action = this.modalAction();
+
+    if (action === 'cancel_at_end' || action === 'resume_period') {
+      this.api
+        .patch<
+          { cancelAtPeriodEnd: boolean },
+          Subscription
+        >(`admin/payments/subscriptions/${sub.id}/terms`, { cancelAtPeriodEnd: action === 'cancel_at_end' })
+        .subscribe({
+          next: () => {
+            this.notifications.success(
+              this.translate.instant(`SUBSCRIPTIONS.${this.actionKey()}_SUCCESS`),
+            );
+            this.loadSubscriptions();
+            this.showModal.set(false);
+          },
+          error: () => {
+            this.notifications.error(this.translate.instant('SUBSCRIPTIONS.UPDATE_FAILED'));
+            this.showModal.set(false);
+          },
+        });
+      return;
+    }
+
     // SUB-7: today the backend /status endpoint only supports immediate
     // cancellation (cancelAtPeriodEnd: false hardcoded server-side).
-    // The cancel-at-period-end variant lives on the /terms endpoint
-    // exposed via openTermsModal() above. When the backend gains a
-    // proper "cancel at period end" flag on /status, surface a radio
-    // choice in this modal and forward it here.
-    // TODO(SUB-7): once backend accepts cancelAtPeriodEnd on /status,
-    // pass it from a cancel-mode picker rendered in the confirm modal.
+    // The cancel-at-period-end variant lives on the /terms endpoint above.
     this.api
       .patch<
         { action: 'cancel' | 'reactivate' },
         Subscription
-      >(`admin/payments/subscriptions/${sub.id}/status`, { action: this.modalAction() })
+      >(`admin/payments/subscriptions/${sub.id}/status`, { action })
       .subscribe({
         next: () => {
           this.notifications.success(
-            this.modalAction() === 'cancel'
+            action === 'cancel'
               ? this.translate.instant('SUBSCRIPTIONS.CANCELLED_SUCCESS')
               : this.translate.instant('SUBSCRIPTIONS.REACTIVATED_SUCCESS'),
           );
@@ -313,62 +299,6 @@ export class SubscriptionListComponent implements OnInit {
         error: () => {
           this.notifications.error(this.translate.instant('SUBSCRIPTIONS.UPDATE_FAILED'));
           this.showModal.set(false);
-        },
-      });
-  }
-
-  openTermsModal(sub: Subscription): void {
-    this.selectedSub.set(sub);
-    this.initialCancelAtPeriodEnd = Boolean(sub.cancelAtPeriodEnd);
-    this.termsForm = {
-      cancelAtPeriodEnd: this.initialCancelAtPeriodEnd,
-      trialEndDate: '',
-    };
-    this.showTermsModal.set(true);
-  }
-
-  closeTermsModal(): void {
-    this.showTermsModal.set(false);
-  }
-
-  saveTerms(): void {
-    const sub = this.selectedSub();
-    if (!sub) return;
-
-    const payload: UpdateTermsPayload = {};
-
-    if (this.termsForm.cancelAtPeriodEnd !== this.initialCancelAtPeriodEnd) {
-      payload.cancelAtPeriodEnd = this.termsForm.cancelAtPeriodEnd;
-    }
-
-    if (this.termsForm.trialEndDate) {
-      const ts = Math.floor(new Date(this.termsForm.trialEndDate).getTime() / 1000);
-      if (!Number.isNaN(ts)) {
-        payload.trialEnd = ts;
-      }
-    }
-
-    if (Object.keys(payload).length === 0) {
-      this.notifications.error(this.translate.instant('SUBSCRIPTIONS.TERMS_UPDATE_FAILED'));
-      return;
-    }
-
-    this.savingTerms.set(true);
-    this.api
-      .patch<
-        UpdateTermsPayload,
-        Subscription
-      >(`admin/payments/subscriptions/${sub.id}/terms`, payload)
-      .subscribe({
-        next: () => {
-          this.notifications.success(this.translate.instant('SUBSCRIPTIONS.TERMS_UPDATED'));
-          this.savingTerms.set(false);
-          this.closeTermsModal();
-          this.loadSubscriptions();
-        },
-        error: () => {
-          this.notifications.error(this.translate.instant('SUBSCRIPTIONS.TERMS_UPDATE_FAILED'));
-          this.savingTerms.set(false);
         },
       });
   }
