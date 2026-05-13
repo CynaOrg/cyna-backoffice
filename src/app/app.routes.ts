@@ -166,7 +166,6 @@ export const routes: Routes = [
           import('./features/orders/order-list/order-list.component').then(
             (m) => m.OrderListComponent,
           ),
-        canActivate: [superAdminGuard],
       },
       {
         path: 'orders/:id',
@@ -174,7 +173,6 @@ export const routes: Routes = [
           import('./features/orders/order-detail/order-detail.component').then(
             (m) => m.OrderDetailComponent,
           ),
-        canActivate: [superAdminGuard],
       },
       {
         path: 'subscriptions',
@@ -182,7 +180,6 @@ export const routes: Routes = [
           import('./features/subscriptions/subscription-list/subscription-list.component').then(
             (m) => m.SubscriptionListComponent,
           ),
-        canActivate: [superAdminGuard],
       },
       {
         path: 'customers',
