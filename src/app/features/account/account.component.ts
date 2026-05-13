@@ -6,8 +6,6 @@ import {
   phosphorPencilSimple,
   phosphorCheck,
   phosphorX,
-  phosphorLockKey,
-  phosphorShieldCheck,
   phosphorClock,
   phosphorCalendarBlank,
 } from '@ng-icons/phosphor-icons/regular';
@@ -29,8 +27,6 @@ const EM_DASH = '—';
       phosphorPencilSimple,
       phosphorCheck,
       phosphorX,
-      phosphorLockKey,
-      phosphorShieldCheck,
       phosphorClock,
       phosphorCalendarBlank,
     }),
@@ -79,9 +75,7 @@ const EM_DASH = '—';
         <!-- ========== RESPONSIVE GRID ========== -->
         <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
           <!-- ===== PROFILE CARD (left, 2/3 on lg+) ===== -->
-          <section
-            class="rounded-xl border border-border-light bg-surface shadow-sm lg:col-span-2"
-          >
+          <section class="rounded-xl border border-border-light bg-surface shadow-sm lg:col-span-2">
             <div class="flex items-center justify-between gap-3 px-5 py-4 sm:px-6">
               <h3 class="m-0 text-base font-semibold text-text-primary">
                 {{ 'ACCOUNT.PROFILE' | translate }}
@@ -191,26 +185,42 @@ const EM_DASH = '—';
               } @else {
                 <!-- View mode -->
                 <dl class="divide-y divide-border-light">
-                  <div class="flex flex-col gap-1 py-3 first:pt-0 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-                    <dt class="text-xs font-medium uppercase tracking-wide text-text-muted sm:text-sm sm:normal-case sm:tracking-normal sm:text-text-secondary">
+                  <div
+                    class="flex flex-col gap-1 py-3 first:pt-0 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
+                  >
+                    <dt
+                      class="text-xs font-medium uppercase tracking-wide text-text-muted sm:text-sm sm:normal-case sm:tracking-normal sm:text-text-secondary"
+                    >
                       {{ 'ACCOUNT.FIRST_NAME' | translate }}
                     </dt>
                     <dd class="text-sm text-text-primary sm:text-right">{{ a.firstName }}</dd>
                   </div>
-                  <div class="flex flex-col gap-1 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-                    <dt class="text-xs font-medium uppercase tracking-wide text-text-muted sm:text-sm sm:normal-case sm:tracking-normal sm:text-text-secondary">
+                  <div
+                    class="flex flex-col gap-1 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
+                  >
+                    <dt
+                      class="text-xs font-medium uppercase tracking-wide text-text-muted sm:text-sm sm:normal-case sm:tracking-normal sm:text-text-secondary"
+                    >
                       {{ 'ACCOUNT.LAST_NAME' | translate }}
                     </dt>
                     <dd class="text-sm text-text-primary sm:text-right">{{ a.lastName }}</dd>
                   </div>
-                  <div class="flex flex-col gap-1 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-                    <dt class="text-xs font-medium uppercase tracking-wide text-text-muted sm:text-sm sm:normal-case sm:tracking-normal sm:text-text-secondary">
+                  <div
+                    class="flex flex-col gap-1 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
+                  >
+                    <dt
+                      class="text-xs font-medium uppercase tracking-wide text-text-muted sm:text-sm sm:normal-case sm:tracking-normal sm:text-text-secondary"
+                    >
                       {{ 'ACCOUNT.EMAIL' | translate }}
                     </dt>
                     <dd class="text-sm text-text-primary break-all sm:text-right">{{ a.email }}</dd>
                   </div>
-                  <div class="flex flex-col gap-1 py-3 last:pb-0 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-                    <dt class="text-xs font-medium uppercase tracking-wide text-text-muted sm:text-sm sm:normal-case sm:tracking-normal sm:text-text-secondary">
+                  <div
+                    class="flex flex-col gap-1 py-3 last:pb-0 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
+                  >
+                    <dt
+                      class="text-xs font-medium uppercase tracking-wide text-text-muted sm:text-sm sm:normal-case sm:tracking-normal sm:text-text-secondary"
+                    >
                       {{ 'ACCOUNT.ROLE' | translate }}
                     </dt>
                     <dd class="text-sm text-text-primary sm:text-right">{{ roleLabel(a.role) }}</dd>
@@ -220,121 +230,48 @@ const EM_DASH = '—';
             </div>
           </section>
 
-          <!-- ===== RIGHT COLUMN: ACTIVITY + SECURITY ===== -->
-          <div class="space-y-6">
-            <!-- Activity card -->
-            <section class="rounded-xl border border-border-light bg-surface shadow-sm">
-              <div class="px-5 py-4 sm:px-6">
-                <h3 class="m-0 text-base font-semibold text-text-primary">
-                  {{ 'ACCOUNT.ACTIVITY' | translate }}
-                </h3>
-              </div>
-              <div class="border-t border-border-light px-5 py-4 sm:px-6">
-                <ul class="space-y-4">
-                  <li class="flex items-start gap-3">
-                    <span
-                      class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary-light text-primary"
-                    >
-                      <ng-icon name="phosphorCalendarBlank" size="18" />
-                    </span>
-                    <div class="min-w-0">
-                      <p class="text-xs font-medium text-text-muted">
-                        {{ 'ACCOUNT.MEMBER_SINCE' | translate }}
-                      </p>
-                      <p class="mt-0.5 text-sm font-medium text-text-primary">
-                        {{ memberSince() }}
-                      </p>
-                    </div>
-                  </li>
-                  <li class="flex items-start gap-3">
-                    <span
-                      class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-success-light text-success"
-                    >
-                      <ng-icon name="phosphorClock" size="18" />
-                    </span>
-                    <div class="min-w-0">
-                      <p class="text-xs font-medium text-text-muted">
-                        {{ 'ACCOUNT.LAST_LOGIN' | translate }}
-                      </p>
-                      <p class="mt-0.5 text-sm font-medium text-text-primary">
-                        {{ lastLogin() }}
-                      </p>
-                    </div>
-                  </li>
-                </ul>
-              </div>
-            </section>
-
-            <!-- Security card (preview structure, controls disabled) -->
-            <section class="rounded-xl border border-border-light bg-surface shadow-sm">
-              <div class="px-5 py-4 sm:px-6">
-                <h3 class="m-0 text-base font-semibold text-text-primary">
-                  {{ 'ACCOUNT.SECURITY' | translate }}
-                </h3>
-              </div>
-              <div class="border-t border-border-light divide-y divide-border-light">
-                <!-- Password row -->
-                <div class="flex items-center gap-3 px-5 py-4 sm:px-6">
+          <!-- ===== RIGHT COLUMN: ACTIVITY ===== -->
+          <section class="rounded-xl border border-border-light bg-surface shadow-sm">
+            <div class="px-5 py-4 sm:px-6">
+              <h3 class="m-0 text-base font-semibold text-text-primary">
+                {{ 'ACCOUNT.ACTIVITY' | translate }}
+              </h3>
+            </div>
+            <div class="border-t border-border-light px-5 py-4 sm:px-6">
+              <ul class="space-y-4">
+                <li class="flex items-start gap-3">
                   <span
-                    class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-background text-text-secondary"
+                    class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary-light text-primary"
                   >
-                    <ng-icon name="phosphorLockKey" size="18" />
+                    <ng-icon name="phosphorCalendarBlank" size="18" />
                   </span>
-                  <div class="min-w-0 flex-1">
-                    <div class="flex items-center gap-2">
-                      <p class="m-0 text-sm font-medium text-text-primary">
-                        {{ 'ACCOUNT.SECURITY_PASSWORD' | translate }}
-                      </p>
-                      <span
-                        class="inline-flex items-center rounded-full bg-warning-light px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-warning"
-                      >
-                        {{ 'ACCOUNT.COMING_SOON_BADGE' | translate }}
-                      </span>
-                    </div>
-                    <p class="m-0 mt-0.5 text-xs text-text-muted">••••••••••</p>
-                  </div>
-                  <button
-                    type="button"
-                    disabled
-                    class="rounded-lg border border-border bg-transparent px-3 py-1.5 text-xs font-medium text-text-muted opacity-60 cursor-not-allowed"
-                  >
-                    {{ 'ACCOUNT.EDIT' | translate }}
-                  </button>
-                </div>
-
-                <!-- 2FA row -->
-                <div class="flex items-center gap-3 px-5 py-4 sm:px-6">
-                  <span
-                    class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-background text-text-secondary"
-                  >
-                    <ng-icon name="phosphorShieldCheck" size="18" />
-                  </span>
-                  <div class="min-w-0 flex-1">
-                    <div class="flex items-center gap-2">
-                      <p class="m-0 text-sm font-medium text-text-primary">
-                        {{ 'ACCOUNT.SECURITY_2FA' | translate }}
-                      </p>
-                      <span
-                        class="inline-flex items-center rounded-full bg-warning-light px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-warning"
-                      >
-                        {{ 'ACCOUNT.COMING_SOON_BADGE' | translate }}
-                      </span>
-                    </div>
-                    <p class="m-0 mt-0.5 text-xs text-text-muted">
-                      {{ 'ACCOUNT.SECURITY_2FA_DISABLED' | translate }}
+                  <div class="min-w-0">
+                    <p class="text-xs font-medium text-text-muted">
+                      {{ 'ACCOUNT.MEMBER_SINCE' | translate }}
+                    </p>
+                    <p class="mt-0.5 text-sm font-medium text-text-primary">
+                      {{ memberSince() }}
                     </p>
                   </div>
-                  <button
-                    type="button"
-                    disabled
-                    class="rounded-lg border border-border bg-transparent px-3 py-1.5 text-xs font-medium text-text-muted opacity-60 cursor-not-allowed"
+                </li>
+                <li class="flex items-start gap-3">
+                  <span
+                    class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-success-light text-success"
                   >
-                    {{ 'ACCOUNT.ACTIVATE' | translate }}
-                  </button>
-                </div>
-              </div>
-            </section>
-          </div>
+                    <ng-icon name="phosphorClock" size="18" />
+                  </span>
+                  <div class="min-w-0">
+                    <p class="text-xs font-medium text-text-muted">
+                      {{ 'ACCOUNT.LAST_LOGIN' | translate }}
+                    </p>
+                    <p class="mt-0.5 text-sm font-medium text-text-primary">
+                      {{ lastLogin() }}
+                    </p>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </section>
         </div>
       </div>
     }
@@ -421,8 +358,7 @@ export class AccountComponent {
         });
       },
       error: (err) => {
-        const message =
-          err?.error?.message || this.translate.instant('ACCOUNT.UPDATE_FAILED');
+        const message = err?.error?.message || this.translate.instant('ACCOUNT.UPDATE_FAILED');
         this.formError.set(message);
         this.saving.set(false);
       },
