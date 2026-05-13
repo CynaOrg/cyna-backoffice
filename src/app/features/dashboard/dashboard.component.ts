@@ -83,54 +83,50 @@ interface DashboardViewModel {
           />
         </div>
 
-        <!-- Super Admin: Quick Access Cards -->
-        @if (authService.isSuperAdmin()) {
-          <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
-            <!-- Low Stock Alerts -->
-            <a
-              routerLink="/analytics"
-              fragment="stock-status"
-              class="group flex items-center gap-4 rounded-xl border border-border-light bg-surface p-6 shadow-sm hover:shadow-md hover:-translate-y-px transition-all duration-200 no-underline"
+        <!-- Quick Access Cards (Low Stock for both roles; Unread Messages super-admin only) -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
+          <!-- Low Stock Alerts -->
+          <a
+            routerLink="/analytics"
+            fragment="stock-status"
+            class="group flex items-center gap-4 rounded-xl border border-border-light bg-surface p-6 shadow-sm hover:shadow-md hover:-translate-y-px transition-all duration-200 no-underline"
+          >
+            <div
+              class="w-12 h-12 rounded-lg bg-warning-light flex items-center justify-center shrink-0"
             >
-              <div
-                class="w-12 h-12 rounded-lg bg-warning-light flex items-center justify-center shrink-0"
-              >
-                <svg
-                  class="w-6 h-6 text-warning"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
-                  />
-                </svg>
-              </div>
-              <div>
-                <div class="text-2xl font-bold text-text-primary">{{ lowStockCount() }}</div>
-                <div class="text-sm text-text-secondary">
-                  {{ 'DASHBOARD.LOW_STOCK' | translate }}
-                </div>
-              </div>
               <svg
-                class="w-5 h-5 text-text-muted ml-auto opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200"
+                class="w-6 h-6 text-warning"
                 fill="none"
-                viewBox="0 0 24 24"
                 stroke="currentColor"
-                stroke-width="2"
+                viewBox="0 0 24 24"
               >
                 <path
                   stroke-linecap="round"
                   stroke-linejoin="round"
-                  d="m8.25 4.5 7.5 7.5-7.5 7.5"
+                  stroke-width="2"
+                  d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
                 />
               </svg>
-            </a>
+            </div>
+            <div>
+              <div class="text-2xl font-bold text-text-primary">{{ lowStockCount() }}</div>
+              <div class="text-sm text-text-secondary">
+                {{ 'DASHBOARD.LOW_STOCK' | translate }}
+              </div>
+            </div>
+            <svg
+              class="w-5 h-5 text-text-muted ml-auto opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+            </svg>
+          </a>
 
-            <!-- Unread Messages -->
+          @if (authService.isSuperAdmin()) {
+            <!-- Unread Messages (super-admin only: /messages is locked for commercial) -->
             <a
               routerLink="/messages"
               class="group flex items-center gap-4 rounded-xl border border-border-light bg-surface p-6 shadow-sm hover:shadow-md hover:-translate-y-px transition-all duration-200 no-underline"
@@ -172,77 +168,75 @@ interface DashboardViewModel {
                 />
               </svg>
             </a>
-          </div>
-        }
+          }
+        </div>
 
-        <!-- Super Admin: Recent Orders Table -->
-        @if (authService.isSuperAdmin()) {
-          <div class="rounded-xl border border-border-light bg-surface shadow-sm">
-            <div class="px-6 py-4 border-b border-border-light flex items-center justify-between">
-              <h3 class="text-lg font-semibold text-text-primary !m-0">
-                {{ 'DASHBOARD.RECENT_ORDERS' | translate }}
-              </h3>
-              <a
-                routerLink="/orders"
-                class="text-sm text-primary hover:text-primary-hover font-medium no-underline"
-              >
-                {{ 'DASHBOARD.VIEW_ALL' | translate }}
-              </a>
-            </div>
-            <div class="overflow-x-auto">
-              <table class="w-full">
-                <thead>
-                  <tr class="border-b border-border-light">
-                    <th
-                      class="px-6 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-text-muted"
-                    >
-                      {{ 'DASHBOARD.ORDER' | translate }}
-                    </th>
-                    <th
-                      class="px-6 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-text-muted"
-                    >
-                      {{ 'DASHBOARD.DATE' | translate }}
-                    </th>
-                    <th
-                      class="px-6 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-text-muted"
-                    >
-                      {{ 'DASHBOARD.STATUS' | translate }}
-                    </th>
-                    <th
-                      class="px-6 py-3 text-right text-[11px] font-semibold uppercase tracking-wider text-text-muted"
-                    >
-                      {{ 'DASHBOARD.TOTAL' | translate }}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y divide-border-light">
-                  @for (order of data()?.recentOrders || []; track order.id) {
-                    <tr class="hover:bg-background transition-colors">
-                      <td class="px-6 py-4 text-sm font-medium text-text-primary">
-                        {{ order.orderNumber }}
-                      </td>
-                      <td class="px-6 py-4 text-sm text-text-secondary">
-                        {{ formatDate(order.createdAt) }}
-                      </td>
-                      <td class="px-6 py-4">
-                        <app-status-badge [status]="order.status" />
-                      </td>
-                      <td class="px-6 py-4 text-sm text-text-primary text-right font-medium">
-                        {{ formatCurrency(order.total) }}
-                      </td>
-                    </tr>
-                  } @empty {
-                    <tr>
-                      <td colspan="4" class="px-6 py-12 text-center text-text-muted text-sm">
-                        {{ 'DASHBOARD.NO_ORDERS' | translate }}
-                      </td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
-            </div>
+        <!-- Recent Orders Table (read-only for commercial) -->
+        <div class="rounded-xl border border-border-light bg-surface shadow-sm">
+          <div class="px-6 py-4 border-b border-border-light flex items-center justify-between">
+            <h3 class="text-lg font-semibold text-text-primary !m-0">
+              {{ 'DASHBOARD.RECENT_ORDERS' | translate }}
+            </h3>
+            <a
+              routerLink="/orders"
+              class="text-sm text-primary hover:text-primary-hover font-medium no-underline"
+            >
+              {{ 'DASHBOARD.VIEW_ALL' | translate }}
+            </a>
           </div>
-        }
+          <div class="overflow-x-auto">
+            <table class="w-full">
+              <thead>
+                <tr class="border-b border-border-light">
+                  <th
+                    class="px-6 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-text-muted"
+                  >
+                    {{ 'DASHBOARD.ORDER' | translate }}
+                  </th>
+                  <th
+                    class="px-6 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-text-muted"
+                  >
+                    {{ 'DASHBOARD.DATE' | translate }}
+                  </th>
+                  <th
+                    class="px-6 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-text-muted"
+                  >
+                    {{ 'DASHBOARD.STATUS' | translate }}
+                  </th>
+                  <th
+                    class="px-6 py-3 text-right text-[11px] font-semibold uppercase tracking-wider text-text-muted"
+                  >
+                    {{ 'DASHBOARD.TOTAL' | translate }}
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-border-light">
+                @for (order of data()?.recentOrders || []; track order.id) {
+                  <tr class="hover:bg-background transition-colors">
+                    <td class="px-6 py-4 text-sm font-medium text-text-primary">
+                      {{ order.orderNumber }}
+                    </td>
+                    <td class="px-6 py-4 text-sm text-text-secondary">
+                      {{ formatDate(order.createdAt) }}
+                    </td>
+                    <td class="px-6 py-4">
+                      <app-status-badge [status]="order.status" />
+                    </td>
+                    <td class="px-6 py-4 text-sm text-text-primary text-right font-medium">
+                      {{ formatCurrency(order.total) }}
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="4" class="px-6 py-12 text-center text-text-muted text-sm">
+                      {{ 'DASHBOARD.NO_ORDERS' | translate }}
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
 
         <!-- Commercial: Sales Overview -->
         @if (authService.isCommercial()) {
@@ -391,21 +385,25 @@ export class DashboardComponent implements OnInit {
       },
     });
 
+    this.loadStockStatus();
     if (this.authService.isSuperAdmin()) {
-      this.loadSuperAdminData();
+      this.loadUnreadMessages();
     }
   }
 
-  private loadSuperAdminData() {
-    forkJoin({
-      stock: this.analyticsService.getStockStatus(),
-      messages: this.contentService.getContactMessages(),
-    }).subscribe({
-      next: ({ stock, messages }) => {
-        // Stock response is { summary: { lowStock, outOfStock, ... }, products: [] }
+  private loadStockStatus() {
+    this.analyticsService.getStockStatus().subscribe({
+      next: (stock) => {
         const lowStockAlerts = (stock?.summary?.lowStock ?? 0) + (stock?.summary?.outOfStock ?? 0);
         this.lowStockCount.set(lowStockAlerts);
+      },
+      error: () => {},
+    });
+  }
 
+  private loadUnreadMessages() {
+    this.contentService.getContactMessages().subscribe({
+      next: (messages) => {
         const unread = (messages || []).filter((msg: ContactMessage) => !msg.isRead);
         this.unreadMessages.set(unread.length);
       },
