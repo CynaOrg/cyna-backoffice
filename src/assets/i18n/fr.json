@@ -695,14 +695,8 @@
     "CANCEL": "Annuler",
     "SAVE": "Enregistrer",
     "SAVING": "Enregistrement...",
-    "ACTIVATE": "Activer",
     "UPDATED_SUCCESS": "Profil mis à jour",
-    "UPDATE_FAILED": "Échec de la mise à jour du profil",
-    "SECURITY": "Sécurité",
-    "SECURITY_PASSWORD": "Mot de passe",
-    "SECURITY_2FA": "Authentification à deux facteurs",
-    "SECURITY_2FA_DISABLED": "Désactivée",
-    "COMING_SOON_BADGE": "Bientôt"
+    "UPDATE_FAILED": "Échec de la mise à jour du profil"
   },
   "ERRORS": {
     "NETWORK": "Impossible de joindre le serveur. Vérifiez votre connexion.",
