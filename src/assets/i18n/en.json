@@ -695,14 +695,8 @@
     "CANCEL": "Cancel",
     "SAVE": "Save",
     "SAVING": "Saving...",
-    "ACTIVATE": "Activate",
     "UPDATED_SUCCESS": "Profile updated",
-    "UPDATE_FAILED": "Failed to update profile",
-    "SECURITY": "Security",
-    "SECURITY_PASSWORD": "Password",
-    "SECURITY_2FA": "Two-factor authentication",
-    "SECURITY_2FA_DISABLED": "Disabled",
-    "COMING_SOON_BADGE": "Soon"
+    "UPDATE_FAILED": "Failed to update profile"
   },
   "ERRORS": {
     "NETWORK": "Unable to reach the server. Check your connection.",
