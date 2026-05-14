@@ -151,6 +151,7 @@
     "CREATE": "Create Product",
     "UPDATED": "Product updated",
     "CREATED": "Product created",
+    "FORM_INVALID": "Some required fields are empty or invalid. Fix them before saving.",
     "SAVE_FAILED": "Failed to save product",
     "LOAD_ERROR": "Failed to load products",
     "SAVE_ERROR": "Failed to save product",

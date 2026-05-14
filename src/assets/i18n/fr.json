@@ -151,6 +151,7 @@
     "CREATE": "Créer le produit",
     "UPDATED": "Produit mis à jour",
     "CREATED": "Produit créé",
+    "FORM_INVALID": "Certains champs requis sont vides ou invalides. Corrigez-les avant d'enregistrer.",
     "SAVE_FAILED": "Échec de l'enregistrement",
     "LOAD_ERROR": "Échec du chargement des produits",
     "SAVE_ERROR": "Échec de l'enregistrement du produit",
