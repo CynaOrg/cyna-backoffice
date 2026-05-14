@@ -8,6 +8,7 @@ import { NotificationService } from '../../../core/services/notification.service
 import { Product } from '../../../core/models/product.model';
 import { StatusBadgeComponent } from '../../../shared/components/status-badge/status-badge.component';
 import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/confirm-modal.component';
+import { DetailSkeletonComponent } from '../../../shared/components/detail-skeleton/detail-skeleton.component';
 
 interface StockUpdatePayload {
   stockQuantity: number;
@@ -17,70 +18,17 @@ interface StockUpdatePayload {
 @Component({
   selector: 'app-product-detail',
   standalone: true,
-  imports: [FormsModule, RouterLink, TranslateModule, StatusBadgeComponent, ConfirmModalComponent],
+  imports: [
+    FormsModule,
+    RouterLink,
+    TranslateModule,
+    StatusBadgeComponent,
+    ConfirmModalComponent,
+    DetailSkeletonComponent,
+  ],
   template: `
     @if (loading()) {
-      <!-- Skeleton loading -->
-      <div style="animation: fadeInUp 0.45s ease-out both">
-        <div class="flex items-center justify-between mb-6">
-          <div class="flex items-center gap-3">
-            <div class="w-9 h-9 rounded-full animate-pulse bg-gray-100"></div>
-            <div class="flex flex-col gap-2">
-              <div class="h-6 w-48 animate-pulse rounded bg-gray-100"></div>
-              <div class="h-4 w-64 animate-pulse rounded bg-gray-100"></div>
-            </div>
-          </div>
-          <div class="flex gap-2">
-            <div class="h-9 w-20 animate-pulse rounded-lg bg-gray-100"></div>
-            <div class="h-9 w-24 animate-pulse rounded-lg bg-gray-100"></div>
-          </div>
-        </div>
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
-          <div class="lg:col-span-2 space-y-5">
-            <div class="rounded-xl border border-border-light bg-surface p-6">
-              <div class="h-5 w-32 animate-pulse rounded bg-gray-100 mb-4"></div>
-              <div class="space-y-0">
-                <div class="flex gap-8 py-3.5">
-                  <div class="h-8 w-28 animate-pulse rounded bg-gray-100"></div>
-                  <div class="h-8 w-28 animate-pulse rounded bg-gray-100"></div>
-                </div>
-              </div>
-            </div>
-            <div class="rounded-xl border border-border-light bg-surface p-6">
-              <div class="h-5 w-28 animate-pulse rounded bg-gray-100 mb-4"></div>
-              <div class="space-y-3">
-                <div class="h-4 w-full animate-pulse rounded bg-gray-100"></div>
-                <div class="h-4 w-3/4 animate-pulse rounded bg-gray-100"></div>
-                <div class="h-4 w-5/6 animate-pulse rounded bg-gray-100"></div>
-              </div>
-            </div>
-            <div class="rounded-xl border border-border-light bg-surface p-6">
-              <div class="h-5 w-36 animate-pulse rounded bg-gray-100 mb-4"></div>
-              <div class="space-y-0">
-                @for (i of [0, 1, 2]; track i) {
-                  <div class="flex items-center gap-4 py-3">
-                    <div class="h-4 w-32 animate-pulse rounded bg-gray-100"></div>
-                    <div class="flex-1"></div>
-                    <div class="h-4 w-40 animate-pulse rounded bg-gray-100"></div>
-                  </div>
-                }
-              </div>
-            </div>
-          </div>
-          <div class="space-y-5">
-            <div class="rounded-xl border border-border-light bg-surface p-6">
-              <div class="h-40 animate-pulse rounded-lg bg-gray-100"></div>
-            </div>
-            <div class="rounded-xl border border-border-light bg-surface p-6">
-              <div class="h-5 w-28 animate-pulse rounded bg-gray-100 mb-4"></div>
-              <div class="space-y-3">
-                <div class="h-4 w-full animate-pulse rounded bg-gray-100"></div>
-                <div class="h-4 w-full animate-pulse rounded bg-gray-100"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <app-detail-skeleton [cards]="3" [showCover]="true" />
     } @else if (product(); as p) {
       <div style="animation: fadeInUp 0.45s ease-out both">
         <!-- Header -->

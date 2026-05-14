@@ -5,3 +5,6 @@ export { PaginationComponent } from './pagination/pagination.component';
 export { ConfirmModalComponent } from './confirm-modal/confirm-modal.component';
 export { LoadingSpinnerComponent } from './loading-spinner/loading-spinner.component';
 export { ImageUploadComponent } from './image-upload/image-upload.component';
+export { TableSkeletonComponent } from './table-skeleton/table-skeleton.component';
+export { StatCardSkeletonComponent } from './stat-card-skeleton/stat-card-skeleton.component';
+export { DetailSkeletonComponent } from './detail-skeleton/detail-skeleton.component';

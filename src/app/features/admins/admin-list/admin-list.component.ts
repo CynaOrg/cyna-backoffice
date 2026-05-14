@@ -17,7 +17,7 @@ import { AdminAuthService } from '../../../core/auth/services/admin-auth.service
 import { NotificationService } from '../../../core/services/notification.service';
 import { Admin, CreateAdminDto, UpdateAdminDto } from '../../../core/models/admin.model';
 import { StatusBadgeComponent } from '../../../shared/components/status-badge/status-badge.component';
-import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
+import { TableSkeletonComponent } from '../../../shared/components/table-skeleton/table-skeleton.component';
 import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/confirm-modal.component';
 import { KpiCardComponent } from '../../../shared/components/kpi-card/kpi-card.component';
 
@@ -30,7 +30,7 @@ import { KpiCardComponent } from '../../../shared/components/kpi-card/kpi-card.c
     TranslateModule,
     NgIconComponent,
     StatusBadgeComponent,
-    LoadingSpinnerComponent,
+    TableSkeletonComponent,
     ConfirmModalComponent,
     KpiCardComponent,
   ],
@@ -150,7 +150,7 @@ import { KpiCardComponent } from '../../../shared/components/kpi-card/kpi-card.c
 
       <!-- Loading -->
       @if (loading()) {
-        <app-loading-spinner />
+        <app-table-skeleton [rows]="8" [columns]="6" />
       } @else {
         <!-- Table -->
         <div class="bg-surface rounded-xl border border-border-light shadow-sm overflow-hidden">

@@ -3,14 +3,14 @@ import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import { ApiService } from '../../core/services/api.service';
 import { Product } from '../../core/models/product.model';
-import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
+import { TableSkeletonComponent } from '../../shared/components/table-skeleton/table-skeleton.component';
 
 type ProductType = 'saas' | 'physical' | 'license';
 
 @Component({
   selector: 'app-product-picker',
   standalone: true,
-  imports: [FormsModule, TranslateModule, LoadingSpinnerComponent],
+  imports: [FormsModule, TranslateModule, TableSkeletonComponent],
   template: `
     @if (open()) {
       <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
@@ -153,7 +153,7 @@ type ProductType = 'saas' | 'physical' | 'license';
           <!-- Available products -->
           <div class="flex-1 overflow-y-auto px-6 py-3">
             @if (loading()) {
-              <app-loading-spinner />
+              <app-table-skeleton [rows]="6" [columns]="4" [showHeader]="false" />
             } @else {
               <div class="flex flex-col gap-1">
                 @for (product of filteredProducts(); track product.id) {

@@ -10,6 +10,8 @@ import { Product, Category } from '../../../core/models/product.model';
 import { StatusBadgeComponent } from '../../../shared/components/status-badge/status-badge.component';
 import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/confirm-modal.component';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
+import { TableSkeletonComponent } from '../../../shared/components/table-skeleton/table-skeleton.component';
+import { StatCardSkeletonComponent } from '../../../shared/components/stat-card-skeleton/stat-card-skeleton.component';
 
 interface AdminProductListResponse {
   data: Product[];
@@ -29,138 +31,152 @@ interface AdminProductListResponse {
     StatusBadgeComponent,
     ConfirmModalComponent,
     PaginationComponent,
+    TableSkeletonComponent,
+    StatCardSkeletonComponent,
   ],
   template: `
     <div style="animation: fadeInUp 0.45s ease-out both">
       <!-- Summary cards -->
-      <div
-        class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6"
-        style="animation: fadeInUp 0.45s ease-out both"
-      >
-        <!-- Total -->
+      @if (loading()) {
         <div
-          class="flex flex-col gap-2.5 rounded-xl border border-border-light bg-surface p-4 sm:p-5 transition-all duration-200 hover:shadow-md hover:-translate-y-px"
+          class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6"
+          style="animation: fadeInUp 0.45s ease-out both"
         >
-          <svg
-            class="w-[18px] h-[18px] text-text-muted"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="1.5"
-              d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"
-            />
-          </svg>
-          <div class="flex flex-col gap-0.5">
-            @if (loading()) {
-              <div class="h-7 w-8 animate-pulse rounded bg-gray-100"></div>
-            } @else {
-              <span class="text-2xl font-semibold tracking-tight text-text-primary">{{
-                totalCount()
-              }}</span>
-            }
-            <span class="text-[11px] text-text-muted leading-tight">{{
-              'PRODUCTS.STAT_TOTAL' | translate
-            }}</span>
-          </div>
+          <app-stat-card-skeleton />
+          <app-stat-card-skeleton />
+          <app-stat-card-skeleton />
+          <app-stat-card-skeleton />
         </div>
+      } @else {
+        <div
+          class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6"
+          style="animation: fadeInUp 0.45s ease-out both"
+        >
+          <!-- Total -->
+          <div
+            class="flex flex-col gap-2.5 rounded-xl border border-border-light bg-surface p-4 sm:p-5 transition-all duration-200 hover:shadow-md hover:-translate-y-px"
+          >
+            <svg
+              class="w-[18px] h-[18px] text-text-muted"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="1.5"
+                d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"
+              />
+            </svg>
+            <div class="flex flex-col gap-0.5">
+              @if (loading()) {
+                <div class="h-7 w-8 animate-pulse rounded bg-gray-100"></div>
+              } @else {
+                <span class="text-2xl font-semibold tracking-tight text-text-primary">{{
+                  totalCount()
+                }}</span>
+              }
+              <span class="text-[11px] text-text-muted leading-tight">{{
+                'PRODUCTS.STAT_TOTAL' | translate
+              }}</span>
+            </div>
+          </div>
 
-        <!-- Available -->
-        <div
-          class="flex flex-col gap-2.5 rounded-xl border border-border-light bg-surface p-4 sm:p-5 transition-all duration-200 hover:shadow-md hover:-translate-y-px"
-        >
-          <svg
-            class="w-[18px] h-[18px] text-success"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
+          <!-- Available -->
+          <div
+            class="flex flex-col gap-2.5 rounded-xl border border-border-light bg-surface p-4 sm:p-5 transition-all duration-200 hover:shadow-md hover:-translate-y-px"
           >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="1.5"
-              d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
-          <div class="flex flex-col gap-0.5">
-            @if (loading()) {
-              <div class="h-7 w-8 animate-pulse rounded bg-gray-100"></div>
-            } @else {
-              <span class="text-2xl font-semibold tracking-tight text-text-primary">{{
-                availableCount()
+            <svg
+              class="w-[18px] h-[18px] text-success"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="1.5"
+                d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            <div class="flex flex-col gap-0.5">
+              @if (loading()) {
+                <div class="h-7 w-8 animate-pulse rounded bg-gray-100"></div>
+              } @else {
+                <span class="text-2xl font-semibold tracking-tight text-text-primary">{{
+                  availableCount()
+                }}</span>
+              }
+              <span class="text-[11px] text-text-muted leading-tight">{{
+                'PRODUCTS.STAT_AVAILABLE' | translate
               }}</span>
-            }
-            <span class="text-[11px] text-text-muted leading-tight">{{
-              'PRODUCTS.STAT_AVAILABLE' | translate
-            }}</span>
+            </div>
           </div>
-        </div>
 
-        <!-- Unavailable -->
-        <div
-          class="flex flex-col gap-2.5 rounded-xl border border-border-light bg-surface p-4 sm:p-5 transition-all duration-200 hover:shadow-md hover:-translate-y-px"
-        >
-          <svg
-            class="w-[18px] h-[18px] text-error"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
+          <!-- Unavailable -->
+          <div
+            class="flex flex-col gap-2.5 rounded-xl border border-border-light bg-surface p-4 sm:p-5 transition-all duration-200 hover:shadow-md hover:-translate-y-px"
           >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="1.5"
-              d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"
-            />
-          </svg>
-          <div class="flex flex-col gap-0.5">
-            @if (loading()) {
-              <div class="h-7 w-8 animate-pulse rounded bg-gray-100"></div>
-            } @else {
-              <span class="text-2xl font-semibold tracking-tight text-text-primary">{{
-                unavailableCount()
+            <svg
+              class="w-[18px] h-[18px] text-error"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="1.5"
+                d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"
+              />
+            </svg>
+            <div class="flex flex-col gap-0.5">
+              @if (loading()) {
+                <div class="h-7 w-8 animate-pulse rounded bg-gray-100"></div>
+              } @else {
+                <span class="text-2xl font-semibold tracking-tight text-text-primary">{{
+                  unavailableCount()
+                }}</span>
+              }
+              <span class="text-[11px] text-text-muted leading-tight">{{
+                'PRODUCTS.STAT_UNAVAILABLE' | translate
               }}</span>
-            }
-            <span class="text-[11px] text-text-muted leading-tight">{{
-              'PRODUCTS.STAT_UNAVAILABLE' | translate
-            }}</span>
+            </div>
           </div>
-        </div>
 
-        <!-- Featured -->
-        <div
-          class="flex flex-col gap-2.5 rounded-xl border border-border-light bg-surface p-4 sm:p-5 transition-all duration-200 hover:shadow-md hover:-translate-y-px"
-        >
-          <svg
-            class="w-[18px] h-[18px] text-warning"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
+          <!-- Featured -->
+          <div
+            class="flex flex-col gap-2.5 rounded-xl border border-border-light bg-surface p-4 sm:p-5 transition-all duration-200 hover:shadow-md hover:-translate-y-px"
           >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="1.5"
-              d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z"
-            />
-          </svg>
-          <div class="flex flex-col gap-0.5">
-            @if (loading()) {
-              <div class="h-7 w-8 animate-pulse rounded bg-gray-100"></div>
-            } @else {
-              <span class="text-2xl font-semibold tracking-tight text-text-primary">{{
-                featuredCount()
+            <svg
+              class="w-[18px] h-[18px] text-warning"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="1.5"
+                d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z"
+              />
+            </svg>
+            <div class="flex flex-col gap-0.5">
+              @if (loading()) {
+                <div class="h-7 w-8 animate-pulse rounded bg-gray-100"></div>
+              } @else {
+                <span class="text-2xl font-semibold tracking-tight text-text-primary">{{
+                  featuredCount()
+                }}</span>
+              }
+              <span class="text-[11px] text-text-muted leading-tight">{{
+                'PRODUCTS.STAT_FEATURED' | translate
               }}</span>
-            }
-            <span class="text-[11px] text-text-muted leading-tight">{{
-              'PRODUCTS.STAT_FEATURED' | translate
-            }}</span>
+            </div>
           </div>
         </div>
-      </div>
+      }
 
       <!-- Toolbar: search + actions -->
       <div
@@ -334,22 +350,7 @@ interface AdminProductListResponse {
         style="animation: fadeInUp 0.45s ease-out 0.14s both"
       >
         @if (loading()) {
-          <!-- Skeleton loading -->
-          <div class="divide-y divide-border-light">
-            @for (i of skeletonRows; track i) {
-              <div class="flex items-center gap-4 px-6 py-4">
-                <div class="w-10 h-10 rounded-lg animate-pulse bg-gray-100 shrink-0"></div>
-                <div class="flex-1 flex flex-col gap-2">
-                  <div class="h-4 w-40 animate-pulse rounded bg-gray-100"></div>
-                  <div class="h-3 w-24 animate-pulse rounded bg-gray-100"></div>
-                </div>
-                <div class="h-4 w-20 animate-pulse rounded bg-gray-100"></div>
-                <div class="h-4 w-16 animate-pulse rounded bg-gray-100"></div>
-                <div class="h-5 w-16 animate-pulse rounded-full bg-gray-100"></div>
-                <div class="h-5 w-16 animate-pulse rounded-full bg-gray-100"></div>
-              </div>
-            }
-          </div>
+          <app-table-skeleton [rows]="8" [columns]="6" />
         } @else if (products().length === 0) {
           <!-- Empty state (PROD-14: message depends on productType) -->
           <div class="flex flex-col items-center justify-center gap-3 py-16">
@@ -805,27 +806,25 @@ export class ProductListComponent implements OnInit, OnDestroy {
     // ApiService.get<T>() unwraps the outer { data: T, meta } envelope, so when the
     // backend returns a paginated response { data: Product[], total, page, limit }, we get
     // that object directly here. Plain arrays are also tolerated for legacy endpoints.
-    this.api
-      .get<AdminProductListResponse | Product[]>('admin/catalog/products', params)
-      .subscribe({
-        next: (res) => {
-          if (Array.isArray(res)) {
-            this.products.set(res);
-            this.total.set(res.length);
-          } else if (Array.isArray(res?.data)) {
-            this.products.set(res.data);
-            this.total.set(res.total ?? res.data.length);
-          } else {
-            this.products.set([]);
-            this.total.set(0);
-          }
-          this.loading.set(false);
-        },
-        error: () => {
-          this.notifications.error(this.translate.instant('PRODUCTS.LOAD_ERROR'));
-          this.loading.set(false);
-        },
-      });
+    this.api.get<AdminProductListResponse | Product[]>('admin/catalog/products', params).subscribe({
+      next: (res) => {
+        if (Array.isArray(res)) {
+          this.products.set(res);
+          this.total.set(res.length);
+        } else if (Array.isArray(res?.data)) {
+          this.products.set(res.data);
+          this.total.set(res.total ?? res.data.length);
+        } else {
+          this.products.set([]);
+          this.total.set(0);
+        }
+        this.loading.set(false);
+      },
+      error: () => {
+        this.notifications.error(this.translate.instant('PRODUCTS.LOAD_ERROR'));
+        this.loading.set(false);
+      },
+    });
   }
 
   onSearch(): void {

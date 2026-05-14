@@ -9,7 +9,8 @@ import { ContentService } from '../../core/services/content.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { KpiCardComponent } from '../../shared/components/kpi-card/kpi-card.component';
 import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
-import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
+import { StatCardSkeletonComponent } from '../../shared/components/stat-card-skeleton/stat-card-skeleton.component';
+import { TableSkeletonComponent } from '../../shared/components/table-skeleton/table-skeleton.component';
 import { DashboardData, DashboardKPIs } from '../../core/models/analytics.model';
 import { ContactMessage } from '../../core/models/content.model';
 import { Order } from '../../core/models/order.model';
@@ -32,7 +33,8 @@ interface DashboardViewModel {
     RouterLink,
     KpiCardComponent,
     StatusBadgeComponent,
-    LoadingSpinnerComponent,
+    StatCardSkeletonComponent,
+    TableSkeletonComponent,
     TranslateModule,
   ],
   template: `
@@ -45,7 +47,13 @@ interface DashboardViewModel {
       </div>
 
       @if (loading()) {
-        <app-loading-spinner />
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <app-stat-card-skeleton />
+          <app-stat-card-skeleton />
+          <app-stat-card-skeleton />
+          <app-stat-card-skeleton />
+        </div>
+        <app-table-skeleton [rows]="5" [columns]="4" />
       } @else {
         <!-- KPI Cards -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">

@@ -8,7 +8,7 @@ import { AdminAuthService } from '../../../core/auth/services/admin-auth.service
 import { NotificationService } from '../../../core/services/notification.service';
 import { Order, OrderStatus } from '../../../core/models/order.model';
 import { StatusBadgeComponent } from '../../../shared/components/status-badge/status-badge.component';
-import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
+import { DetailSkeletonComponent } from '../../../shared/components/detail-skeleton/detail-skeleton.component';
 
 interface UpdateOrderStatusBody {
   status: OrderStatus;
@@ -25,12 +25,12 @@ interface UpdateOrderStatusBody {
     FormsModule,
     TranslateModule,
     StatusBadgeComponent,
-    LoadingSpinnerComponent,
+    DetailSkeletonComponent,
   ],
   template: `
     <div>
       @if (loading()) {
-        <app-loading-spinner />
+        <app-detail-skeleton [cards]="2" />
       } @else if (order()) {
         <div class="flex items-center justify-between mb-6">
           <div class="flex items-center gap-3">
