@@ -154,7 +154,7 @@ import { TableSkeletonComponent } from '../../../shared/components/table-skeleto
                     <td class="px-6 py-4 text-right">
                       <a
                         [routerLink]="['/orders', order.id]"
-                        class="text-sm text-primary hover:text-primary-hover"
+                        class="inline-flex items-center px-2.5 py-1 text-xs font-medium text-primary bg-primary-light/60 border border-primary/15 rounded-md hover:bg-primary-light hover:border-primary/30 transition-colors cursor-pointer"
                       >
                         {{ 'ORDERS.VIEW' | translate }}
                       </a>

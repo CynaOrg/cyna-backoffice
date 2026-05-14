@@ -119,14 +119,14 @@ type SubscriptionAction = 'cancel' | 'reactivate' | 'cancel_at_end' | 'resume_pe
                             @if (sub.cancelAtPeriodEnd) {
                               <button
                                 (click)="confirmAction(sub, 'resume_period')"
-                                class="text-sm text-primary hover:text-primary-hover"
+                                class="inline-flex items-center px-2.5 py-1 text-xs font-medium text-primary bg-primary-light/60 border border-primary/15 rounded-md hover:bg-primary-light hover:border-primary/30 transition-colors cursor-pointer"
                               >
                                 {{ 'SUBSCRIPTIONS.RESUME_PERIOD' | translate }}
                               </button>
                             } @else {
                               <button
                                 (click)="confirmAction(sub, 'cancel_at_end')"
-                                class="text-sm text-warning hover:text-orange-700"
+                                class="inline-flex items-center px-2.5 py-1 text-xs font-medium text-warning bg-warning-light/60 border border-warning/15 rounded-md hover:bg-warning-light hover:border-warning/30 transition-colors cursor-pointer"
                               >
                                 {{ 'SUBSCRIPTIONS.CANCEL_AT_END' | translate }}
                               </button>
@@ -140,14 +140,14 @@ type SubscriptionAction = 'cancel' | 'reactivate' | 'cancel_at_end' | 'resume_pe
                             -->
                             <button
                               (click)="confirmAction(sub, 'cancel')"
-                              class="text-sm text-error hover:text-red-700"
+                              class="inline-flex items-center px-2.5 py-1 text-xs font-medium text-error bg-error-light/60 border border-error/15 rounded-md hover:bg-error-light hover:border-error/30 transition-colors cursor-pointer"
                             >
                               {{ 'SUBSCRIPTIONS.CANCEL' | translate }}
                             </button>
                           } @else if (sub.status === 'cancelled' || sub.status === 'paused') {
                             <button
                               (click)="confirmAction(sub, 'reactivate')"
-                              class="text-sm text-primary hover:text-primary-hover"
+                              class="inline-flex items-center px-2.5 py-1 text-xs font-medium text-primary bg-primary-light/60 border border-primary/15 rounded-md hover:bg-primary-light hover:border-primary/30 transition-colors cursor-pointer"
                             >
                               {{ 'SUBSCRIPTIONS.REACTIVATE' | translate }}
                             </button>
