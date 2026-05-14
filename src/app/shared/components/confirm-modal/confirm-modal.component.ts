@@ -24,54 +24,12 @@ import { TranslateService } from '@ngx-translate/core';
           [class.scale-95]="!animateIn()"
         >
           <div class="p-5">
-            <!-- Icon + Content -->
-            <div class="flex gap-3.5">
-              @if (variant() === 'danger') {
-                <div
-                  class="flex-shrink-0 w-9 h-9 rounded-full bg-error-light flex items-center justify-center"
-                >
-                  <svg
-                    class="w-[18px] h-[18px] text-error"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                    />
-                  </svg>
-                </div>
-              } @else {
-                <div
-                  class="flex-shrink-0 w-9 h-9 rounded-full bg-primary-light flex items-center justify-center"
-                >
-                  <svg
-                    class="w-[18px] h-[18px] text-primary"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      d="M12 9v2m0 4h.01M12 3a9 9 0 110 18 9 9 0 010-18z"
-                    />
-                  </svg>
-                </div>
-              }
-              <div class="min-w-0">
-                <h3 class="text-sm font-semibold text-text-primary leading-snug">
-                  {{ resolvedTitle() }}
-                </h3>
-                <p class="mt-1 text-[13px] text-text-secondary leading-relaxed">
-                  {{ resolvedMessage() }}
-                </p>
-              </div>
-            </div>
+            <h3 class="text-sm font-semibold text-text-primary leading-snug">
+              {{ resolvedTitle() }}
+            </h3>
+            <p class="mt-1 text-[13px] text-text-secondary leading-relaxed">
+              {{ resolvedMessage() }}
+            </p>
           </div>
 
           <!-- Actions -->

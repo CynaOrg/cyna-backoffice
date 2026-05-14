@@ -99,19 +99,19 @@ describe('ConfirmModalComponent', () => {
   });
 
   describe('variant', () => {
-    it('renders the danger icon when variant=danger', () => {
+    it('renders the danger confirm button when variant=danger', () => {
       fixture.componentRef.setInput('open', true);
       fixture.componentRef.setInput('variant', 'danger');
       fixture.detectChanges();
       const html = fixture.nativeElement.innerHTML as string;
-      expect(html).toContain('bg-error-light');
+      expect(html).toContain('bg-error');
     });
 
-    it('renders the primary icon when variant=primary (default)', () => {
+    it('renders the primary confirm button when variant=primary (default)', () => {
       fixture.componentRef.setInput('open', true);
       fixture.detectChanges();
       const html = fixture.nativeElement.innerHTML as string;
-      expect(html).toContain('bg-primary-light');
+      expect(html).toContain('bg-primary');
     });
   });
 });
