@@ -103,7 +103,7 @@ type SubscriptionAction = 'cancel' | 'reactivate' | 'cancel_at_end' | 'resume_pe
                       {{ formatCurrency(sub.price) }}
                     </td>
                     <td class="px-6 py-4">
-                      <app-status-badge [status]="sub.status" />
+                      <app-status-badge [status]="badgeStatus(sub)" />
                     </td>
                     <td class="px-6 py-4 text-sm text-text-secondary">
                       {{ formatDate(sub.currentPeriodEnd) }}
@@ -308,6 +308,12 @@ export class SubscriptionListComponent implements OnInit {
 
   customerLabel(sub: Subscription): string {
     return sub.customerEmail || (sub.userId ? sub.userId.slice(0, 8) : '');
+  }
+
+  badgeStatus(sub: Subscription): string {
+    const billingActive =
+      sub.status === 'active' || sub.status === 'past_due' || sub.status === 'unpaid';
+    return sub.cancelAtPeriodEnd && billingActive ? 'active_canceling' : sub.status;
   }
 
   formatDate(d: string): string {
