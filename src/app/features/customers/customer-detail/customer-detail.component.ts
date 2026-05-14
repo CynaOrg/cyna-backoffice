@@ -251,8 +251,8 @@ interface UpdateStatusPayload {
                       <td class="px-4 py-3 text-sm font-medium text-text-primary">
                         {{ sub.productName || sub.productId }}
                       </td>
-                      <td class="px-4 py-3 text-sm text-text-secondary capitalize">
-                        {{ sub.billingPeriod?.toLowerCase() }}
+                      <td class="px-4 py-3 text-sm text-text-secondary">
+                        {{ billingPeriodLabel(sub) | translate }}
                       </td>
                       <td class="px-4 py-3 text-sm text-text-primary font-medium">
                         {{ formatCurrency(sub.price) }}
@@ -333,6 +333,12 @@ export class CustomerDetailComponent implements OnInit {
     const billingActive =
       sub.status === 'active' || sub.status === 'past_due' || sub.status === 'unpaid';
     return sub.cancelAtPeriodEnd && billingActive ? 'active_canceling' : sub.status;
+  }
+
+  billingPeriodLabel(sub: Subscription): string {
+    return sub.billingPeriod === 'YEARLY'
+      ? 'SUBSCRIPTIONS.BILLING_YEARLY'
+      : 'SUBSCRIPTIONS.BILLING_MONTHLY';
   }
 
   loadOrders(userId: string): void {
