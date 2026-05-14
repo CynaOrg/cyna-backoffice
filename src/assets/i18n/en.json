@@ -266,6 +266,7 @@
     "SUBTITLE": "Manage customer subscriptions",
     "ALL_STATUSES": "All statuses",
     "ACTIVE": "Active",
+    "ACTIVE_CANCELING": "Cancellation scheduled",
     "PAST_DUE": "Past Due",
     "CANCELLED": "Cancelled",
     "UNPAID": "Unpaid",
