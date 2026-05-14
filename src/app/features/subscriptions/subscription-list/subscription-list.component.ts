@@ -119,14 +119,14 @@ type SubscriptionAction = 'cancel' | 'reactivate' | 'cancel_at_end' | 'resume_pe
                             @if (sub.cancelAtPeriodEnd) {
                               <button
                                 (click)="confirmAction(sub, 'resume_period')"
-                                class="inline-flex items-center px-2.5 py-1 text-xs font-medium text-primary bg-primary-light/60 border border-primary/15 rounded-md hover:bg-primary-light hover:border-primary/30 transition-colors cursor-pointer"
+                                class="inline-flex items-center justify-center h-7 px-3 text-xs font-medium text-primary bg-primary-light rounded-md hover:brightness-95 transition-[filter] whitespace-nowrap cursor-pointer"
                               >
                                 {{ 'SUBSCRIPTIONS.RESUME_PERIOD' | translate }}
                               </button>
                             } @else {
                               <button
                                 (click)="confirmAction(sub, 'cancel_at_end')"
-                                class="inline-flex items-center px-2.5 py-1 text-xs font-medium text-warning bg-warning-light/60 border border-warning/15 rounded-md hover:bg-warning-light hover:border-warning/30 transition-colors cursor-pointer"
+                                class="inline-flex items-center justify-center h-7 px-3 text-xs font-medium text-warning bg-warning-light rounded-md hover:brightness-95 transition-[filter] whitespace-nowrap cursor-pointer"
                               >
                                 {{ 'SUBSCRIPTIONS.CANCEL_AT_END' | translate }}
                               </button>
@@ -140,14 +140,14 @@ type SubscriptionAction = 'cancel' | 'reactivate' | 'cancel_at_end' | 'resume_pe
                             -->
                             <button
                               (click)="confirmAction(sub, 'cancel')"
-                              class="inline-flex items-center px-2.5 py-1 text-xs font-medium text-error bg-error-light/60 border border-error/15 rounded-md hover:bg-error-light hover:border-error/30 transition-colors cursor-pointer"
+                              class="inline-flex items-center justify-center h-7 px-3 text-xs font-medium text-error bg-error-light rounded-md hover:brightness-95 transition-[filter] whitespace-nowrap cursor-pointer"
                             >
                               {{ 'SUBSCRIPTIONS.CANCEL' | translate }}
                             </button>
                           } @else if (sub.status === 'cancelled' || sub.status === 'paused') {
                             <button
                               (click)="confirmAction(sub, 'reactivate')"
-                              class="inline-flex items-center px-2.5 py-1 text-xs font-medium text-primary bg-primary-light/60 border border-primary/15 rounded-md hover:bg-primary-light hover:border-primary/30 transition-colors cursor-pointer"
+                              class="inline-flex items-center justify-center h-7 px-3 text-xs font-medium text-primary bg-primary-light rounded-md hover:brightness-95 transition-[filter] whitespace-nowrap cursor-pointer"
                             >
                               {{ 'SUBSCRIPTIONS.REACTIVATE' | translate }}
                             </button>
