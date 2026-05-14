@@ -272,6 +272,7 @@
     "CANCELLED": "Cancelled",
     "UNPAID": "Unpaid",
     "PAUSED": "Paused",
+    "SEARCH_PLACEHOLDER": "Search by customer, product or subscription ID...",
     "PRODUCT": "Product",
     "CUSTOMER": "Customer",
     "PERIOD": "Period",
@@ -343,7 +344,10 @@
     "NOT_FOUND": "User not found",
     "ORDER_HISTORY": "Order history",
     "NO_ORDERS": "No orders",
-    "VIEW_ALL_ORDERS": "View all orders"
+    "VIEW_ALL_ORDERS": "View all orders",
+    "SUBSCRIPTION_HISTORY": "Subscription history",
+    "NO_SUBSCRIPTIONS": "No subscriptions",
+    "VIEW_ALL_SUBSCRIPTIONS": "View all subscriptions"
   },
   "ANALYTICS": {
     "TITLE": "Analytics",
