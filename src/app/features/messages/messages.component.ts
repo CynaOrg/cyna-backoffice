@@ -12,8 +12,6 @@ type MessagesTab = 'inbox' | 'archived';
 type MessageActionKey =
   | `read:${string}`
   | `unread:${string}`
-  | `processed:${string}`
-  | `unprocessed:${string}`
   | `archive:${string}`
   | `restore:${string}`
   | `delete:${string}`;
@@ -125,28 +123,6 @@ type MessageActionKey =
                     </td>
                     <td class="px-6 py-4 text-right" (click)="$event.stopPropagation()">
                       <div class="flex items-center justify-end gap-1">
-                        <!-- MSG-2: processed toggle -->
-                        <label
-                          class="flex items-center gap-1.5 px-2 py-1 text-xs text-text-secondary cursor-pointer select-none"
-                          [title]="'MESSAGES.MARK_PROCESSED' | translate"
-                        >
-                          <input
-                            type="checkbox"
-                            class="rounded"
-                            [checked]="msg.isProcessed"
-                            [disabled]="
-                              isBusy('processed:' + msg.id) || isBusy('unprocessed:' + msg.id)
-                            "
-                            (change)="toggleProcessed(msg)"
-                          />
-                          @if (isBusy('processed:' + msg.id) || isBusy('unprocessed:' + msg.id)) {
-                            <span
-                              class="inline-block w-3 h-3 border-2 border-primary border-t-transparent rounded-full animate-spin"
-                            ></span>
-                          } @else {
-                            <span>{{ 'MESSAGES.PROCESSED' | translate }}</span>
-                          }
-                        </label>
                         @if (!msg.isRead) {
                           <button
                             type="button"
@@ -402,12 +378,6 @@ export class MessagesComponent implements OnInit {
 
   markUnread(msg: ContactMessage): void {
     this.update(msg, { isRead: false }, `unread:${msg.id}`);
-  }
-
-  toggleProcessed(msg: ContactMessage): void {
-    const next = !msg.isProcessed;
-    const key: MessageActionKey = next ? `processed:${msg.id}` : `unprocessed:${msg.id}`;
-    this.update(msg, { isProcessed: next }, key);
   }
 
   archive(msg: ContactMessage): void {
