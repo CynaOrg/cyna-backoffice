@@ -7,7 +7,8 @@ import { NotificationService } from '../../../core/services/notification.service
 import { User } from '../../../core/models/user.model';
 import { Order } from '../../../core/models/order.model';
 import { StatusBadgeComponent } from '../../../shared/components/status-badge/status-badge.component';
-import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
+import { DetailSkeletonComponent } from '../../../shared/components/detail-skeleton/detail-skeleton.component';
+import { TableSkeletonComponent } from '../../../shared/components/table-skeleton/table-skeleton.component';
 
 interface UpdateStatusPayload {
   isActive: boolean;
@@ -16,11 +17,17 @@ interface UpdateStatusPayload {
 @Component({
   selector: 'app-customer-detail',
   standalone: true,
-  imports: [RouterLink, TranslateModule, StatusBadgeComponent, LoadingSpinnerComponent],
+  imports: [
+    RouterLink,
+    TranslateModule,
+    StatusBadgeComponent,
+    DetailSkeletonComponent,
+    TableSkeletonComponent,
+  ],
   template: `
     <div>
       @if (loading()) {
-        <app-loading-spinner />
+        <app-detail-skeleton [cards]="3" />
       } @else if (user()) {
         <div class="flex items-center justify-between mb-6">
           <div class="flex items-center gap-3">
@@ -122,7 +129,7 @@ interface UpdateStatusPayload {
           </div>
 
           @if (ordersLoading()) {
-            <app-loading-spinner />
+            <app-table-skeleton [rows]="5" [columns]="5" />
           } @else if (orders().length === 0) {
             <p class="py-8 text-center text-text-muted text-sm">
               {{ 'CUSTOMERS.NO_ORDERS' | translate }}

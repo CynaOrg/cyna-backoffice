@@ -14,7 +14,7 @@ import { NotificationService } from '../../../core/services/notification.service
 import { User } from '../../../core/models/user.model';
 import { StatusBadgeComponent } from '../../../shared/components/status-badge/status-badge.component';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
-import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
+import { TableSkeletonComponent } from '../../../shared/components/table-skeleton/table-skeleton.component';
 import { KpiCardComponent } from '../../../shared/components/kpi-card/kpi-card.component';
 
 @Component({
@@ -27,7 +27,7 @@ import { KpiCardComponent } from '../../../shared/components/kpi-card/kpi-card.c
     NgIconComponent,
     StatusBadgeComponent,
     PaginationComponent,
-    LoadingSpinnerComponent,
+    TableSkeletonComponent,
     KpiCardComponent,
   ],
   viewProviders: [
@@ -135,7 +135,7 @@ import { KpiCardComponent } from '../../../shared/components/kpi-card/kpi-card.c
       </div>
 
       @if (loading()) {
-        <app-loading-spinner />
+        <app-table-skeleton [rows]="8" [columns]="6" />
       } @else {
         <div class="bg-surface rounded-xl border border-border-light shadow-sm overflow-hidden">
           <div class="overflow-x-auto">
@@ -321,9 +321,7 @@ export class CustomerListComponent implements OnInit {
       }>('admin/users', params)
       .subscribe({
         next: (res) => {
-          const items = Array.isArray(res)
-            ? (res as User[])
-            : (res?.data ?? res?.items ?? []);
+          const items = Array.isArray(res) ? (res as User[]) : (res?.data ?? res?.items ?? []);
           const total = Array.isArray(res)
             ? (res as User[]).length
             : (res?.pagination?.total ?? res?.total ?? items.length);

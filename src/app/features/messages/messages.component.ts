@@ -5,7 +5,7 @@ import { ContactMessage } from '../../core/models/content.model';
 import { ContentService } from '../../core/services/content.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { ConfirmModalComponent } from '../../shared/components/confirm-modal/confirm-modal.component';
-import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
+import { TableSkeletonComponent } from '../../shared/components/table-skeleton/table-skeleton.component';
 import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
 
 type MessagesTab = 'inbox' | 'archived';
@@ -21,7 +21,7 @@ type MessageActionKey =
 @Component({
   selector: 'app-messages',
   standalone: true,
-  imports: [TranslateModule, LoadingSpinnerComponent, StatusBadgeComponent, ConfirmModalComponent],
+  imports: [TranslateModule, TableSkeletonComponent, StatusBadgeComponent, ConfirmModalComponent],
   template: `
     <div>
       <!-- Sub tabs -->
@@ -53,7 +53,7 @@ type MessageActionKey =
       </div>
 
       @if (loading()) {
-        <app-loading-spinner />
+        <app-table-skeleton [rows]="8" [columns]="6" />
       } @else {
         <div class="bg-surface rounded-xl border border-border-light shadow-sm overflow-hidden">
           <div class="overflow-x-auto">
@@ -139,9 +139,7 @@ type MessageActionKey =
                             "
                             (change)="toggleProcessed(msg)"
                           />
-                          @if (
-                            isBusy('processed:' + msg.id) || isBusy('unprocessed:' + msg.id)
-                          ) {
+                          @if (isBusy('processed:' + msg.id) || isBusy('unprocessed:' + msg.id)) {
                             <span
                               class="inline-block w-3 h-3 border-2 border-primary border-t-transparent rounded-full animate-spin"
                             ></span>

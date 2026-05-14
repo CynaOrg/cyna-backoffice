@@ -623,6 +623,10 @@
     "PRODUCT_IMAGE_ALT": "Image du produit",
     "SET_PRIMARY": "Définir comme image principale",
     "DELETE_IMAGE": "Supprimer l'image",
+    "DELETE_IMAGE_TITLE": "Supprimer l'image",
+    "DELETE_IMAGE_MESSAGE": "Cette image sera définitivement supprimée. Cette action est irréversible.",
+    "DELETE_IMAGE_CONFIRM": "Supprimer",
+    "DELETE_IMAGE_CANCEL": "Annuler",
     "PRIMARY": "Principale",
     "FILE_TOO_LARGE": "Fichier trop volumineux (max 5 Mo)",
     "INVALID_TYPE": "Format non supporté"
