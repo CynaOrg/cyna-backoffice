@@ -181,26 +181,6 @@ const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label class="block text-sm font-medium text-text-primary mb-1">
-                    {{ 'CONTENT.TITLE_FR' | translate }}
-                  </label>
-                  <input
-                    formControlName="titleFr"
-                    class="w-full px-3 py-2 border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                  />
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-text-primary mb-1">
-                    {{ 'CONTENT.TITLE_EN' | translate }}
-                  </label>
-                  <input
-                    formControlName="titleEn"
-                    class="w-full px-3 py-2 border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                  />
-                </div>
-              </div>
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label class="block text-sm font-medium text-text-primary mb-1">
                     {{ 'CONTENT.SUBTITLE_FR' | translate }}
                   </label>
                   <textarea
@@ -572,8 +552,6 @@ export class ContentComponent implements OnInit {
   });
 
   heroForm: FormGroup = this.fb.group({
-    titleFr: [''],
-    titleEn: [''],
     subtitleFr: [''],
     subtitleEn: [''],
   });
@@ -864,8 +842,6 @@ export class ContentComponent implements OnInit {
       next: (hero) => {
         if (hero) {
           this.heroForm.patchValue({
-            titleFr: hero.titleFr || '',
-            titleEn: hero.titleEn || '',
             subtitleFr: hero.subtitleFr || '',
             subtitleEn: hero.subtitleEn || '',
           });
