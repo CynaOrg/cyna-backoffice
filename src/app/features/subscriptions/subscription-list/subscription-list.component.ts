@@ -6,7 +6,7 @@ import { AdminAuthService } from '../../../core/auth/services/admin-auth.service
 import { NotificationService } from '../../../core/services/notification.service';
 import { Subscription } from '../../../core/models/subscription.model';
 import { StatusBadgeComponent } from '../../../shared/components/status-badge/status-badge.component';
-import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
+import { TableSkeletonComponent } from '../../../shared/components/table-skeleton/table-skeleton.component';
 import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/confirm-modal.component';
 
 type SubscriptionAction = 'cancel' | 'reactivate' | 'cancel_at_end' | 'resume_period';
@@ -18,7 +18,7 @@ type SubscriptionAction = 'cancel' | 'reactivate' | 'cancel_at_end' | 'resume_pe
     FormsModule,
     TranslateModule,
     StatusBadgeComponent,
-    LoadingSpinnerComponent,
+    TableSkeletonComponent,
     ConfirmModalComponent,
   ],
   template: `
@@ -38,7 +38,7 @@ type SubscriptionAction = 'cancel' | 'reactivate' | 'cancel_at_end' | 'resume_pe
       </div>
 
       @if (loading()) {
-        <app-loading-spinner />
+        <app-table-skeleton [rows]="8" [columns]="7" />
       } @else {
         <div class="bg-surface rounded-xl border border-border-light shadow-sm overflow-hidden">
           <div class="overflow-x-auto">

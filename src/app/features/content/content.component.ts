@@ -5,7 +5,8 @@ import { map, switchMap } from 'rxjs/operators';
 import { ContentService } from '../../core/services/content.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { CarouselSlide } from '../../core/models/content.model';
-import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
+import { TableSkeletonComponent } from '../../shared/components/table-skeleton/table-skeleton.component';
+import { DetailSkeletonComponent } from '../../shared/components/detail-skeleton/detail-skeleton.component';
 import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
 import { ConfirmModalComponent } from '../../shared/components/confirm-modal/confirm-modal.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -20,7 +21,8 @@ const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
   imports: [
     ReactiveFormsModule,
     FormsModule,
-    LoadingSpinnerComponent,
+    TableSkeletonComponent,
+    DetailSkeletonComponent,
     StatusBadgeComponent,
     ConfirmModalComponent,
     TranslateModule,
@@ -53,7 +55,7 @@ const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
           </div>
 
           @if (loadingSlides()) {
-            <app-loading-spinner />
+            <app-table-skeleton [rows]="3" [columns]="4" [showHeader]="false" />
           } @else {
             <div class="grid gap-4 mt-4">
               @for (slide of slides(); track slide.id; let i = $index) {
@@ -173,7 +175,7 @@ const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
           </p>
 
           @if (loadingHero()) {
-            <app-loading-spinner />
+            <app-detail-skeleton [cards]="1" />
           } @else {
             <form [formGroup]="heroForm" (ngSubmit)="saveHeroText()" class="space-y-4">
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -251,7 +253,7 @@ const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
           </p>
 
           @if (loadingTopConfig()) {
-            <app-loading-spinner />
+            <app-detail-skeleton [cards]="1" />
           } @else {
             <div class="space-y-4">
               <div class="bg-white rounded-lg border border-border-light p-4">
