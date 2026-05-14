@@ -9,7 +9,7 @@ import { NotificationService } from '../../../core/services/notification.service
 import { Order, OrderStatus } from '../../../core/models/order.model';
 import { StatusBadgeComponent } from '../../../shared/components/status-badge/status-badge.component';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
-import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
+import { TableSkeletonComponent } from '../../../shared/components/table-skeleton/table-skeleton.component';
 
 @Component({
   selector: 'app-order-list',
@@ -20,7 +20,7 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
     TranslateModule,
     StatusBadgeComponent,
     PaginationComponent,
-    LoadingSpinnerComponent,
+    TableSkeletonComponent,
   ],
   template: `
     <div>
@@ -81,7 +81,7 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
       </div>
 
       @if (loading()) {
-        <app-loading-spinner />
+        <app-table-skeleton [rows]="8" [columns]="7" />
       } @else {
         <div class="bg-surface rounded-xl border border-border-light shadow-sm overflow-hidden">
           <div class="overflow-x-auto">
@@ -234,10 +234,11 @@ export class OrderListComponent implements OnInit, OnDestroy {
     // Use getRaw so we can read `pagination.total`; ApiService.get would strip the
     // outer envelope and hand back only the items array, losing the total.
     this.api
-      .getRaw<{ data?: Order[]; pagination?: { total?: number }; total?: number }>(
-        'admin/orders',
-        params,
-      )
+      .getRaw<{
+        data?: Order[];
+        pagination?: { total?: number };
+        total?: number;
+      }>('admin/orders', params)
       .subscribe({
         next: (res) => {
           const items = Array.isArray(res) ? (res as Order[]) : (res?.data ?? []);

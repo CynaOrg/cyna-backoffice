@@ -13,7 +13,7 @@ import { ActivatedRoute } from '@angular/router';
 import { AnalyticsService } from '../../core/services/analytics.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { KpiCardComponent } from '../../shared/components/kpi-card/kpi-card.component';
-import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
+import { StatCardSkeletonComponent } from '../../shared/components/stat-card-skeleton/stat-card-skeleton.component';
 import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import {
@@ -76,7 +76,7 @@ Chart.defaults.plugins.tooltip.usePointStyle = true;
   standalone: true,
   imports: [
     KpiCardComponent,
-    LoadingSpinnerComponent,
+    StatCardSkeletonComponent,
     StatusBadgeComponent,
     TranslateModule,
     NgIconComponent,
@@ -114,7 +114,13 @@ Chart.defaults.plugins.tooltip.usePointStyle = true;
       </div>
 
       @if (loading()) {
-        <app-loading-spinner />
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+          <app-stat-card-skeleton />
+          <app-stat-card-skeleton />
+          <app-stat-card-skeleton />
+          <app-stat-card-skeleton />
+        </div>
+        <div class="h-64 w-full rounded-xl bg-gray-100 animate-pulse"></div>
       } @else {
         <!-- KPI Cards -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">

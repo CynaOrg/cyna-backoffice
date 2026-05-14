@@ -596,10 +596,10 @@ const UPLOAD_CONCURRENCY = 3;
 
     <app-confirm-modal
       [open]="showDeleteImageModal()"
-      title="Supprimer l'image"
-      message="Cette image sera definitivement supprimee. Cette action est irreversible."
-      confirmLabel="Supprimer"
-      cancelLabel="Annuler"
+      [title]="'IMAGE_UPLOAD.DELETE_IMAGE_TITLE' | translate"
+      [message]="'IMAGE_UPLOAD.DELETE_IMAGE_MESSAGE' | translate"
+      [confirmLabel]="'IMAGE_UPLOAD.DELETE_IMAGE_CONFIRM' | translate"
+      [cancelLabel]="'IMAGE_UPLOAD.DELETE_IMAGE_CANCEL' | translate"
       variant="danger"
       (confirm)="confirmDeleteImage()"
       (cancel)="showDeleteImageModal.set(false)"
