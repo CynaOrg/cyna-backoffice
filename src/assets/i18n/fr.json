@@ -272,6 +272,8 @@
     "UNPAID": "Impayé",
     "PAUSED": "En pause",
     "SEARCH_PLACEHOLDER": "Rechercher par client, produit ou ID d'abonnement...",
+    "BILLING_MONTHLY": "Mensuel",
+    "BILLING_YEARLY": "Annuel",
     "PRODUCT": "Produit",
     "CUSTOMER": "Client",
     "PERIOD": "Période",
