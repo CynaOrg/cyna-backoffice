@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ApiService } from '../../../core/services/api.service';
@@ -23,7 +23,16 @@ type SubscriptionAction = 'cancel' | 'reactivate' | 'cancel_at_end' | 'resume_pe
   ],
   template: `
     <div>
-      <div class="bg-surface rounded-xl border border-border-light shadow-sm p-4 mb-6">
+      <div
+        class="bg-surface rounded-xl border border-border-light shadow-sm p-4 mb-6 flex flex-col md:flex-row gap-3"
+      >
+        <input
+          type="text"
+          [ngModel]="searchTerm()"
+          (ngModelChange)="searchTerm.set($event)"
+          [placeholder]="'SUBSCRIPTIONS.SEARCH_PLACEHOLDER' | translate"
+          class="flex-1 px-4 py-2 rounded-lg border border-border bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+        />
         <select
           [(ngModel)]="statusFilter"
           (change)="loadSubscriptions()"
@@ -88,7 +97,7 @@ type SubscriptionAction = 'cancel' | 'reactivate' | 'cancel_at_end' | 'resume_pe
                 </tr>
               </thead>
               <tbody class="divide-y divide-border-light">
-                @for (sub of subscriptions(); track sub.id) {
+                @for (sub of filteredSubscriptions(); track sub.id) {
                   <tr
                     class="hover:bg-gray-50/50"
                     [class]="sub.status === 'past_due' ? 'bg-orange-50/30' : ''"
@@ -193,6 +202,20 @@ export class SubscriptionListComponent implements OnInit {
   subscriptions = signal<Subscription[]>([]);
   loading = signal<boolean>(true);
   statusFilter = '';
+  searchTerm = signal<string>('');
+
+  filteredSubscriptions = computed(() => {
+    const term = this.searchTerm().trim().toLowerCase();
+    const list = this.subscriptions();
+    if (!term) return list;
+    return list.filter((sub) => {
+      const haystack = [sub.customerEmail, sub.productName, sub.stripeSubscriptionId, sub.userId]
+        .filter((v): v is string => !!v)
+        .join(' ')
+        .toLowerCase();
+      return haystack.includes(term);
+    });
+  });
   showModal = signal<boolean>(false);
   modalAction = signal<SubscriptionAction>('cancel');
   selectedSub = signal<Subscription | null>(null);
