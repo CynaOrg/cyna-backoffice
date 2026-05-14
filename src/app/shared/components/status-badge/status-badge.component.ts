@@ -44,6 +44,7 @@ export class StatusBadgeComponent {
 
   private readonly statusConfig: Record<string, { bg: string; text: string; dot: string }> = {
     active: { bg: 'bg-success-light', text: 'text-success', dot: 'bg-success' },
+    active_canceling: { bg: 'bg-warning-light', text: 'text-warning', dot: 'bg-warning' },
     paid: { bg: 'bg-success-light', text: 'text-success', dot: 'bg-success' },
     completed: { bg: 'bg-success-light', text: 'text-success', dot: 'bg-success' },
     delivered: { bg: 'bg-success-light', text: 'text-success', dot: 'bg-success' },
