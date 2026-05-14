@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { EMPTY } from 'rxjs';
 import { StatusBadgeComponent } from './status-badge.component';
 
 describe('StatusBadgeComponent', () => {
@@ -17,7 +18,13 @@ describe('StatusBadgeComponent', () => {
     component = fixture.componentInstance;
   }
 
-  beforeEach(() => setup({ instant: (k: string) => k } as Partial<TranslateService>));
+  beforeEach(() =>
+    setup({
+      instant: (k: string) => k,
+      onLangChange: EMPTY,
+      currentLang: 'fr',
+    } as unknown as Partial<TranslateService>),
+  );
 
   describe('displayLabel', () => {
     it('returns the explicit label when provided', () => {
@@ -32,7 +39,11 @@ describe('StatusBadgeComponent', () => {
     });
 
     it('returns the translated value when present', () => {
-      setup({ instant: (k: string) => (k === 'STATUS.ACTIVE' ? 'Actif' : k) });
+      setup({
+        instant: (k: string) => (k === 'STATUS.ACTIVE' ? 'Actif' : k),
+        onLangChange: EMPTY,
+        currentLang: 'fr',
+      } as unknown as Partial<TranslateService>);
       fixture.componentRef.setInput('status', 'active');
       expect(component.displayLabel()).toBe('Actif');
     });
