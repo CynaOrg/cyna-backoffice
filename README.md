@@ -1,59 +1,57 @@
-# CynaBackoffice
+# CYNA — Back-office (Angular 21)
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.1.3.
+Interface admin pour gérer le catalogue, les commandes, les clients, les admins, les abonnements et le contenu.
 
-## Development server
+## Stack
 
-To start a local development server, run:
+| Composant     | Version | Rôle                 |
+| ------------- | ------- | -------------------- |
+| Angular       | 21      | framework            |
+| Tailwind CSS  | 4       | styling              |
+| ngx-translate | —       | i18n FR/EN           |
+| Vitest        | —       | tests unitaires      |
+| chart.js      | 4       | graphiques analytics |
 
-```bash
-ng serve
-```
-
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
-
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+## Démarrage rapide
 
 ```bash
-ng generate component component-name
+git clone https://github.com/CynaOrg/cyna-backoffice.git
+cd cyna-backoffice
+npm install
+
+# Backend doit tourner sur localhost:3000 (voir cyna-api)
+ng serve --port 4300
+# → http://localhost:4300/
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+Le `proxy.conf.json` redirige `/api/v1/**` vers `http://localhost:3000`.
+
+## Comptes de test
+
+Une fois la base seedée (`cyna-api/npm run seed:dev`) :
+
+| Rôle        | Email                    | Mot de passe     | Accès                                      |
+| ----------- | ------------------------ | ---------------- | ------------------------------------------ |
+| Super Admin | `super.admin@cyna.local` | `SuperAdmin123!` | Tout (CRUD catalog/users/admins/content)   |
+| Commercial  | `commercial@cyna.local`  | `Commercial123!` | Lecture (analytics, orders, subscriptions) |
+
+> ⚠️ Le login admin envoie un code 2FA par email. En local sans SMTP, voir `cyna-api/README.md` pour récupérer le code via SQL.
+
+## Tests
 
 ```bash
-ng generate --help
+npm run test:cov        # Vitest avec couverture (572 tests)
+ng build                # Build prod
 ```
 
-## Building
+## Périmètre
 
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+- `features/products/` — Catalogue (CRUD produits, catégories)
+- `features/orders/` — Commandes (liste, détail, statut)
+- `features/customers/` — Utilisateurs (liste, détail, pause)
+- `features/admins/` — Admins (liste, création — super-admin only)
+- `features/subscriptions/` — Abonnements SaaS
+- `features/content/` — CMS (carousel, FAQ, hero text)
+- `features/messages/` — Messages contact client
+- `features/analytics/` — KPIs et graphiques
+- `features/account/` — Compte admin courant
