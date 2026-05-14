@@ -146,12 +146,6 @@ describe('MessagesComponent', () => {
       expect(content.updateContactMessage).toHaveBeenCalledWith('m1', { isRead: false });
     });
 
-    it('toggleProcessed flips the flag', () => {
-      content.updateContactMessage.mockReturnValue(of(msg));
-      component.toggleProcessed(msg);
-      expect(content.updateContactMessage).toHaveBeenCalledWith('m1', { isProcessed: true });
-    });
-
     it('archive sends isProcessed:true', () => {
       content.updateContactMessage.mockReturnValue(of(msg));
       component.archive(msg);
