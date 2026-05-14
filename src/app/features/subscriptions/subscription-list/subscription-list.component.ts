@@ -31,6 +31,9 @@ type SubscriptionAction = 'cancel' | 'reactivate' | 'cancel_at_end' | 'resume_pe
         >
           <option value="">{{ 'SUBSCRIPTIONS.ALL_STATUSES' | translate }}</option>
           <option value="active">{{ 'SUBSCRIPTIONS.ACTIVE' | translate }}</option>
+          <option value="active_canceling">
+            {{ 'SUBSCRIPTIONS.ACTIVE_CANCELING' | translate }}
+          </option>
           <option value="past_due">{{ 'SUBSCRIPTIONS.PAST_DUE' | translate }}</option>
           <option value="cancelled">{{ 'SUBSCRIPTIONS.CANCELLED' | translate }}</option>
           <option value="unpaid">{{ 'SUBSCRIPTIONS.UNPAID' | translate }}</option>
@@ -201,11 +204,16 @@ export class SubscriptionListComponent implements OnInit {
   loadSubscriptions(): void {
     this.loading.set(true);
     const params: Record<string, string | number> = {};
-    if (this.statusFilter) params['status'] = this.statusFilter;
+    // active_canceling is a UI-only status: ask the backend for active subs
+    // then keep only those scheduled to cancel at period end.
+    const isCancelingFilter = this.statusFilter === 'active_canceling';
+    const serverStatus = isCancelingFilter ? 'active' : this.statusFilter;
+    if (serverStatus) params['status'] = serverStatus;
 
     this.api.getList<Subscription>('admin/payments/subscriptions', params).subscribe({
       next: (data) => {
-        this.subscriptions.set(data || []);
+        const list = data || [];
+        this.subscriptions.set(isCancelingFilter ? list.filter((s) => s.cancelAtPeriodEnd) : list);
         this.loading.set(false);
       },
       error: () => {
