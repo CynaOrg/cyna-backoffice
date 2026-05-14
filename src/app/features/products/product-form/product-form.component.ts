@@ -190,6 +190,8 @@ export class ProductFormComponent implements OnInit, OnDestroy {
   async onSubmit(): Promise<void> {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
+      this.notifications.error(this.translate.instant('PRODUCTS.FORM_INVALID'));
+      this.focusFirstInvalidField();
       return;
     }
     this.saving.set(true);
@@ -560,5 +562,23 @@ export class ProductFormComponent implements OnInit, OnDestroy {
         this.items.set(this.itemsFromProduct(p));
       },
     });
+  }
+
+  isInvalid(fieldName: string): boolean {
+    const control = this.form.get(fieldName);
+    return !!control && control.invalid && control.touched;
+  }
+
+  private focusFirstInvalidField(): void {
+    const firstInvalid = Object.keys(this.form.controls).find((name) => {
+      const control = this.form.get(name);
+      return control?.invalid && control?.enabled;
+    });
+    if (!firstInvalid) return;
+    setTimeout(() => {
+      const el = document.querySelector<HTMLElement>(`[formcontrolname="${firstInvalid}"]`);
+      el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      el?.focus({ preventScroll: true });
+    }, 0);
   }
 }
