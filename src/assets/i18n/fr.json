@@ -266,6 +266,7 @@
     "SUBTITLE": "Gérer les abonnements clients",
     "ALL_STATUSES": "Tous les statuts",
     "ACTIVE": "Actif",
+    "ACTIVE_CANCELING": "Annulation prévue",
     "PAST_DUE": "En retard",
     "CANCELLED": "Annulé",
     "UNPAID": "Impayé",
