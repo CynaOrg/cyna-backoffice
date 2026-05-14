@@ -631,6 +631,7 @@
   },
   "STATUS": {
     "ACTIVE": "Actif",
+    "ACTIVE_CANCELING": "Annulation prévue",
     "INACTIVE": "Inactif",
     "PENDING": "En attente",
     "PAID": "Payée",
