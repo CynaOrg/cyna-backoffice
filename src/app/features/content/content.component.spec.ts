@@ -131,7 +131,7 @@ describe('ContentComponent', () => {
     it('hydrates hero form when hero text exists', () => {
       content.getHeroText.mockReturnValue(of(makeHero()));
       fixture.detectChanges();
-      expect(component.heroForm.value.titleFr).toBe('HT FR');
+      expect(component.heroForm.value.subtitleFr).toBe('HS FR');
     });
 
     it('handles top config errors gracefully', () => {
@@ -340,7 +340,7 @@ describe('ContentComponent', () => {
     beforeEach(() => fixture.detectChanges());
 
     it('saves hero text via the service', () => {
-      component.heroForm.patchValue({ titleFr: 'X' });
+      component.heroForm.patchValue({ subtitleFr: 'X' });
       component.saveHeroText();
       expect(content.updateHeroText).toHaveBeenCalled();
       expect(notifications.success).toHaveBeenCalled();
