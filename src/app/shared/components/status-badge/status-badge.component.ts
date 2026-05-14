@@ -1,5 +1,7 @@
 import { Component, input, computed, inject } from '@angular/core';
-import { TranslateService } from '@ngx-translate/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { LangChangeEvent, TranslateService } from '@ngx-translate/core';
+import { startWith } from 'rxjs/operators';
 
 @Component({
   selector: 'app-status-badge',
@@ -20,14 +22,21 @@ export class StatusBadgeComponent {
   status = input.required<string>();
   label = input<string>();
 
+  // Track language changes so the computed below re-runs when the user
+  // toggles FR/EN. translate.instant() is non-reactive on its own.
+  private readonly currentLang = toSignal(
+    this.translate.onLangChange.pipe(
+      startWith({ lang: this.translate.currentLang } as LangChangeEvent),
+    ),
+    { initialValue: { lang: this.translate.currentLang } as LangChangeEvent },
+  );
+
   displayLabel = computed(() => {
     const explicit = this.label();
     if (explicit) return explicit;
     const raw = this.status();
     if (!raw) return '';
-    // Try to resolve a STATUS.* translation. ngx-translate returns the key
-    // verbatim when missing — fall back to a kebab-cased version of the raw
-    // status (e.g. `past_due` -> `past due`) in that case.
+    this.currentLang();
     const key = `STATUS.${raw.toUpperCase()}`;
     const translated = this.translate.instant(key);
     return translated && translated !== key ? translated : raw.replace(/_/g, ' ');
