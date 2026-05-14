@@ -273,6 +273,8 @@
     "UNPAID": "Unpaid",
     "PAUSED": "Paused",
     "SEARCH_PLACEHOLDER": "Search by customer, product or subscription ID...",
+    "BILLING_MONTHLY": "Monthly",
+    "BILLING_YEARLY": "Yearly",
     "PRODUCT": "Product",
     "CUSTOMER": "Customer",
     "PERIOD": "Period",

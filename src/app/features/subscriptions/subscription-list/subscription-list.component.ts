@@ -108,8 +108,8 @@ type SubscriptionAction = 'cancel' | 'reactivate' | 'cancel_at_end' | 'resume_pe
                     <td class="px-6 py-4 text-sm text-text-secondary">
                       {{ customerLabel(sub) }}
                     </td>
-                    <td class="px-6 py-4 text-sm text-text-secondary capitalize">
-                      {{ sub.billingPeriod?.toLowerCase() }}
+                    <td class="px-6 py-4 text-sm text-text-secondary">
+                      {{ billingPeriodLabel(sub) | translate }}
                     </td>
                     <td class="px-6 py-4 text-sm text-text-primary font-medium">
                       {{ formatCurrency(sub.price) }}
@@ -345,6 +345,12 @@ export class SubscriptionListComponent implements OnInit {
     const billingActive =
       sub.status === 'active' || sub.status === 'past_due' || sub.status === 'unpaid';
     return sub.cancelAtPeriodEnd && billingActive ? 'active_canceling' : sub.status;
+  }
+
+  billingPeriodLabel(sub: Subscription): string {
+    return sub.billingPeriod === 'YEARLY'
+      ? 'SUBSCRIPTIONS.BILLING_YEARLY'
+      : 'SUBSCRIPTIONS.BILLING_MONTHLY';
   }
 
   formatDate(d: string): string {
