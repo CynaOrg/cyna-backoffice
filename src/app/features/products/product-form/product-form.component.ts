@@ -134,6 +134,16 @@ export class ProductFormComponent implements OnInit, OnDestroy {
       next: (res) => {
         const cats = Array.isArray(res) ? res : res?.data || res || [];
         this.categories.set(cats);
+
+        // When the productType is fixed by the route, the category is implied
+        // (saas → 'saas' slug, physical → 'physical' slug, license → 'license' slug).
+        // Auto-fill categoryId so the user doesn't have to pick a redundant value.
+        if (this.fixedProductType && !this.form.get('categoryId')?.value) {
+          const match = cats.find((c: Category) => c.slug === this.fixedProductType);
+          if (match) {
+            this.form.patchValue({ categoryId: match.id });
+          }
+        }
       },
     });
   }
