@@ -177,6 +177,52 @@ interface DashboardViewModel {
               </svg>
             </a>
           }
+          @if (authService.isCommercial()) {
+            <!-- Average Cart (commercial fills the slot super-admin uses for messages) -->
+            <a
+              routerLink="/analytics"
+              class="group flex items-center gap-4 rounded-xl border border-border-light bg-surface p-6 shadow-sm hover:shadow-md hover:-translate-y-px transition-all duration-200 no-underline"
+            >
+              <div
+                class="w-12 h-12 rounded-lg bg-primary-light flex items-center justify-center shrink-0"
+              >
+                <svg
+                  class="w-6 h-6 text-primary"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z"
+                  />
+                </svg>
+              </div>
+              <div>
+                <div class="text-2xl font-bold text-text-primary">
+                  {{ formatCurrency(data()?.kpis?.avgCartValue || 0) }}
+                </div>
+                <div class="text-sm text-text-secondary">
+                  {{ 'DASHBOARD.AVG_CART' | translate }}
+                </div>
+              </div>
+              <svg
+                class="w-5 h-5 text-text-muted ml-auto opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="m8.25 4.5 7.5 7.5-7.5 7.5"
+                />
+              </svg>
+            </a>
+          }
         </div>
 
         <!-- Recent Orders Table (read-only for commercial) -->
@@ -245,68 +291,6 @@ interface DashboardViewModel {
             </table>
           </div>
         </div>
-
-        <!-- Commercial: Sales Overview -->
-        @if (authService.isCommercial()) {
-          <div class="rounded-xl border border-border-light bg-surface shadow-sm p-6">
-            <h3 class="text-lg font-semibold text-text-primary !m-0 mb-4">
-              {{ 'DASHBOARD.SALES_OVERVIEW' | translate }}
-            </h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div class="rounded-lg bg-background p-5">
-                <div class="text-sm text-text-secondary mb-1">
-                  {{ 'DASHBOARD.AVG_CART' | translate }}
-                </div>
-                <div class="text-xl font-bold text-text-primary">
-                  {{ formatCurrency(data()?.kpis?.avgCartValue || 0) }}
-                </div>
-                @if (data()?.kpis?.avgCartVariation !== undefined) {
-                  <span
-                    class="text-xs font-semibold mt-1 inline-block"
-                    [class]="data()!.kpis.avgCartVariation! >= 0 ? 'text-success' : 'text-error'"
-                  >
-                    {{ data()!.kpis.avgCartVariation! >= 0 ? '+' : ''
-                    }}{{ data()!.kpis.avgCartVariation }}%
-                    {{ 'DASHBOARD.VS_LAST_PERIOD' | translate }}
-                  </span>
-                }
-              </div>
-
-              <div class="rounded-lg bg-background p-5">
-                <div class="text-sm text-text-secondary mb-1">
-                  {{ 'DASHBOARD.CONVERSION_RATE' | translate }}
-                </div>
-                <div class="text-xl font-bold text-text-primary">
-                  {{
-                    data()?.kpis?.conversionRate !== undefined
-                      ? data()!.kpis.conversionRate + '%'
-                      : 'N/A'
-                  }}
-                </div>
-                <span class="text-xs text-text-secondary mt-1 inline-block">
-                  {{ 'DASHBOARD.BASED_ON_PERIOD' | translate }}
-                </span>
-              </div>
-            </div>
-
-            <div class="mt-6 pt-6 border-t border-border-light">
-              <div class="flex items-center justify-between mb-2">
-                <span class="text-sm text-text-secondary">{{
-                  'DASHBOARD.REVENUE_TARGET' | translate
-                }}</span>
-                <span class="text-sm font-medium text-text-primary">
-                  {{ formatCurrency(data()?.kpis?.totalRevenue || 0) }}
-                </span>
-              </div>
-              <div class="w-full bg-border-light rounded-full h-3">
-                <div
-                  class="bg-primary rounded-full h-3 transition-all duration-500"
-                  [style.width.%]="revenueProgress()"
-                ></div>
-              </div>
-            </div>
-          </div>
-        }
       }
     </div>
   `,
@@ -324,18 +308,7 @@ export class DashboardComponent implements OnInit {
   lowStockCount = signal(0);
   unreadMessages = signal(0);
 
-  // DASH-2: extracted from a magic number in revenueProgress(). Eventually
-  // this should come from a backend `/admin/config/revenue-target` endpoint
-  // (or env config) so non-engineers can tune it.
-  // TODO(DASH-2): replace with a value coming from the backend config service.
-  private readonly REVENUE_TARGET_EUR = 100000;
-
   adminFirstName = computed(() => this.authService.admin()?.firstName || 'Admin');
-
-  revenueProgress = computed(() => {
-    const revenue = this.data()?.kpis?.totalRevenue || 0;
-    return Math.min((revenue / this.REVENUE_TARGET_EUR) * 100, 100);
-  });
 
   ngOnInit() {
     this.loadDashboard();
@@ -344,10 +317,10 @@ export class DashboardComponent implements OnInit {
   loadDashboard() {
     this.loading.set(true);
 
-    // DASH-3: avgCart/conversionRate are only rendered in the commercial
-    // view; gate populating them so we don't surface unused data on
-    // dashboards that won't display it.
-    const showCartConversion = this.authService.isCommercial();
+    // DASH-3: avgCart is only rendered in the commercial dashboard (next to
+    // the low-stock alert tile); skip populating it on the super-admin view
+    // so we don't surface unused data.
+    const showAvgCart = this.authService.isCommercial();
 
     // The API gateway TransformInterceptor returns admin/orders as
     // `{ data: items, pagination: {...}, meta }`; ApiService.get would strip the
@@ -370,8 +343,7 @@ export class DashboardComponent implements OnInit {
             ordersVariation: apiData?.orders?.changePercent,
             activeSubscriptions: apiData?.subscriptions?.active ?? 0,
             subscriptionsVariation: apiData?.subscriptions?.changePercent,
-            avgCartValue: showCartConversion ? (apiData?.averageOrderValue ?? 0) : 0,
-            conversionRate: showCartConversion ? apiData?.conversionRate : undefined,
+            avgCartValue: showAvgCart ? (apiData?.averageOrderValue ?? 0) : 0,
           },
           recentOrders: (Array.isArray(recentOrders)
             ? recentOrders

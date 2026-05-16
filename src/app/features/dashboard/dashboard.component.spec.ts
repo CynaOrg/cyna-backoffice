@@ -62,7 +62,6 @@ describe('DashboardComponent', () => {
           subscriptions: { mrr: 2000, changePercent: 5, active: 30 },
           orders: { total: 100, changePercent: 8 },
           averageOrderValue: 250,
-          conversionRate: 4.2,
         }),
       );
       api.getRaw.mockReturnValue(
@@ -89,7 +88,7 @@ describe('DashboardComponent', () => {
       expect(vm?.recentOrders[0].total).toBe(99.5);
     });
 
-    it('zeros out avgCart/conversion for non-commercial admins', async () => {
+    it('zeros out avgCart for non-commercial admins', async () => {
       await setup({ isCommercial: false });
       analytics.getDashboard.mockReturnValue(
         of({
@@ -97,15 +96,13 @@ describe('DashboardComponent', () => {
           subscriptions: {},
           orders: {},
           averageOrderValue: 250,
-          conversionRate: 4.2,
         }),
       );
       fixture.detectChanges();
       expect(component.data()?.kpis.avgCartValue).toBe(0);
-      expect(component.data()?.kpis.conversionRate).toBeUndefined();
     });
 
-    it('populates avgCart/conversion for commercial admins', async () => {
+    it('populates avgCart for commercial admins', async () => {
       await setup({ isCommercial: true });
       analytics.getDashboard.mockReturnValue(
         of({
@@ -113,12 +110,10 @@ describe('DashboardComponent', () => {
           subscriptions: {},
           orders: {},
           averageOrderValue: 250,
-          conversionRate: 4.2,
         }),
       );
       fixture.detectChanges();
       expect(component.data()?.kpis.avgCartValue).toBe(250);
-      expect(component.data()?.kpis.conversionRate).toBe(4.2);
     });
 
     it('handles a bare array of recent orders', async () => {
@@ -192,19 +187,6 @@ describe('DashboardComponent', () => {
 
     it('adminFirstName uses the admin firstName', () => {
       expect(component.adminFirstName()).toBe('Alice');
-    });
-
-    it('revenueProgress caps at 100', async () => {
-      await setup();
-      analytics.getDashboard.mockReturnValue(
-        of({ revenue: { total: 500000 }, subscriptions: {}, orders: {} }),
-      );
-      fixture.detectChanges();
-      expect(component.revenueProgress()).toBe(100);
-    });
-
-    it('revenueProgress is proportional', () => {
-      expect(component.revenueProgress()).toBe(25);
     });
   });
 
