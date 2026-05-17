@@ -627,11 +627,11 @@ export class AnalyticsComponent implements OnInit, AfterViewInit, OnDestroy {
       },
       options: {
         responsive: true,
-        // The canvas is absolutely positioned and fills a rectangular flex-1
-        // area. Chart.js keeps the doughnut itself square and centered inside
-        // that rectangle, so the chart never pushes its own card taller than
-        // the grid neighbor on narrow viewports.
-        maintainAspectRatio: true,
+        // false so Chart.js does NOT resize the canvas to a square — it would
+        // anchor the now-square canvas to inset-0 (top-left) and the doughnut
+        // would look left-aligned. With false, the canvas keeps the parent's
+        // rectangle and Chart.js draws the circular doughnut centered inside.
+        maintainAspectRatio: false,
         cutout: '58%',
         plugins: {
           legend: { display: false },
