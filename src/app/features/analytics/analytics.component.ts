@@ -20,7 +20,6 @@ import {
   DashboardData,
   StockStatusResponse,
   SalesDataPoint,
-  SalesByProductTypeData,
   MrrDataPoint,
   StockItem,
   CategorySalesEntry,
@@ -203,10 +202,9 @@ Chart.defaults.plugins.tooltip.usePointStyle = true;
           </div>
         </div>
 
-        <!-- MRR Evolution + Product Type Distribution -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
-          <!-- MRR Line Chart (2/3) -->
-          <div class="lg:col-span-2 rounded-xl border border-border-light bg-surface shadow-sm">
+        <!-- MRR Evolution (full width) -->
+        <div class="mb-4">
+          <div class="rounded-xl border border-border-light bg-surface shadow-sm">
             <div
               class="flex items-center justify-between px-4 sm:px-5 py-3 sm:py-4 border-b border-border-light"
             >
@@ -219,41 +217,6 @@ Chart.defaults.plugins.tooltip.usePointStyle = true;
             </div>
             <div class="p-4 sm:p-5">
               <canvas #mrrChart height="110"></canvas>
-            </div>
-          </div>
-
-          <!-- Product Type Doughnut (1/3) -->
-          <div class="rounded-xl border border-border-light bg-surface shadow-sm">
-            <div class="px-4 sm:px-5 py-3 sm:py-4 border-b border-border-light">
-              <h3 class="text-sm font-semibold text-text-primary !m-0">
-                {{ 'ANALYTICS.SALES_BY_TYPE' | translate }}
-              </h3>
-            </div>
-            <div class="p-4 sm:p-5 flex flex-col items-center">
-              <div class="w-40 h-40">
-                <canvas
-                  #productTypeChart
-                  class="block w-full h-full"
-                  width="160"
-                  height="160"
-                ></canvas>
-              </div>
-              <div class="w-full mt-4 space-y-2">
-                @for (pt of productTypeData(); track pt.type) {
-                  <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-2 min-w-0">
-                      <span
-                        class="w-2 h-2 rounded-full flex-shrink-0"
-                        [style.background-color]="chartColors[$index % chartColors.length]"
-                      ></span>
-                      <span class="text-xs text-text-primary truncate">{{ pt.type }}</span>
-                    </div>
-                    <span class="text-xs font-medium text-text-primary tabular-nums">
-                      {{ pt.percentage }}%
-                    </span>
-                  </div>
-                }
-              </div>
             </div>
           </div>
         </div>
@@ -446,7 +409,6 @@ Chart.defaults.plugins.tooltip.usePointStyle = true;
 })
 export class AnalyticsComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('salesChart') salesChartRef!: ElementRef<HTMLCanvasElement>;
-  @ViewChild('productTypeChart') productTypeChartRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('mrrChart') mrrChartRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('categorySalesChart') categorySalesChartRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('avgCartTypeChart') avgCartTypeChartRef!: ElementRef<HTMLCanvasElement>;
@@ -462,7 +424,6 @@ export class AnalyticsComponent implements OnInit, AfterViewInit, OnDestroy {
 
   dashboard = signal<AnalyticsViewModel | null>(null);
   salesData = signal<SalesDataPoint[]>([]);
-  productTypeData = signal<SalesByProductTypeData[]>([]);
   mrrHistory = signal<MrrDataPoint[]>([]);
   stockItems = signal<StockItem[]>([]);
   salesByCategoryData = signal<CategorySalesEntry[]>([]);
@@ -479,7 +440,6 @@ export class AnalyticsComponent implements OnInit, AfterViewInit, OnDestroy {
   exporting = signal(false);
 
   private salesChart: Chart | null = null;
-  private productTypeChart: Chart | null = null;
   private mrrChart: Chart | null = null;
   private categorySalesChart: Chart | null = null;
   private avgCartTypeChart: Chart | null = null;
@@ -512,7 +472,6 @@ export class AnalyticsComponent implements OnInit, AfterViewInit, OnDestroy {
   ngOnDestroy(): void {
     const charts: Array<Chart | null> = [
       this.salesChart,
-      this.productTypeChart,
       this.mrrChart,
       this.categorySalesChart,
       this.avgCartTypeChart,
@@ -523,7 +482,6 @@ export class AnalyticsComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     }
     this.salesChart = null;
-    this.productTypeChart = null;
     this.mrrChart = null;
     this.categorySalesChart = null;
     this.avgCartTypeChart = null;
@@ -554,9 +512,6 @@ export class AnalyticsComponent implements OnInit, AfterViewInit, OnDestroy {
       sales: this.analyticsService
         .getSales(period, this.groupBy())
         .pipe(catchError(() => of(null))),
-      productType: this.analyticsService
-        .getSalesByProductType(period)
-        .pipe(catchError(() => of(null))),
       salesByCategory: this.analyticsService
         .getSalesByCategory(period)
         .pipe(catchError(() => of(null))),
@@ -584,8 +539,19 @@ export class AnalyticsComponent implements OnInit, AfterViewInit, OnDestroy {
         }
 
         this.salesData.set(results.sales?.series || []);
-        this.productTypeData.set(results.productType?.productTypes || []);
-        this.salesByCategoryData.set(results.salesByCategory?.categories || []);
+        // Filter out the orphan 'unknown' bucket (order_items whose product was
+        // hard/soft-deleted) and renormalize percentages so the doughnut and
+        // its legend still add up to 100%.
+        const rawCategories = results.salesByCategory?.categories || [];
+        const knownCategories = rawCategories.filter((c) => c.categoryId !== 'unknown');
+        const totalKnownRevenue = knownCategories.reduce((sum, c) => sum + c.revenue, 0);
+        this.salesByCategoryData.set(
+          knownCategories.map((c) => ({
+            ...c,
+            percentage:
+              totalKnownRevenue > 0 ? Math.round((c.revenue / totalKnownRevenue) * 10000) / 100 : 0,
+          })),
+        );
         // SaaS subscriptions never transit through the cart (subscribe is a
         // direct Stripe Checkout flow), so the SaaS bucket is always 0 € and
         // would just display an empty bar — hide it from the breakdown.
@@ -630,7 +596,6 @@ export class AnalyticsComponent implements OnInit, AfterViewInit, OnDestroy {
 
   renderAllCharts(): void {
     this.renderSalesChart();
-    this.renderProductTypeChart();
     this.renderMrrChart();
     this.renderSalesByCategoryChart();
     this.renderAverageCartByTypeChart();
@@ -785,45 +750,6 @@ export class AnalyticsComponent implements OnInit, AfterViewInit, OnDestroy {
           },
           x: {
             grid: { display: false },
-          },
-        },
-      },
-    });
-  }
-
-  renderProductTypeChart(): void {
-    const data = this.productTypeData();
-    if (!data.length || !this.productTypeChartRef) return;
-
-    if (this.productTypeChart) this.productTypeChart.destroy();
-
-    this.productTypeChart = new Chart(this.productTypeChartRef.nativeElement, {
-      type: 'doughnut',
-      data: {
-        labels: data.map((d) => d.type),
-        datasets: [
-          {
-            data: data.map((d) => d.revenue),
-            backgroundColor: data.map((_, i) => this.chartColors[i % this.chartColors.length]),
-            borderColor: '#ffffff',
-            borderWidth: 2,
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        cutout: '58%',
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            callbacks: {
-              label: (ctx) => {
-                const value = this.formatCurrency(ctx.parsed);
-                const pct = data[ctx.dataIndex]?.percentage ?? 0;
-                return `${ctx.label}: ${value} (${pct}%)`;
-              },
-            },
           },
         },
       },
