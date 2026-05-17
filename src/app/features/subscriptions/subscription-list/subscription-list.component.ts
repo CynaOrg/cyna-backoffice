@@ -156,14 +156,20 @@ type SubscriptionAction = 'cancel' | 'reactivate' | 'cancel_at_end' | 'resume_pe
                             >
                               {{ 'SUBSCRIPTIONS.CANCEL' | translate }}
                             </button>
-                          } @else if (sub.status === 'cancelled' || sub.status === 'paused') {
-                            <button
-                              (click)="confirmAction(sub, 'reactivate')"
-                              class="inline-flex items-center justify-center h-7 px-3 text-xs font-medium text-primary bg-primary-light rounded-md hover:brightness-95 transition-[filter] whitespace-nowrap cursor-pointer"
-                            >
-                              {{ 'SUBSCRIPTIONS.REACTIVATE' | translate }}
-                            </button>
                           }
+                          <!--
+                            A subscription whose status is "cancelled" is
+                            terminal: Stripe will not let us resurrect it, the
+                            API returns 400 SUBSCRIPTION_ALREADY_TERMINATED.
+                            "Reactivating" only makes sense for an "active"
+                            row scheduled to cancel at the period end —
+                            handled by the resume_period branch above. A
+                            customer who wants to come back after a real
+                            cancellation has to subscribe again from scratch.
+                            We therefore do NOT render a Reactivate button on
+                            cancelled/paused rows: the admin has no action to
+                            take here.
+                          -->
                         </div>
                       </td>
                     }
