@@ -122,7 +122,9 @@ Chart.defaults.plugins.tooltip.usePointStyle = true;
         </div>
         <div class="h-64 w-full rounded-xl bg-gray-100 animate-pulse"></div>
       } @else {
-        <!-- KPI Cards -->
+        <!-- KPI Cards — MRR moved to the end and rendered in the primary
+             (purple) variant because it is a real-time snapshot that does not
+             vary with the date-range selector at the top of the page. -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
           <app-kpi-card
             [value]="formatCurrency(dashboard()?.kpis?.totalRevenue || 0)"
@@ -131,10 +133,10 @@ Chart.defaults.plugins.tooltip.usePointStyle = true;
             [variation]="dashboard()?.kpis?.revenueVariation"
           />
           <app-kpi-card
-            [value]="formatCurrency(dashboard()?.kpis?.mrr || 0)"
-            [label]="'ANALYTICS.MRR' | translate"
-            iconName="phosphorTrendUp"
-            [variation]="dashboard()?.kpis?.mrrVariation"
+            [value]="formatCurrency(dashboard()?.kpis?.avgCartValue || 0)"
+            [label]="'ANALYTICS.AVG_CART' | translate"
+            iconName="phosphorShoppingCartSimple"
+            [variation]="dashboard()?.kpis?.avgCartVariation"
           />
           <app-kpi-card
             [value]="(dashboard()?.kpis?.totalOrders || 0).toString()"
@@ -143,10 +145,10 @@ Chart.defaults.plugins.tooltip.usePointStyle = true;
             [variation]="dashboard()?.kpis?.ordersVariation"
           />
           <app-kpi-card
-            [value]="formatCurrency(dashboard()?.kpis?.avgCartValue || 0)"
-            [label]="'ANALYTICS.AVG_CART' | translate"
-            iconName="phosphorShoppingCartSimple"
-            [variation]="dashboard()?.kpis?.avgCartVariation"
+            [value]="formatCurrency(dashboard()?.kpis?.mrr || 0)"
+            [label]="'ANALYTICS.MRR' | translate"
+            iconName="phosphorTrendUp"
+            variant="primary"
           />
         </div>
 
@@ -584,7 +586,12 @@ export class AnalyticsComponent implements OnInit, AfterViewInit, OnDestroy {
         this.salesData.set(results.sales?.series || []);
         this.productTypeData.set(results.productType?.productTypes || []);
         this.salesByCategoryData.set(results.salesByCategory?.categories || []);
-        this.averageCartByTypeData.set(results.averageCartByType?.data || []);
+        // SaaS subscriptions never transit through the cart (subscribe is a
+        // direct Stripe Checkout flow), so the SaaS bucket is always 0 € and
+        // would just display an empty bar — hide it from the breakdown.
+        this.averageCartByTypeData.set(
+          (results.averageCartByType?.data || []).filter((d) => d.productType !== 'saas'),
+        );
         this.mrrHistory.set(results.mrr?.history || []);
 
         const stockRes = results.stock as StockStatusResponse | null;
