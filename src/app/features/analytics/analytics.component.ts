@@ -202,25 +202,6 @@ Chart.defaults.plugins.tooltip.usePointStyle = true;
           </div>
         </div>
 
-        <!-- MRR Evolution (full width) -->
-        <div class="mb-4">
-          <div class="rounded-xl border border-border-light bg-surface shadow-sm">
-            <div
-              class="flex items-center justify-between px-4 sm:px-5 py-3 sm:py-4 border-b border-border-light"
-            >
-              <h3 class="text-sm font-semibold text-text-primary !m-0">
-                {{ 'ANALYTICS.MRR_EVOLUTION' | translate }}
-              </h3>
-              <span class="text-xs text-text-muted">
-                {{ 'ANALYTICS.MONTHLY_TREND' | translate }}
-              </span>
-            </div>
-            <div class="p-4 sm:p-5">
-              <canvas #mrrChart height="110"></canvas>
-            </div>
-          </div>
-        </div>
-
         <!-- Sales by Category (Doughnut) + Avg Cart by Product Type (Bar) -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
           <!-- Sales by Category Doughnut (1/3) -->
@@ -230,16 +211,11 @@ Chart.defaults.plugins.tooltip.usePointStyle = true;
                 {{ 'ANALYTICS.SALES_BY_CATEGORY' | translate }}
               </h3>
             </div>
-            <div class="p-4 sm:p-5 flex flex-col items-center">
-              <div class="w-40 h-40">
-                <canvas
-                  #categorySalesChart
-                  class="block w-full h-full"
-                  width="160"
-                  height="160"
-                ></canvas>
+            <div class="p-4 sm:p-5 flex flex-col lg:flex-row items-center gap-4 lg:gap-6">
+              <div class="w-full max-w-[200px] aspect-square shrink-0">
+                <canvas #categorySalesChart class="block w-full h-full"></canvas>
               </div>
-              <div class="w-full mt-4 space-y-2">
+              <div class="flex-1 w-full space-y-2 min-w-0">
                 @for (cat of salesByCategoryData(); track cat.categoryId) {
                   <div class="flex items-center justify-between">
                     <div class="flex items-center gap-2 min-w-0">
@@ -272,6 +248,27 @@ Chart.defaults.plugins.tooltip.usePointStyle = true;
             </div>
             <div class="p-4 sm:p-5">
               <canvas #avgCartTypeChart height="110"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- MRR Evolution (full width, placed below category breakdown because
+             it is independent of the page-level date-range selector — a 12-month
+             rolling snapshot, not a period-bound metric). -->
+        <div class="mb-4">
+          <div class="rounded-xl border border-border-light bg-surface shadow-sm">
+            <div
+              class="flex items-center justify-between px-4 sm:px-5 py-3 sm:py-4 border-b border-border-light"
+            >
+              <h3 class="text-sm font-semibold text-text-primary !m-0">
+                {{ 'ANALYTICS.MRR_EVOLUTION' | translate }}
+              </h3>
+              <span class="text-xs text-text-muted">
+                {{ 'ANALYTICS.MONTHLY_TREND' | translate }}
+              </span>
+            </div>
+            <div class="p-4 sm:p-5">
+              <canvas #mrrChart height="110"></canvas>
             </div>
           </div>
         </div>
