@@ -214,10 +214,14 @@ Chart.defaults.plugins.tooltip.usePointStyle = true;
               </h3>
             </div>
             <div class="p-4 sm:p-5 flex-1 flex flex-col min-h-0">
-              <div class="flex-1 w-full flex items-center justify-center min-h-0">
-                <div class="aspect-square h-full max-w-full">
-                  <canvas #categorySalesChart class="block w-full h-full"></canvas>
-                </div>
+              <!-- Canvas is absolutely positioned so it never participates in
+                   the parent's intrinsic height computation — eliminates the
+                   feedback loop where a square wrapper pushes its own card
+                   taller than its grid neighbor on narrow viewports. Chart.js
+                   keeps the doughnut centered and proportional inside the
+                   rectangular drawing area via maintainAspectRatio: true. -->
+              <div class="flex-1 w-full relative min-h-0">
+                <canvas #categorySalesChart class="absolute inset-0 w-full h-full"></canvas>
               </div>
               <div class="w-full mt-4 space-y-2 shrink-0">
                 @for (cat of salesByCategoryData(); track cat.categoryId) {
@@ -623,9 +627,11 @@ export class AnalyticsComponent implements OnInit, AfterViewInit, OnDestroy {
       },
       options: {
         responsive: true,
-        // Let the aspect-square parent dictate the canvas size so the doughnut
-        // fills the available vertical room in the card.
-        maintainAspectRatio: false,
+        // The canvas is absolutely positioned and fills a rectangular flex-1
+        // area. Chart.js keeps the doughnut itself square and centered inside
+        // that rectangle, so the chart never pushes its own card taller than
+        // the grid neighbor on narrow viewports.
+        maintainAspectRatio: true,
         cutout: '58%',
         plugins: {
           legend: { display: false },
