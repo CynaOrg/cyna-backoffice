@@ -7,14 +7,24 @@ import { NgIconComponent } from '@ng-icons/core';
   imports: [NgIconComponent],
   template: `
     <div
-      class="rounded-xl border border-border-light bg-surface p-4 sm:p-5 shadow-sm hover:shadow-md hover:-translate-y-px transition-all duration-200"
+      class="rounded-xl p-4 sm:p-5 shadow-sm hover:shadow-md hover:-translate-y-px transition-all duration-200"
+      [class]="
+        variant() === 'primary'
+          ? 'bg-primary text-text-inverse border border-primary-hover'
+          : 'bg-surface border border-border-light'
+      "
     >
       <div class="flex items-start justify-between mb-2.5">
         @if (iconName()) {
-          <ng-icon [name]="iconName()" class="text-text-muted" size="18" />
+          <ng-icon
+            [name]="iconName()"
+            [class]="variant() === 'primary' ? 'text-text-inverse opacity-90' : 'text-text-muted'"
+            size="18"
+          />
         } @else {
           <svg
-            class="w-[18px] h-[18px] text-text-muted"
+            class="w-[18px] h-[18px]"
+            [class]="variant() === 'primary' ? 'text-text-inverse opacity-90' : 'text-text-muted'"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -38,8 +48,18 @@ import { NgIconComponent } from '@ng-icons/core';
           </span>
         }
       </div>
-      <div class="text-2xl font-semibold tracking-tight text-text-primary">{{ value() }}</div>
-      <div class="text-[11px] text-text-muted leading-tight mt-0.5">{{ label() }}</div>
+      <div
+        class="text-2xl font-semibold tracking-tight"
+        [class]="variant() === 'primary' ? 'text-text-inverse' : 'text-text-primary'"
+      >
+        {{ value() }}
+      </div>
+      <div
+        class="text-[11px] leading-tight mt-0.5"
+        [class]="variant() === 'primary' ? 'text-text-inverse opacity-80' : 'text-text-muted'"
+      >
+        {{ label() }}
+      </div>
     </div>
   `,
 })
@@ -51,4 +71,10 @@ export class KpiCardComponent {
   iconBgClass = input<string>('');
   iconClass = input<string>('');
   variation = input<number | undefined>(undefined);
+  /**
+   * `'primary'` renders the card with the Cyna brand purple background — used
+   * to flag a KPI that is a snapshot (e.g. MRR) and therefore does not vary
+   * with the date-range selector. Defaults to the surface variant.
+   */
+  variant = input<'default' | 'primary'>('default');
 }
