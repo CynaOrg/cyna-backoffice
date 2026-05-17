@@ -204,18 +204,22 @@ Chart.defaults.plugins.tooltip.usePointStyle = true;
 
         <!-- Sales by Category (Doughnut) + Avg Cart by Product Type (Bar) -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
-          <!-- Sales by Category Doughnut (1/3) -->
-          <div class="rounded-xl border border-border-light bg-surface shadow-sm">
+          <!-- Sales by Category Doughnut (1/3) — flex column so the doughnut
+               grows to fill the leftover vertical space and the card height
+               tracks the bar-chart neighbor in the same grid row. -->
+          <div class="rounded-xl border border-border-light bg-surface shadow-sm flex flex-col">
             <div class="px-4 sm:px-5 py-3 sm:py-4 border-b border-border-light">
               <h3 class="text-sm font-semibold text-text-primary !m-0">
                 {{ 'ANALYTICS.SALES_BY_CATEGORY' | translate }}
               </h3>
             </div>
-            <div class="p-4 sm:p-5 flex flex-col lg:flex-row items-center gap-4 lg:gap-6">
-              <div class="w-full max-w-[200px] aspect-square shrink-0">
-                <canvas #categorySalesChart class="block w-full h-full"></canvas>
+            <div class="p-4 sm:p-5 flex-1 flex flex-col min-h-0">
+              <div class="flex-1 w-full flex items-center justify-center min-h-0">
+                <div class="aspect-square h-full max-w-full">
+                  <canvas #categorySalesChart class="block w-full h-full"></canvas>
+                </div>
               </div>
-              <div class="flex-1 w-full space-y-2 min-w-0">
+              <div class="w-full mt-4 space-y-2 shrink-0">
                 @for (cat of salesByCategoryData(); track cat.categoryId) {
                   <div class="flex items-center justify-between">
                     <div class="flex items-center gap-2 min-w-0">
@@ -619,7 +623,9 @@ export class AnalyticsComponent implements OnInit, AfterViewInit, OnDestroy {
       },
       options: {
         responsive: true,
-        maintainAspectRatio: true,
+        // Let the aspect-square parent dictate the canvas size so the doughnut
+        // fills the available vertical room in the card.
+        maintainAspectRatio: false,
         cutout: '58%',
         plugins: {
           legend: { display: false },
